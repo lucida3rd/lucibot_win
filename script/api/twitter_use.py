@@ -1,0 +1,1073 @@
+#!/usr/bin/python
+# coding: UTF-8
+#####################################################
+# ::ProjectName : Lucibot Win
+# ::github      : https://github.com/lucida3rd/lucibot_win
+# ::Admin       : Lucida（lucida3hai@twitter.com）
+# ::TwitterURL : https://twitter.com/lucida3hai
+# ::Class       : ついったーユーズ
+# 
+# ::Update= 2020/10/7
+#####################################################
+# Private Function:
+#   __initTwStatus(self):
+#   __Get_Resp(self):
+#   __twConnect(self):
+#   __TwitterPing(self):
+#
+# Instance Function:
+#   __init__(self):
+#   GetTwStatus(self):
+#   GetUsername(self):
+#   Create( self, inTwitterID, inAPIkey, inAPIsecret, inACCtoken, inACCsecret, inGetNum=200 ):
+#
+# ◇Twitter接続・切断
+#   Connect(self):
+#   
+# ◇タイムライン制御系
+#   Tweet( self, inTweet ):
+#   GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
+#   GetMyFollowList(self):
+#   GetFollowerList(self):
+#   RemoveFollow( self, inID ):
+#   GetFavolist(self):
+#   RemoveFavo( self, inID ):
+#   GetLists(self):
+#   GetListMember( self, inListName ):
+#   AddUserList( self, inListName, inUserID ):
+#   RemoveUserList( self, inListName, inUserID ):
+#   GetTrends(self):
+#
+# Class Function(static):
+#   (none)
+#
+#####################################################
+# 参考：
+#   twitter api rate
+#     https://developer.twitter.com/en/docs/basics/rate-limits
+#
+#####################################################
+import json
+import subprocess as sp
+from requests_oauthlib import OAuth1Session
+
+#####################################################
+class CLS_Twitter_Use():
+#####################################################
+	Twitter_use = ''						#Twitterモジュール実体
+###	IniStatus = ""
+	TwStatus = ""
+	##	"Init"     : False
+	##	"Reason"   : None
+	##	"Responce" : None
+
+	STR_TWITTERdata = {
+		"TwitterID"		: "",				#Twitter ID
+		"APIkey"		: "",				#API key
+		"APIsecret"		: "",				#API secret key
+		"ACCtoken"		: "",				#Access token
+		"ACCsecret"		: ""				#Access token secret
+	}
+	
+	VAL_TwitNum     = 200
+	VAL_TwitListNum = 5000
+
+	DEF_TWITTER_HOSTNAME = "twitter.com"	#Twitterホスト名
+	DEF_MOJI_ENCODE      = 'utf-8'			#ファイル文字エンコード
+	DEF_TWITTER_PING_COUNT   = "2"			#Ping回数 (文字型)
+##	DEF_TWITTER_PING_TIMEOUT = "1000"		#Pingタイムアウト秒 (文字型)
+
+	#トレンド地域ID
+#	DEF_WOEID = "1"				#グローバル
+	DEF_WOEID = "23424856"		#日本
+		# idにはWOEID Lookupの地域IDを入れる
+		#   http://woeid.rosselliot.co.nz/
+		#   なんだけどエラー？で取得できない。なんやこれ...
+
+
+	STR_TWITTER_STATUS_CODE = {
+		"200"	: "OK",
+		"304"	: "Not Modified",
+		"400"	: "Bad Request",
+		"401"	: "Unauthorized",
+		"403"	: "Forbidden",
+		"404"	: "Not Found",
+		"406"	: "Not Acceptable",
+		"410"	: "Gone",
+		"420"	: "Enhance Your Calm",
+		"422"	: "Unprocessable Entity",
+		"429"	: "Too Many Requests",
+		"500"	: "Internal Server Error",
+		"502"	: "Bad Gateway",
+		"503"	: "Service Unavailable",
+		"504"	: "Gateway timeout"
+	}
+	### http://westplain.sakuraweb.com/translate/twitter/API-Overview/Error-Codes-and-Responses.cgi
+
+	ARR_TwitterList = {}	#Twitterリスト
+	# id    リストid
+	# name  リスト名
+
+
+
+#####################################################
+# Twitter状態取得
+#####################################################
+	def GetTwStatus(self):
+		return self.TwStatus	#返すだけ
+
+
+
+#####################################################
+# ユーザ名取得
+#####################################################
+	def GetUsername(self):
+		if self.STR_TWITTERdata['TwitterID']=='' :
+			return ""
+		
+		wUser = self.STR_TWITTERdata['TwitterID'] + "@" + self.DEF_TWITTER_HOSTNAME
+		return wUser
+
+
+
+#####################################################
+# Twitter状態取得
+#####################################################
+	def __initTwStatus(self):
+		self.TwStatus = {
+			"Init"     : False,
+			"Reason"   : None,
+			"Responce" : None
+		}
+		return
+
+
+
+#####################################################
+# レスポンス取得
+#####################################################
+
+##		#############################
+##		# 応答形式の取得
+##		#   "Result" : False, "Reason" : None, "Responce" : None
+##		wRes = CLS_OSIF.sGet_Resp()
+
+	def __Get_Resp(self):
+		wRes = {
+			"Result"   : False,
+			"Reason"   : None,
+			"Responce" : None }
+		
+		return wRes
+
+
+
+#####################################################
+# 初期化
+#####################################################
+	def __init__(self):
+		return
+
+
+
+#####################################################
+# 接続情報の作成
+#####################################################
+	def Create( self, inTwitterID, inAPIkey, inAPIsecret, inACCtoken, inACCsecret, inGetNum=200 ):
+		#############################
+		# Twitter状態 全初期化
+		self.__initTwStatus()
+		
+		#############################
+		# 接続情報の仮セット
+		self.STR_TWITTERdata['TwitterID'] = inTwitterID
+		self.STR_TWITTERdata['APIkey']    = inAPIkey
+		self.STR_TWITTERdata['APIsecret'] = inAPIsecret
+		self.STR_TWITTERdata['ACCtoken']  = inACCtoken
+		self.STR_TWITTERdata['ACCsecret'] = inACCsecret
+		
+		self.VAL_TwitNum = inGetNum
+		
+		#############################
+		# Twitter接続テスト
+		if self.__twConnect()!=True :
+			return False	#失敗
+		
+		#############################
+		# 初期化完了
+		self.TwStatus['Init'] = True
+		return True
+
+
+
+#####################################################
+# 接続
+#####################################################
+	def Connect(self):
+		#############################
+		# 初期化状態の確認
+		if self.TwStatus['Init']!=True :
+			self.TwStatus['Reason'] = "CLS_Twitter_Use: Connect: TwStatusが初期化されていません"
+			return False
+		
+		#############################
+		# Twitter接続
+		if self.__twConnect()!=True :
+			return False
+		
+		return True
+
+	#####################################################
+	def __twConnect(self):
+
+		#############################
+		# 通信テスト
+		if self.__TwitterPing()!=True :
+			self.TwStatus['Reason'] = "CLS_Twitter_Use: __twConnect: Twitter host no responce"
+			return False
+		
+		#############################
+		# Twitterクラスの生成
+		try:
+			self.Twitter_use = OAuth1Session(
+				self.STR_TWITTERdata["APIkey"],
+				self.STR_TWITTERdata["APIsecret"],
+				self.STR_TWITTERdata["ACCtoken"],
+				self.STR_TWITTERdata["ACCsecret"]
+			)
+		except ValueError as err :
+			self.IniStatus['Reason'] = "CLS_Twitter_Use: __twConnect: Twitter error: " + str(err)
+			return False
+		
+		return True
+
+
+
+#####################################################
+# twitterサーバのPing確認
+#####################################################
+	def __TwitterPing(self):
+##		wStatus, wResult = sp.getstatusoutput( "ping -c " + str(inCount) + " " + str( self.DEF_TWITTER_HOSTNAME ) )
+##		wPingComm = "ping -c " + self.DEF_TWITTER_PING_COUNT + " -w " + self.DEF_TWITTER_PING_TIMEOUT + " " + self.DEF_TWITTER_HOSTNAME
+##		wPingComm = "ping -c " + self.DEF_TWITTER_PING_COUNT + " " + self.DEF_TWITTER_HOSTNAME
+		wPingComm = "ping -n " + self.DEF_TWITTER_PING_COUNT + " " + self.DEF_TWITTER_HOSTNAME
+		wStatus, wResult = sp.getstatusoutput( wPingComm )
+		if wStatus==0 :
+			return True	# Link UP
+		
+		return False	# Link Down
+
+
+
+#####################################################
+# ついーと処理
+#####################################################
+	def Tweet( self, inTweet ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# 入力チェック
+		if inTweet=='' :
+			wRes['Reason'] = "Twitter内容がない"
+			return wRes
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/statuses/update.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "status" : inTweet }
+		
+		#############################
+		# ついーと
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# タイムライン読み込み処理
+#####################################################
+	def GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		if inTLmode=="home" :
+			wAPI = "https://api.twitter.com/1.1/statuses/home_timeline.json"
+		elif inTLmode=="user" :
+			wAPI = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+		elif inTLmode=="list" and isinstance(inListID, int)==True :
+			wAPI = "https://api.twitter.com/1.1/lists/statuses.json"
+		else :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: inTLmode is invalid: " + str(inTLmode)
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		if inTLmode=="list" :
+			wParams = {
+				"count"           : self.VAL_TwitNum,
+				"screen_name"     : self.STR_TWITTERdata['TwitterUser'],
+				"exclude_replies" : inFLG_Rep,
+				"include_rts"     : inFLG_Rts,
+				"list_id"         : inListID
+			}
+		else :
+			wParams = {
+				"count"           : self.VAL_TwitNum,
+				"screen_name"     : self.STR_TWITTERdata['TwitterUser'],
+				"exclude_replies" : inFLG_Rep,
+				"include_rts"     : inFLG_Rts
+			}
+			## exclude_replies  : リプライを除外する True=除外
+			## include_rts      : リツイートを含める True=含める
+		
+		#############################
+		# タイムライン読み込み
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# フォロー一覧読み込み処理
+#####################################################
+	def GetMyFollowList(self):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetMyFollowList: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/friends/list.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"count"			: self.VAL_TwitNum,
+			"cursor"		: "-1",
+			"skip_status"	: "True"
+##			"screen_name"	: "..."
+		}
+		
+		#############################
+		# タイムライン読み込み
+		wARR_TL = []
+		wFLG_Limit = False
+		try:
+			while True :
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wUsers = json.loads( wTweetRes.text )
+				
+				###要素チェック
+				if 'next_cursor_str' not in wUsers :
+					break
+				if 'users' not in wUsers :
+					break
+				
+				###情報抜き出し
+				if len(wUsers['users'])>0 :
+					for wLine in wUsers['users'] :
+						wARR_TL.append( wLine )
+				
+				###ページング処理
+				if wParams['cursor']==wUsers['next_cursor_str'] :
+					break
+				if wUsers['next_cursor_str']=="0" :
+					break
+				wParams['cursor'] = wUsers['next_cursor_str']
+			
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetMyFollowList: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wUsers :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			
+			wRes['Reason'] = "CLS_Twitter_Use: GetMyFollowList: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = wARR_TL
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# フォロワー一覧読み込み処理
+#####################################################
+	def GetFollowerList(self):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetFollowerList: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/followers/list.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"count"			: self.VAL_TwitNum,
+			"cursor"		: "-1",
+			"skip_status"	: "True"
+##			"screen_name"	: "..."
+		}
+		
+		#############################
+		# タイムライン読み込み
+		wARR_TL = []
+		wFLG_Limit = False
+		try:
+			while True :
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wUsers = json.loads( wTweetRes.text )
+				
+				###要素チェック
+				if 'next_cursor_str' not in wUsers :
+					break
+				if 'users' not in wUsers :
+					break
+				
+				###情報抜き出し
+				if len(wUsers['users'])>0 :
+					for wLine in wUsers['users'] :
+						wARR_TL.append( wLine )
+				
+				###ページング処理
+				if wParams['cursor']==wUsers['next_cursor_str'] :
+					break
+				if wUsers['next_cursor_str']=="0" :
+					break
+				wParams['cursor'] = wUsers['next_cursor_str']
+			
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetFollowerList: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wUsers :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			
+			wRes['Reason'] = "CLS_Twitter_Use: GetFollowerList: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = wARR_TL
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# フォロー解除処理
+#####################################################
+	def RemoveFollow( self, inID ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveFollow: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/friendships/destroy.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveFollow: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveFollow: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# いいね一覧読み込み処理
+#####################################################
+###	def GetFavolist( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
+	def GetFavolist(self):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetFavolist: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/favorites/list.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"count"			: self.VAL_TwitNum,
+			"cursor"		: "-1",
+			"skip_status"	: "True"
+##			"screen_name"	: "..."
+		}
+		
+		#############################
+		# タイムライン読み込み
+		wARR_TL = []
+		wFLG_Limit = False
+		try:
+			while True :
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wTL = json.loads( wTweetRes.text )
+				
+				###情報抜き出し
+				if len(wTL)>0 :
+					for wLine in wTL :
+						wARR_TL.append( wLine )
+				
+				###ページング処理
+				if 'next_cursor_str' not in wTL :
+					break
+				if wParams['cursor']==wTL['next_cursor_str'] :
+					break
+				if wTL['next_cursor_str']=="0" :
+					break
+				wParams['cursor'] = wUsers['next_cursor_str']
+			
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetFavolist: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wUsers :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			
+			wRes['Reason'] = "CLS_Twitter_Use: GetFavolist: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = wARR_TL
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# いいね解除処理
+#####################################################
+	def RemoveFavo( self, inID ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveFavo: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/favorites/destroy.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveFavo: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveFavo: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# リスト一覧の取得
+#####################################################
+	def GetLists(self):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter connect error: " + str(wResIni['Reason'])
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/lists/list.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"screen_name" : self.STR_TWITTERdata['TwitterID']
+		}
+		
+		#############################
+		# タイムライン読み込み
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# リストを取得
+		wTweetList = json.loads( wTweetRes.text )
+		
+		#############################
+		# Twitterリストの作成
+		self.ARR_TwitterList = {}	#Twitterリスト
+		wIndex = 0
+		for wROW in wTweetList :
+			#自分のリストではない
+			if wROW['user']['name']!=self.STR_TWITTERdata['TwitterID'] :
+				continue
+			
+			wCell = {}
+			wCell.update({ "id"   : wROW['id'] })
+			wCell.update({ "name" : wROW['name'] })
+			self.ARR_TwitterList.update({ wIndex : wCell })
+			wIndex += 1
+		
+		#############################
+		# 一覧を返す
+		wRes['Responce'] = self.ARR_TwitterList
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# リスト登録者一覧の取得
+#####################################################
+###	def GetListMember( self, inListID ):
+	def GetListMember( self, inListName ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: Twitter connect error: " + str(wResIni['Reason'])
+			return wRes
+		
+		#############################
+		# リスト名のIDを取得
+		wListID = -1
+		wKeylist = self.ARR_TwitterList.keys()
+		for wKey in wKeylist :
+			if self.ARR_TwitterList[wKey]['name']==inListName :
+				###リスト発見 =idを取得する
+				wListID = self.ARR_TwitterList[wKey]['id']
+				break
+		
+		if wListID==-1 :
+			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: List is not found: " + inListName
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/lists/members.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "list_id"		: wListID,
+					"count"			: self.VAL_TwitListNum,
+					"cursor"		: "-1",
+					"skip_status"	: "True"
+##					"screen_name"	: "..."
+		}
+		
+		#############################
+		# タイムライン読み込み
+		wARR_TL = []
+		wFLG_Limit = False
+		try:
+			while True :
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wUsers = json.loads( wTweetRes.text )
+				
+				###要素チェック
+				if 'next_cursor_str' not in wUsers :
+					break
+				if 'users' not in wUsers :
+					break
+				
+				###情報抜き出し
+				if len(wUsers['users'])>0 :
+					for wLine in wUsers['users'] :
+						wARR_TL.append( wLine )
+				
+				###ページング処理
+				if wParams['cursor']==wUsers['next_cursor_str'] :
+					break
+				if wUsers['next_cursor_str']=="0" :
+					break
+				wParams['cursor'] = wUsers['next_cursor_str']
+			
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wUsers :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			
+			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = wARR_TL
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# リストへ追加処理
+#####################################################
+###	def AddUserList( self, inListID, inUserID ):
+	def AddUserList( self, inListName, inUserID ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# リスト名のIDを取得
+		wListID = -1
+		wKeylist = self.ARR_TwitterList.keys()
+		for wKey in wKeylist :
+			if self.ARR_TwitterList[wKey]['name']==inListName :
+				###リスト発見 =idを取得する
+				wListID = wROW['id']
+				break
+		
+		if wListID==-1 :
+			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: List is not found: " + inListName
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/lists/members/create.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "list_id" : wListID,
+					"user_id" : inUserID
+		}
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# リストから削除処理
+#####################################################
+	def RemoveUserList( self, inListName, inUserID ):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# リスト名のIDを取得
+		wListID = -1
+		wKeylist = self.ARR_TwitterList.keys()
+		for wKey in wKeylist :
+			if self.ARR_TwitterList[wKey]['name']==inListName :
+				###リスト発見 =idを取得する
+				wListID = wROW['id']
+				break
+		
+		if wListID==-1 :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: List is not found: " + inListName
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/lists/members/destroy.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "list_id" : wListID,
+					"user_id" : inUserID
+		}
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# トレンド読み込み処理
+#####################################################
+	def GetTrends(self):
+		#############################
+		# 応答形式の取得
+		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		wRes = self.__Get_Resp()
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTrends: Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/trends/place.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"id" : self.DEF_WOEID
+		}
+		
+		#############################
+		# タイムライン読み込み
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "CLS_Twitter_Use: GetTrends: Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
