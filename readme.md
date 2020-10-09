@@ -4,8 +4,8 @@
 ::Admin= Lucida（lucida3hai@twitter.com）
 ::TwitterURL= https://twitter.com/lucida3hai
 
-::Update= 2020/10/8
-::Version= 0.1.0.0
+::Update= 2020/10/9
+::Version= 0.1.0.1
 
 
 <a id="iSystemSummary"></a>
@@ -25,6 +25,7 @@ python3で作成したWindows環境下で動くことを前提にしたTwitter�
 * [システム概要](#iSystemSummary)
 * [前提](#iPremise)
 * [githubアカウントの取り方](#iGetGithub)
+* [Twitterリストの作成](#iGetTwitterList)
 * [デフォルトエンコードの確認](#iDefEncode)
 * [Twitter APIの取得方法](#iGetTwitter)
 * [セットアップ手順](#iSetup)
@@ -50,6 +51,8 @@ python3で作成したWindows環境下で動くことを前提にしたTwitter�
 * postgreSQL（Windows版）
 * Windows 10
 * twitterアカウント
+* twitterリスト: normal
+* twitterリスト: un_refollow
 * githubアカウント
 * デフォルトエンコード：utf-8
 
@@ -81,6 +84,20 @@ python3で作成したWindows環境下で動くことを前提にしたTwitter�
 githubのホームページから取得できます。
 　　[github.com](https://github.com)
 
+
+
+<a id="iGetTwitterList"></a>
+## Twitterリストの作成　★初回のみ
+フォロワー監視機能を有効にするため、Twitter側に専用のリストを作成します。
+準拠するリストが既にあればそちらを使っても構いません。
+なお、使えるリストはアカウントで作成したもののみです。
+
+* twitterリスト: normal
+  フォロワー監視をおこなうユーザをリストします。
+  ここで登録したユーザしかフォロワー監視をおこないません。
+* twitterリスト: un_refollow
+  フォロワー監視で自動リムーブしたユーザをリストします。
+  ここに登録されたユーザはキーワード検索や、新規ユーザ出力でひっかからなくなります。
 
 
 
@@ -317,44 +334,47 @@ psql -U postgres
 　※エラーがでなければOKです
 ```
 
+3.botソースの管理アプリとしてWindows版のgithubデスクトップを使います。
 
+3-1.githubデスクトップをインストールします。
+　　[githubデスクトップ](https://desktop.github.com)
 
+3-2.githubの自分のアカウントに本家リポジトリをFork（コピー）する。
+　　[Lucibotリポジトリ](https://github.com/lucida3rd/lucibot_win)
+  の右上あたりの[Fork]ボタンを押してください。
+  すると、自分のアカウントに[自垢名 / lucibot_win]というリポジトリができます。
 
+3-3.githubデスクトップで1項でForkしたリポジトリから自PCにクローンをダウンロードします。
+  githubデスクトップのCurrent repository→Add→Cloneを選択します。
+  任意のフォルダを選択してCloneを押してください。
 
+3-4.自分のブランチを作ります。
+  githubデスクトップのCurrent branch→New branchで任意の名前を入力します。
 
 
 
 <a id="iUpdate"></a>
 ## アップデート手順
 るしぼっとリポジトリのmasterから最新版をpullする方法です。  
-- ※forkしてる場合はforkリポジトリにmasterを反映してから実行します。
 
-1.セットアップしたサーバにログインし、るしぼっと用ユーザに切り替えます。  
-　そしてるしぼっとのcloneフォルダにcdします。  
+1.githubデスクトップを起動します。
 
-```
-# su - [ユーザ名]
-$ pwd
-/home/[ユーザ名]/bot
-　　※cloneフォルダにいることを確認します
-```
+2.自分のLucibotリポジトリを選択し、Current branchをクリックします。
 
-2.最新版のリストをfetchします。
+3.New branchをクリックし、バックアップ用のブランチを作成します。
+  名前はわかりやすいように。
 
-```
-$ git fetch
-　original->master と出たら、githubに最新版があります。
-```
+4.ブランチを[main]に切り替えます。
 
-3.アップデートします。
+5.[Fetch Origin]をクリックします。
 
-```
-$ git stash　※stashは不要と思いますが念のため
-$ git pull
-  pullされたファイル一覧が出ればOKです。
-$ exit
-　作業は終わりです。
-```
+6.[Puch]をクリックします。
+
+ここまでで、自分のリポジトリの[main]と、自PCのソースに最新が反映されてます。
+
+もし不具合があったら...？
+3項で保存したブランチに切り替えると、自PC側にアップデート前のソースが戻ってきます。
+以後、アップデートがあったら[main]に切り替えて[Fetch]すれば、修正後のソースが反映されます。
 
 
 

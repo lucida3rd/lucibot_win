@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/8
+# ::Update= 2020/10/9
 #####################################################
 
 #####################################################
@@ -71,6 +71,8 @@ class gVal() :
 		"removeLimWait"		: 185,						#自動リムーブ処理待ち(秒)   900秒
 
 		"getTwitTLnum"		: 200,						#TwitterのTL取得数(Twitter仕様は最大200)
+
+		"logShortLen"		: 100,						#ログ表示 ショートモード
 		"(dummy)"			: ""
 	}
 
@@ -127,6 +129,7 @@ class gVal() :
 	
 	OBJ_Twitter = ""										#Twitter
 	OBJ_DB      = ""										#ぽすぐれ
+	OBJ_L      = ""											#ログ用
 
 
 

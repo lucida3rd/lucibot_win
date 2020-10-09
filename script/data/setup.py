@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/6
+# ::Update= 2020/10/9
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -359,6 +359,8 @@ class CLS_Setup():
 		wQuery = "create table " + inTBLname + "(" + \
 					"twitterid   TEXT  NOT NULL," + \
 					"level       CHAR(1) DEFAULT '-'," + \
+					"log_class   TEXT  NOT NULL," + \
+					"log_func    TEXT  NOT NULL," + \
 					"reason      TEXT  NOT NULL," + \
 					"lupdate     TIMESTAMP" + \
 					" ) ;"

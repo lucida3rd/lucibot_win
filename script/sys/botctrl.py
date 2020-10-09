@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : bot制御(共通)
 # 
-# ::Update= 2020/10/3
+# ::Update= 2020/10/9
 #####################################################
 # Private Function:
 #   (none)
@@ -26,6 +26,7 @@
 #####################################################
 from postgresql_use import CLS_PostgreSQL_Use
 from twitter_use import CLS_Twitter_Use
+from mylog import CLS_Mylog
 
 from osif import CLS_OSIF
 from filectrl import CLS_File
@@ -99,6 +100,10 @@ class CLS_BotCtrl():
 			return False
 		
 		#############################
+		# ログオブジェクトの生成
+		gVal.OBJ_L = CLS_Mylog()
+		
+		#############################
 		# テーブルがある
 		wQuery = "select * from tbl_user_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
@@ -108,23 +113,26 @@ class CLS_BotCtrl():
 		wDBRes = gVal.OBJ_DB.GetQueryStat()
 		if wDBRes['Result']!=True :
 			##失敗
-			wStr = "CLS_BotCtrl: sBotTest: Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
-			CLS_OSIF.sPrn( wStr )
+###			wStr = "CLS_BotCtrl: sBotTest: Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+###			CLS_OSIF.sPrn( wStr )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query'] )
 			gVal.OBJ_DB.Close()
 			return False
 		
 		#############################
 		# ユーザ登録の確認
 		if len(wDBRes['Responce']['Data'])==0 :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: ユーザが登録されていません" )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: ユーザが登録されていません" )
+			gVal.OBJ_L.Log( "D", "CLS_BotCtrl", "sBotTest", "ユーザが登録されていません =" + gVal.STR_UserInfo['Account'] )
 			gVal.OBJ_DB.Close()
 			return False
 		
 		wChgDict = {}
 		if gVal.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wChgDict )!=True :
 			##ないケースかも
-			wStr = "CLS_BotCtrl: sBotTest: ChgList is failed(1)"
-			CLS_OSIF.sPrn( wStr )
+###			wStr = "CLS_BotCtrl: sBotTest: ChgList is failed(1)"
+###			CLS_OSIF.sPrn( wStr )
+			gVal.OBJ_L.Log( "C", "CLS_BotCtrl", "sBotTest", "恐らくDBに未登録: ChgList is failed" )
 			gVal.OBJ_DB.Close()
 			return False
 		
@@ -143,10 +151,12 @@ class CLS_BotCtrl():
 ###		wLock = cls.sLock( parentObj=parentObj )
 		wLock = cls.sLock()
 		if wLock['Result']!=True :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: 排他取得失敗(1): " + wLock['Reason'] + '\n' )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: 排他取得失敗(1): " + wLock['Reason'] + '\n' )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "排他取得失敗(1): " + wLock['Reason'] )
 			gVal.OBJ_DB.Close()
 			return
 		elif wLock['Responce']==True :
+			gVal.OBJ_L.Log( "R", "CLS_BotCtrl", "sBotTest", "排他中" )
 			CLS_OSIF.sPrn( "処理中です。しばらくお待ちください。" )
 			CLS_OSIF.sPrn( wLock['Reason'] )
 			gVal.OBJ_DB.Close()
@@ -158,13 +168,15 @@ class CLS_BotCtrl():
 		wResTwitter_Create = gVal.OBJ_Twitter.Create( gVal.STR_UserInfo['Account'], wAPIkey, wAPIsecret, wACCtoken, wACCsecret )
 		wResTwitter = gVal.OBJ_Twitter.GetTwStatus()
 		if wResTwitter_Create!=True :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Twitterの接続に失敗しました: 理由=" + wResTwitter['Reason'] )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Twitterの接続に失敗しました: 理由=" + wResTwitter['Reason'] )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Twitterの接続失敗: reason=" + wResTwitter['Reason'] )
 			cls.sBotEnd()	#bot終了
 			return False
 		
 		###結果の確認
 		if wResTwitter['Init']!=True :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Twitterが初期化できてません" )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Twitterが初期化できてません" )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Twitter初期化失敗" )
 			cls.sBotEnd()	#bot終了
 			return False
 		
@@ -173,7 +185,8 @@ class CLS_BotCtrl():
 		wTD = CLS_OSIF.sGetTime()
 		if wTD['Result']!=True :
 			###時間取得失敗  時計壊れた？
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: PC時間の取得に失敗しました" )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: PC時間の取得に失敗しました" )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "PC時間取得失敗" )
 			cls.sBotEnd()	#bot終了
 			return
 		### wTD['TimeDate']
@@ -182,12 +195,14 @@ class CLS_BotCtrl():
 		# るしぼっとVersion
 		wReadme = []
 		if CLS_File.sReadFile( gVal.DEF_STR_FILE['Readme'], outLine=wReadme )!=True :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Readme.mdファイルが見つかりません: path=" + gVal.DEF_STR_FILE['Readme'] )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Readme.mdファイルが見つかりません: path=" + gVal.DEF_STR_FILE['Readme'] )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Readme.mdファイルが見つかりません: path=" + gVal.DEF_STR_FILE['Readme'] )
 			cls.sBotEnd()	#bot終了
 			return False
 		
 		if len(wReadme)<=1 :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Readme.mdファイルが空です: path=" + gVal.DEF_STR_FILE['Readme'] )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: Readme.mdファイルが空です: path=" + gVal.DEF_STR_FILE['Readme'] )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Readme.mdファイルが空です: path=" + gVal.DEF_STR_FILE['Readme'] )
 			cls.sBotEnd()	#bot終了
 			return False
 		
@@ -217,21 +232,22 @@ class CLS_BotCtrl():
 		
 		#############################
 		# ログに記録する
-		wQuery = "insert into tbl_log_data values (" + \
-					"'" + gVal.STR_UserInfo['Account'] + "'," + \
-					"'t'," + \
-					"'TEST=OK'," + \
-					"'" + str(wTD['TimeDate']) + "'" + \
-					") ;"
-		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
-			##失敗
-			wStr = "CLS_BotCtrl: sBotTest: Run Query is failed(2): " + wDBRes['Reason']
-			CLS_OSIF.sPrn( wStr )
-			cls.sBotEnd()	#bot終了
-			return False
+##		wQuery = "insert into tbl_log_data values (" + \
+##					"'" + gVal.STR_UserInfo['Account'] + "'," + \
+##					"'t'," + \
+##					"'TEST=OK'," + \
+##					"'" + str(wTD['TimeDate']) + "'" + \
+##					") ;"
+##		
+##		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
+##		wDBRes = gVal.OBJ_DB.GetQueryStat()
+##		if wDBRes['Result']!=True :
+##			##失敗
+##			wStr = "CLS_BotCtrl: sBotTest: Run Query is failed(2): " + wDBRes['Reason']
+##			CLS_OSIF.sPrn( wStr )
+##			cls.sBotEnd()	#bot終了
+##			return False
+		gVal.OBJ_L.Log( "R", "CLS_BotCtrl", "sBotTest", "実行" )
 		
 		#############################
 		# テスト終了
@@ -248,7 +264,8 @@ class CLS_BotCtrl():
 		# 排他解除
 		wRes = cls.sUnlock()
 		if wRes['Result']!=True :
-			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotEnd: 排他取得失敗: " + wRes['Reason'] + '\n' )
+###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotEnd: 排他取得失敗: " + wRes['Reason'] + '\n' )
+			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotEnd", "排他取得失敗: " + wRes['Reason'] )
 		
 		#############################
 		# DB終了
@@ -311,19 +328,20 @@ class CLS_BotCtrl():
 				cls.sUnlock()	#一度解除する
 				
 				#ログに記録する
-				wQuery = "insert into tbl_log_data values (" + \
-							"'" + gVal.STR_UserInfo['Account'] + "'," + \
-							"'t'," + \
-							"'排他解除'," + \
-							"'" + str(wGetLag['NowTime']) + "'" + \
-							") ;"
-				
-				wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-				wDBRes = gVal.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
-					##失敗
-					wRes['Reason'] = "CLS_BotCtrl: Run Query is failed(2): " + wDBRes['Reason']
-					return wRes
+###				wQuery = "insert into tbl_log_data values (" + \
+###							"'" + gVal.STR_UserInfo['Account'] + "'," + \
+###							"'t'," + \
+###							"'排他解除'," + \
+###							"'" + str(wGetLag['NowTime']) + "'" + \
+###							") ;"
+###				
+###				wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
+###				wDBRes = gVal.OBJ_DB.GetQueryStat()
+###				if wDBRes['Result']!=True :
+###					##失敗
+###					wRes['Reason'] = "CLS_BotCtrl: Run Query is failed(2): " + wDBRes['Reason']
+###					return wRes
+				gVal.OBJ_L.Log( "R", "CLS_BotCtrl", "sLock", "排他解除" )
 			
 			else :
 				wAtSec = wReaRIPmin - wGetLag['RateSec']

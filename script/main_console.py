@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/8
+# ::Update= 2020/10/9
 #####################################################
 # Private Function:
 #   __getLucibotVer(cls):
@@ -49,11 +49,12 @@ class CLS_Main_Console() :
 		#   テスト項目
 		#     1.引数ロード
 		#     2.データベースの取得
-		#     3.排他
-		#     4.Twitterの取得
-		#     5.Readme情報の取得
-		#     6.Python情報の取得
-		#     7.TESTログ記録
+		#     3.ログの取得
+		#     4.排他
+		#     5.Twitterの取得
+		#     6.Readme情報の取得
+		#     7.Python情報の取得
+		#     8.TESTログ記録
 		wRes = CLS_BotCtrl.sBotTest()
 		if wRes!=True :
 			return	#問題あり
@@ -84,7 +85,8 @@ class CLS_Main_Console() :
 			
 			if wCommand.find("\\q")>=0 or wCommand=="exit" :
 				###終了
-				CLS_OSIF.sPrn( "コンソールを停止します。" + '\n' )
+###				CLS_OSIF.sPrn( "コンソールを停止します。" + '\n' )
+				gVal.OBJ_L.Log( "R", "CLS_Main_Console", "sRun", "コンソール停止" )
 				CLS_BotCtrl.sBotEnd()	#bot停止
 				break
 			
@@ -126,31 +128,31 @@ class CLS_Main_Console() :
 		#############################
 		# システム情報の表示
 		if inCommand=="\\v" :
-			wRes = cls().sView_Sysinfo()
+			cls().sView_Sysinfo()
 			wFlg = True
 		
 		#############################
 		# 監視情報の取得
 		if inCommand=="\\g" :
-			wRes = cls.OBJ_TwitterMain.Run()
+			cls.OBJ_TwitterMain.Run()
 			wFlg = True
 		
 		#############################
 		# いいね情報の表示
 		if inCommand=="\\vi" :
-			wRes = cls.OBJ_TwitterMain.ViewFavo()
+			cls.OBJ_TwitterMain.ViewFavo()
 			wFlg = True
 		
 		#############################
 		# いいね監視の実行
 		if inCommand=="\\ri" :
-			wRes = cls.OBJ_TwitterMain.Run_FavoRemove()
+			cls.OBJ_TwitterMain.RunFavo()
 			wFlg = True
 		
 		#############################
 		# フォロワー情報の表示
 		if inCommand=="\\vf" :
-			wRes = cls.OBJ_TwitterMain.ViewFollower()
+			cls.OBJ_TwitterMain.ViewFollower()
 			wFlg = True
 		
 
@@ -164,12 +166,36 @@ class CLS_Main_Console() :
 #			wCLS_work.ManualToot()
 #			wFlg = True
 		
+		#############################
+		# ログの表示(全ログ)
+		if inCommand=="\\l" :
+			gVal.OBJ_L.View()
+			wFlg = True
+		
+		#############################
+		# ログの表示(運用ログ)
+		if inCommand=="\\lr" :
+			gVal.OBJ_L.View( inViewMode="R" )
+			wFlg = True
+		
+		#############################
+		# ログの表示(異常ログ)
+		if inCommand=="\\le" :
+			gVal.OBJ_L.View( inViewMode="E" )
+			wFlg = True
+		
+		#############################
+		# ログクリア
+		if inCommand=="\\lc" :
+			gVal.OBJ_L.Clear()
+			wFlg = True
+		
 	#####################################################
 		#############################
-		# エラーがあったら表示する
-		if wRes['Result']!=True :
-			CLS_OSIF.sPrn( wRes['Reason'] )
-
+		# ないコマンド
+		if wFlg!=True :
+			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sRunCommand", "存在しないコマンド :" + str(inCommand) )
+		
 		return wFlg
 
 
@@ -184,12 +210,14 @@ class CLS_Main_Console() :
 		wKeylist = gVal.DEF_STR_DISPFILE.keys()
 		if inDisp not in wKeylist :
 			###キーがない(指定ミス)
-			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display key is not found: inDisp= " + inDisp )
+###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display key is not found: inDisp= " + inDisp )
+			gVal.OBJ_L.Log( "C", "CLS_Main_Console", "sViewDisp", "Display key is not found: inDisp= " + inDisp )
 			return False
 		
 		if CLS_File.sExist( gVal.DEF_STR_DISPFILE[inDisp] )!=True :
 			###ファイルがない...(消した？)
-			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display file is not found: " + gVal.DEF_STR_DISPFILE[inDisp] )
+###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display file is not found: " + gVal.DEF_STR_DISPFILE[inDisp] )
+			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
 			return False
 		
 		#############################
@@ -200,11 +228,13 @@ class CLS_Main_Console() :
 		# 中身表示
 		wDispFile = []
 		if CLS_File.sReadFile( gVal.DEF_STR_DISPFILE[inDisp], outLine=wDispFile )!=True :
-			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが見つかりません: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
+###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが見つかりません: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
+			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp] )
 			return False
 		
 		if len(wDispFile)<=1 :
-			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが空です: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
+###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが空です: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
+			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
 			return False
 		
 		wStr = "--------------------" + '\n'
