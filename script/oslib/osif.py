@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : OS I/F (OS向け共通処理)
 # 
-# ::Update= 2020/10/5
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
 #   (none)
@@ -75,13 +75,17 @@ class CLS_OSIF() :
 
 ##		#############################
 ##		# 応答形式の取得
-##		#   "Result" : False, "Reason" : None, "Responce" : None
+##		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 ##		wRes = CLS_OSIF.sGet_Resp()
+##		wRes['Class'] = "Class"
+##		wRes['Func']  = "Function"
 
 	@classmethod
 	def sGet_Resp(cls):
 		wRes = {
 			"Result"   : False,
+			"Class"    : None,
+			"Func"     : None,
 			"Reason"   : None,
 			"Responce" : None }
 		
@@ -444,6 +448,27 @@ class CLS_OSIF() :
 	def sPrn( cls, inMsg ):
 		print( inMsg )
 		return
+
+
+
+#####################################################
+# コンソールへのエラー表示
+#####################################################
+	@classmethod
+	def sErr( cls, inRes ):
+		wMsg = cls.sCatErr( inRes )
+		print( wMsg )
+		return
+
+
+
+#####################################################
+# エラークラス+関数+理由をくっつけて返す
+#####################################################
+	@classmethod
+	def sCatErr( cls, inRes ):
+		wMsg = inRes['Class'] + ": " + inRes['Func'] + ": " + inRes['Reason']
+		return wMsg
 
 
 

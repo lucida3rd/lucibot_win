@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/3
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
 #   (none)
@@ -41,8 +41,10 @@ class CLS_Config() :
 	def SetTwitterAPI( self, inTwitterID, inSave=True ):
 		#############################
 		# 応答形式の取得
-		#   "Result" : False, "Reason" : None, "Responce" : None
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetTwitterAPI"
 		
 		wRes['Responce'] = {}
 		wRes['Responce'].update({
@@ -110,14 +112,12 @@ class CLS_Config() :
 				)
 		wResTwitter = gVal.OBJ_Twitter.GetTwStatus()
 		if wResTwitter_Create!=True :
-			wRes['Reason'] = "CLS_Config: SetTwitterAPI: Twitterの接続に失敗しました: 理由=" + wResTwitter['Reason']
-			CLS_OSIF.sPrn( wRes['Reason'] )
+			wRes['Reason'] = "Twitterの接続に失敗しました: reason=" + wResTwitter['Reason']
 			return wRes
 		
 		###結果の確認
 		if wResTwitter['Init']!=True :
-			wRes['Reason'] = "CLS_Config: SetTwitterAPI: Twitterが初期化できてません"
-			CLS_OSIF.sPrn( wRes['Reason'] )
+			wRes['Reason'] = "Twitterが初期化できてません"
 			return wRes
 		
 		wStr = "Twitterへ正常に接続しました。" + '\n'
@@ -138,12 +138,11 @@ class CLS_Config() :
 				"accsecret = '" + wRes['Responce']['ACCsecret'] + " " + \
 				"where twitterid = '" + inTwitterID + "' ;"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_Setup: SetTwitterAPI: Run Query is failed: " + wDBRes['Reason']
-			CLS_OSIF.sPrn( wRes['Reason'] )
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
 		wStr = "データベースのユーザ " + inTwitterID + " を更新しました。" + '\n'
@@ -162,8 +161,10 @@ class CLS_Config() :
 	def SetTwitterList( self, inTwitterID, inSave=True ):
 		#############################
 		# 応答形式の取得
-		#   "Result" : False, "Reason" : None, "Responce" : None
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetTwitterList"
 		
 		wRes['Responce'] = {}
 		wRes['Responce'].update({ "norlist" : "(none)", "urflist" : "(none)" })
@@ -172,8 +173,7 @@ class CLS_Config() :
 		# リスト一覧の取得
 		wResTwitter = gVal.OBJ_Twitter.GetLists()
 		if wResTwitter['Result']!=True :
-			wRes['Reason'] = "CLS_Setup: SetTwitterList: GetLists failure reason=" + wResTwitter['Reason']
-			CLS_OSIF.sPrn( wRes['Reason'] )
+			wRes['Reason'] = "GetLists failure reason=" + wResTwitter['Reason']
 			return wRes
 		
 		if len(wResTwitter['Responce'])==0 :
@@ -262,12 +262,11 @@ class CLS_Config() :
 				"urflist = '" + wRes['Responce']['urflist'] + "' " + \
 				"where twitterid = '" + inTwitterID + "' ;"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_Setup: Setup: Run Query is failed: " + wDBRes['Reason']
-			CLS_OSIF.sPrn( wRes['Reason'] )
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
 		wStr = "データベースのユーザ " + inTwitterID + " を更新しました。" + '\n'

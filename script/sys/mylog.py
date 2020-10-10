@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ログ処理
 # 
-# ::Update= 2020/10/9
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -21,12 +21,12 @@
 #
 #####################################################
 # 書式:
-#	A:	gVal.OBJ_L.Log( "A", "Class", "Func", "Reason" )	致命的エラー: プログラム停止 ロジックエラーなどソフト側の問題
-#	B:	gVal.OBJ_L.Log( "B", "Class", "Func", "Reason" )	外部のエラー: プログラム停止か実行不可 外部モジュールやハードの問題
-#	C:	gVal.OBJ_L.Log( "C", "Class", "Func", "Reason" )	内部的エラー: プログラムは停止しないが、実行に影響があるレベル
-#	D:	gVal.OBJ_L.Log( "D", "Class", "Func", "Reason" )	潜在的エラー: ユーザ入力など予想外 or 後に問題を起こす可能性がある
-#	R:	gVal.OBJ_L.Log( "R", "Class", "Func", "Reason" )	実行記録
-#	T:	gVal.OBJ_L.Log( "T", "Class", "Func", "Reason" )	テスト用ログ
+#	A:	gVal.OBJ_L.Log( "A", wRes )		致命的エラー: プログラム停止 ロジックエラーなどソフト側の問題
+#	B:	gVal.OBJ_L.Log( "B", wRes )		外部のエラー: プログラム停止か実行不可 外部モジュールやハードの問題
+#	C:	gVal.OBJ_L.Log( "C", wRes )		内部的エラー: プログラムは停止しないが、実行に影響があるレベル
+#	D:	gVal.OBJ_L.Log( "D", wRes )		潜在的エラー: ユーザ入力など予想外 or 後に問題を起こす可能性がある
+#	R:	gVal.OBJ_L.Log( "R", wRes )		実行記録
+#	T:	gVal.OBJ_L.Log( "T", wRes )		テスト用ログ
 #
 #####################################################
 
@@ -70,7 +70,8 @@ class CLS_Mylog():
 #####################################################
 # ロギング
 #####################################################
-	def Log( self, inLevel=None, inLogClass=None, inLogFunc=None, inReason=None, inARR_Data=[], inViewConsole=DEF_VIEW_CONSOLE, inOutFile=DEF_OUT_FILE ):
+###	def Log( self, inLevel=None, inLogClass=None, inLogFunc=None, inReason=None, inARR_Data=[], inViewConsole=DEF_VIEW_CONSOLE, inOutFile=DEF_OUT_FILE ):
+	def Log( self, inLevel, inRes, inARR_Data=[], inViewConsole=DEF_VIEW_CONSOLE, inOutFile=DEF_OUT_FILE ):
 		#############################
 		# ログ文字セット
 		wSTR_Log = {
@@ -94,21 +95,36 @@ class CLS_Mylog():
 		
 		#############################
 		# ログクラスのチェック
-		wLogClass = inLogClass
+###		wLogClass = inLogClass
+		if "Class" not in inRes :
+			wLogClass = "(none)"
+		else:
+			wLogClass = inRes['Class']
+		
 		if wLogClass==None or wLogClass=="" :
 			wLogClass = "(none)"
 		wSTR_Log['LogClass'] = wLogClass
 		
 		#############################
 		# ログファンクのチェック
-		wLogFunc = inLogFunc
+###		wLogFunc = inLogFunc
+		if "Func" not in inRes :
+			wLogFunc = "(none)"
+		else:
+			wLogFunc = inRes['Func']
+		
 		if wLogFunc==None or wLogFunc=="" :
 			wLogFunc = "(none)"
 		wSTR_Log['LogFunc'] = wLogFunc
 		
 		#############################
 		# 理由のチェック
-		wReason = inReason
+###		wReason = inReason
+		if "Reason" not in inRes :
+			wReason = "(none)"
+		else:
+			wReason = inRes['Reason']
+		
 		if wReason==None or wReason=="" :
 			wReason = "(none)"
 		### ' を　'' に置き換える
@@ -134,11 +150,11 @@ class CLS_Mylog():
 						"'" + wCHR_TimeDate + "'" + \
 						") ;"
 			
-			wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-			wDBRes = gVal.OBJ_DB.GetQueryStat()
-			if wDBRes['Result']!=True :
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
 				##失敗
-				wStr = "CLS_Mylog: Log: Run Query is failed(sGetTime)" + wDBRes['Reason']
+				wStr = "CLS_Mylog: Log: Run Query is failed(sGetTime): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 				CLS_OSIF.sPrn( wStr )
 		
 		else:
@@ -155,11 +171,11 @@ class CLS_Mylog():
 					"'" + wCHR_TimeDate + "'" + \
 					") ;"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wStr = "CLS_Mylog: Log: Run Query is failed" + wDBRes['Reason']
+			wStr = "CLS_Mylog: Log: Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			CLS_OSIF.sPrn( wStr )
 			##以後の記録処理は継続する
 		
@@ -300,18 +316,18 @@ class CLS_Mylog():
 						"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 						"order by lupdate DESC ;"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wStr = "CLS_Mylog: View: Run Query is failed: " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wStr = "CLS_Mylog: View: Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			CLS_OSIF.sPrn( wStr )
 			return False
 		
 		#############################
 		# 辞書型に整形
 		wARR_Log = {}
-		gVal.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_Log )
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_Log )
 		
 		#############################
 		# ログ表示長のセット
@@ -397,18 +413,18 @@ class CLS_Mylog():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					"order by lupdate ;"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wStr = "CLS_Mylog: Clear: Run Query is failed: " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wStr = "CLS_Mylog: Clear: Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			CLS_OSIF.sPrn( wStr )
 			return False
 		
 		#############################
 		# 辞書型に整形
 		wARR_Log = {}
-		gVal.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_Log )
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_Log )
 		
 		#############################
 		# ログ表示長のセット
@@ -442,11 +458,11 @@ class CLS_Mylog():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					";"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wStr = "CLS_Mylog: Clear: Run Query is failed: " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wStr = "CLS_Mylog: Clear: Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			CLS_OSIF.sPrn( wStr )
 			return False
 		

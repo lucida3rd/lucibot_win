@@ -7,23 +7,19 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/9
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
-#   __checkTwitterPatt( self, inROW ):
-#   __getTwitterPatt(self):
+#   (none)
 #
 # Instance Function:
 #   __init__(self):
 #   GetCope(self):
 #   GetNewFollower(self):
 #   Run(self):
-
-#   __get_FavoInfo(self):
 #   ViewFavo(self):
-
-#   Get_RunFavoAdmin(self):
-#   Get_Run_FollowerAdmin(self):
+#   RunFavo(self):
+#   ViewFollower(self):
 #
 # Class Function(static):
 #   (none)
@@ -102,8 +98,10 @@ class CLS_TwitterMain():
 	def Run(self):
 		#############################
 		# 応答形式の取得
-		#   "Result" : False, "Reason" : None, "Responce" : None
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterMain"
+		wRes['Func']  = "Run"
 		
 		#############################
 		# 集計のリセット
@@ -126,14 +124,16 @@ class CLS_TwitterMain():
 		# いいね情報の取得
 		wResSub = self.OBJ_TwitterFavo.Get()
 		if wResSub['Result']!=True :
-			wRes['Reason'] = wResSub['Reason']
+			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
+			wRes['Reason'] = "TwitterFavo.Get failed: " + wResSub_Reason
 			return wRes
 		
 		#############################
 		# フォロワー情報の取得
 		wResSub = self.OBJ_TwitterFollower.Get()
 		if wResSub['Result']!=True :
-			wRes['Reason'] = wResSub['Reason']
+			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
+			wRes['Reason'] = "OBJ_TwitterFollower.Get failed: " + wResSub_Reason
 			return wRes
 		
 		#############################
@@ -178,7 +178,7 @@ class CLS_TwitterMain():
 # いいね情報の表示
 #####################################################
 	def ViewFavo(self):
-		wRes = self.OBJ_TwitterFavo.Get()
+		wRes = self.OBJ_TwitterFavo.View()
 		return wRes
 
 

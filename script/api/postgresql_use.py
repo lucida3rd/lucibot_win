@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ぽすぐれユーズ
 # 
-# ::Update= 2020/9/28
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
 #   __initDbStatus(self):
@@ -54,6 +54,7 @@ class CLS_PostgreSQL_Use():
 	
 	QueryStat = ""
 	##	"Result"	: False,
+	##	"RunFunc"	: inRunFunc,
 	##	"Reason"	: None,
 	##	"Responce"	: None,
 	##	"Query"		: "None"
@@ -78,7 +79,7 @@ class CLS_PostgreSQL_Use():
 
 
 #####################################################
-# DB状態取得
+# DB状態 初期化
 #####################################################
 	def __initDbStatus(self):
 		self.DbStatus = {
@@ -100,11 +101,12 @@ class CLS_PostgreSQL_Use():
 
 
 #####################################################
-# クエリ状態取得
+# クエリ状態 初期化
 #####################################################
-	def __initQueryStat(self):
+	def __initQueryStat( self, inRunFunc=None ):
 		self.QueryStat = {
 			"Result"	: False,
+			"RunFunc"	: inRunFunc,
 			"Reason"	: None,
 			"Responce"	: None,
 			"Query"		: "None"
@@ -181,9 +183,7 @@ class CLS_PostgreSQL_Use():
 		# DB接続
 		try:
 			self.PostgreSQL_use = psycopg2.connect( host=self.STR_DBdata['hostname'], database=self.STR_DBdata['database'], user=self.STR_DBdata['username'], password=self.STR_DBdata['password'] )
-###		except ValueError as err :
 		except psycopg2.OperationalError as e:
-###			self.DbStatus['Reason'] = "CLS_PostgreSQL_Use: __dbConnect: psycopg2 error: " + err
 			self.DbStatus['Reason'] = "CLS_PostgreSQL_Use: __dbConnect: psycopg2 error: " + str(e)
 			return False
 		
@@ -217,9 +217,7 @@ class CLS_PostgreSQL_Use():
 		# DB切断
 		try:
 			self.PostgreSQL_use.close()
-###		except ValueError as err :
 		except psycopg2.OperationalError as e:
-###			self.DbStatus['Reason'] = "CLS_PostgreSQL_Use: __dbClose: psycopg2 error: " + err
 			self.DbStatus['Reason'] = "CLS_PostgreSQL_Use: __dbClose: psycopg2 error: " + str(e)
 			return False
 		
@@ -235,25 +233,25 @@ class CLS_PostgreSQL_Use():
 	def RunQuery( self, inQuery=None ):
 		#############################
 		# 状態初期化
-		self.__initQueryStat()
+		self.__initQueryStat( "RunQuery" )
 		
 		#############################
 		# 接続状態の確認
 		if self.DbStatus['Open']!=True :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunQuery: DBが接続されていません"
+			self.QueryStat['Reason'] = "DBが接続されていません"
 			return False
 		
 		#############################
 		# 実行前チェック
 		if inQuery==None :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunQuery: None Query"
+			self.QueryStat['Reason'] = "None Query"
 			return False
 		
 		#############################
 		# コマンド取得
 		wCommand = inQuery.split(" ")
 		if len( wCommand )<=1 :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunQuery: Query is not correct: " + inQuery
+			self.QueryStat['Reason'] = "Query is not correct: " + inQuery
 			return False
 		wCommand = wCommand[0]
 		
@@ -264,7 +262,7 @@ class CLS_PostgreSQL_Use():
 		   wCommand!="insert" and \
 		   wCommand!="delete" and \
 		   wCommand!="update" :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunQuery: Unknown command: " + inQuery
+			self.QueryStat['Reason'] = "Unknown command: " + inQuery
 			return False
 		
 		#############################
@@ -300,10 +298,8 @@ class CLS_PostgreSQL_Use():
 					"Data"   : wCur.fetchall()
 				}
 			
-###			except ValueError as err :
 			except psycopg2.OperationalError as e:
-###				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: __runQuerySelect: Query error: " + err
-				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: __runQuerySelect: Query error: " + str(e)
+				self.QueryStat['Reason'] = "psycopg2.OperationalError(1): " + str(e)
 				return False
 		
 		#############################
@@ -323,10 +319,8 @@ class CLS_PostgreSQL_Use():
 				# commit
 				self.PostgreSQL_use.commit()
 			
-###			except ValueError as err :
 			except psycopg2.OperationalError as e:
-###				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: __runQueryCommit: Query error: " + err
-				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: __runQueryCommit: Query error: " + str(e)
+				self.QueryStat['Reason'] = "psycopg2.OperationalError(2): " + str(e)
 				return False
 		
 		#############################
@@ -341,21 +335,21 @@ class CLS_PostgreSQL_Use():
 	def RunExist( self, inObjTable=None, inWhere=None ):
 		#############################
 		# 状態初期化
-		self.__initQueryStat()
+		self.__initQueryStat( "RunExist" )
 		
 		#############################
 		# 接続状態の確認
 		if self.DbStatus['Open']!=True :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunExist: DBが接続されていません"
+			self.QueryStat['Reason'] = "DBが接続されていません"
 			return False
 		
 		#############################
 		# 実行前チェック
 		if inObjTable==None :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunExist: None Object table"
+			self.QueryStat['Reason'] = "None Object table"
 			return False
 		if inWhere==None :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunExist: None Where"
+			self.QueryStat['Reason'] = "None Where"
 			return False
 		
 		#############################
@@ -378,10 +372,8 @@ class CLS_PostgreSQL_Use():
 				wRes = wCur.fetchall()
 				self.QueryStat['Responce'] = wRes[0][0]
 			
-###			except ValueError as err :
 			except psycopg2.OperationalError as e:
-###				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunExist: Query error: " + err
-				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunExist: Query error: " + str(e)
+				self.QueryStat['Reason'] = "psycopg2.OperationalError(3): " + str(e)
 				return False
 		
 		#############################
@@ -397,18 +389,18 @@ class CLS_PostgreSQL_Use():
 	def RunTblExist( self, inObjTable=None ):
 		#############################
 		# 状態初期化
-		self.__initQueryStat()
+		self.__initQueryStat( "RunTblExist" )
 		
 		#############################
 		# 接続状態の確認
 		if self.DbStatus['Open']!=True :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunTblExist: DBが接続されていません"
+			self.QueryStat['Reason'] = "DBが接続されていません"
 			return False
 		
 		#############################
 		# 実行前チェック
 		if inObjTable==None :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunTblExist: None Object table"
+			self.QueryStat['Reason'] = "None Object table"
 			return False
 		
 		#############################
@@ -434,10 +426,8 @@ class CLS_PostgreSQL_Use():
 				if len(wRes)==1 :
 					self.QueryStat['Responce'] = True
 			
-##			except ValueError as err :
 			except psycopg2.OperationalError as e:
-##				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunTblExist: Query error: " + err
-				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunTblExist: Query error: " + str(e)
+				self.QueryStat['Reason'] = "psycopg2.OperationalError(4): " + str(e)
 				return False
 		
 		#############################
@@ -453,18 +443,18 @@ class CLS_PostgreSQL_Use():
 	def RunCount( self, inObjTable=None ):
 		#############################
 		# 状態初期化
-		self.__initQueryStat()
+		self.__initQueryStat( "RunCount" )
 		
 		#############################
 		# 接続状態の確認
 		if self.DbStatus['Open']!=True :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunCount: DBが接続されていません"
+			self.QueryStat['Reason'] = "DBが接続されていません"
 			return False
 		
 		#############################
 		# 実行前チェック
 		if inObjTable==None :
-			self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunCount: None Object table"
+			self.QueryStat['Reason'] = "None Object table"
 			return False
 		
 		#############################
@@ -487,10 +477,8 @@ class CLS_PostgreSQL_Use():
 				wRes = wCur.fetchall()
 				self.QueryStat['Responce'] = wRes[0][0]
 			
-###			except ValueError as err :
 			except psycopg2.OperationalError as e:
-###				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunCount: Query error: " + err
-				self.QueryStat['Reason'] = "CLS_PostgreSQL_Use: RunCount: Query error: " + str(e)
+				self.QueryStat['Reason'] = "psycopg2.OperationalError(5): " + str(e)
 				return False
 		
 		#############################

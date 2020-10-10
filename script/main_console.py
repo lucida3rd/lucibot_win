@@ -7,11 +7,10 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/9
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
-#   __getLucibotVer(cls):
-#   __getSystemInfo(cls):
+#   (none)
 #
 # Instance Function:
 #   (none)
@@ -37,13 +36,18 @@ class CLS_Main_Console() :
 	#使用クラス実体化
 	OBJ_TwitterMain = ""
 
-
-
 #####################################################
 # 実行
 #####################################################
 	@classmethod
 	def sRun(cls):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Main_Console"
+		wRes['Func']  = "sRun"
+		
 		#############################
 		# botテスト、引数ロード
 		#   テスト項目
@@ -55,8 +59,8 @@ class CLS_Main_Console() :
 		#     6.Readme情報の取得
 		#     7.Python情報の取得
 		#     8.TESTログ記録
-		wRes = CLS_BotCtrl.sBotTest()
-		if wRes!=True :
+		wResTest = CLS_BotCtrl.sBotTest()
+		if wResTest!=True :
 			return	#問題あり
 		
 		#############################
@@ -86,12 +90,14 @@ class CLS_Main_Console() :
 			if wCommand.find("\\q")>=0 or wCommand=="exit" :
 				###終了
 ###				CLS_OSIF.sPrn( "コンソールを停止します。" + '\n' )
-				gVal.OBJ_L.Log( "R", "CLS_Main_Console", "sRun", "コンソール停止" )
+###				gVal.OBJ_L.Log( "R", "CLS_Main_Console", "sRun", "コンソール停止" )
+				wRes['Reason'] = "コンソール停止"
+				gVal.OBJ_L.Log( "R", wRes )
 				CLS_BotCtrl.sBotEnd()	#bot停止
 				break
 			
-			wRes = cls().sRunCommand( wCommand )
-			if wRes==True :
+			wResCmd = cls().sRunCommand( wCommand )
+			if wResCmd==True :
 				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 		
 		return
@@ -120,7 +126,13 @@ class CLS_Main_Console() :
 #####################################################
 	@classmethod
 	def sRunCommand( cls, inCommand ):
-
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Main_Console"
+		wRes['Func']  = "sRunCommand"
+		
 		wCLS_work = ""
 		wFlg = False
 		
@@ -194,7 +206,9 @@ class CLS_Main_Console() :
 		#############################
 		# ないコマンド
 		if wFlg!=True :
-			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sRunCommand", "存在しないコマンド :" + str(inCommand) )
+###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sRunCommand", "存在しないコマンド :" + str(inCommand) )
+			wRes['Reason'] = "存在しないコマンド :" + str(inCommand)
+			gVal.OBJ_L.Log( "D", wRes )
 		
 		return wFlg
 
@@ -206,18 +220,29 @@ class CLS_Main_Console() :
 	@classmethod
 	def sViewDisp( cls, inDisp ):
 		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Main_Console"
+		wRes['Func']  = "sViewDisp"
+		
+		#############################
 		# ディスプレイファイルの確認
 		wKeylist = gVal.DEF_STR_DISPFILE.keys()
 		if inDisp not in wKeylist :
 			###キーがない(指定ミス)
 ###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display key is not found: inDisp= " + inDisp )
-			gVal.OBJ_L.Log( "C", "CLS_Main_Console", "sViewDisp", "Display key is not found: inDisp= " + inDisp )
+###			gVal.OBJ_L.Log( "C", "CLS_Main_Console", "sViewDisp", "Display key is not found: inDisp= " + inDisp )
+			wRes['Reason'] = "Display key is not found: inDisp= " + inDisp
+			gVal.OBJ_L.Log( "C", wRes )
 			return False
 		
 		if CLS_File.sExist( gVal.DEF_STR_DISPFILE[inDisp] )!=True :
 			###ファイルがない...(消した？)
 ###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display file is not found: " + gVal.DEF_STR_DISPFILE[inDisp] )
-			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
+###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
+			wRes['Reason'] = "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp]
+			gVal.OBJ_L.Log( "D", wRes )
 			return False
 		
 		#############################
@@ -229,12 +254,16 @@ class CLS_Main_Console() :
 		wDispFile = []
 		if CLS_File.sReadFile( gVal.DEF_STR_DISPFILE[inDisp], outLine=wDispFile )!=True :
 ###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが見つかりません: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
-			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp] )
+###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp] )
+			wRes['Reason'] = "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp]
+			gVal.OBJ_L.Log( "D", wRes )
 			return False
 		
 		if len(wDispFile)<=1 :
 ###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが空です: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
-			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
+###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
+			wRes['Reason'] = "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp]
+			gVal.OBJ_L.Log( "D", wRes )
 			return False
 		
 		wStr = "--------------------" + '\n'
@@ -289,128 +318,6 @@ class CLS_Main_Console() :
 		# コンソールに表示
 		CLS_OSIF.sPrn( wStr )
 		return
-
-
-
-#####################################################
-# いいね監視の実行
-#####################################################
-	@classmethod
-	def sRun_FavoAdmin(cls):
-		
-		#############################
-		# いいね監視の実行
-		wCLS_work = CLS_Twitter_Ctrl( parentObj=cls )
-		wCLS_work.Get_RunFavoAdmin()
-		wSTR_Cope = wCLS_work.GetCope()
-		
-		#############################
-		# 画面クリア
-		CLS_OSIF.sDispClr()
-		
-		#############################
-		# ヘッダ表示
-		wStr = "--------------------" + '\n'
-		wStr = wStr + " いいね監視結果" + '\n'
-		wStr = wStr + "--------------------" + '\n'
-		
-		#############################
-		# 情報組み立て
-		wStr = wStr + "現いいね数   = " + str(wSTR_Cope['FavoNum']) + '\n'
-		wStr = wStr + "解除いいね数 = " + str(wSTR_Cope['FavoRemove']) + '\n'
-		wStr = wStr + '\n'
-		wStr = wStr + "DB登録数 = " + str(wSTR_Cope['DB_Num']) + '\n'
-		wStr = wStr + "DB挿入   = " + str(wSTR_Cope['DB_Insert']) + '\n'
-		wStr = wStr + "DB更新   = " + str(wSTR_Cope['DB_Update']) + '\n'
-		wStr = wStr + "DB削除   = " + str(wSTR_Cope['DB_Delete']) + '\n'
-		
-		#############################
-		# コンソールに表示
-		CLS_OSIF.sPrn( wStr )
-		return
-
-
-
-#####################################################
-# フォロワー監視の実行
-#####################################################
-	@classmethod
-	def sRun_FollowerAdmin(cls):
-		
-		#############################
-		# フォロワー監視の実行
-		wCLS_work = CLS_Twitter_Ctrl( parentObj=cls )
-		wRes = wCLS_work.Get_Run_FollowerAdmin()
-		if wRes['Result']!=True :
-			CLS_OSIF.sPrn( wRes['Reason'] )
-			return
-		
-		wSTR_Cope = wCLS_work.GetCope()
-		wSTR_NewFollower = wCLS_work.GetNewFollower()
-		
-		#############################
-		# 画面クリア
-##		CLS_OSIF.sDispClr()
-		
-		#############################
-		# ヘッダ表示
-		wStr = "--------------------" + '\n'
-		wStr = wStr + " フォロワー監視結果" + '\n'
-		wStr = wStr + "--------------------" + '\n'
-		
-		#############################
-		# 情報組み立て
-		wStr = wStr + "現フォロワー数   = " + str(wSTR_Cope['FollowerNum']) + '\n'
-		wStr = wStr + "新規フォロワー数 = " + str(wSTR_Cope['NewFollowerNum']) + '\n'
-		wStr = wStr + "自動リムーブ数   = " + str(wSTR_Cope['MyFollowRemove']) + '\n'
-		wStr = wStr + '\n'
-		wStr = wStr + "DB登録数 = " + str(wSTR_Cope['DB_Num']) + '\n'
-		wStr = wStr + "DB挿入   = " + str(wSTR_Cope['DB_Insert']) + '\n'
-		wStr = wStr + "DB更新   = " + str(wSTR_Cope['DB_Update']) + '\n'
-		wStr = wStr + "DB削除   = " + str(wSTR_Cope['DB_Delete']) + '\n'
-		
-		#############################
-		# コンソールに表示
-		CLS_OSIF.sPrn( wStr )
-		
-		#############################
-		# 新規フォロワーCSV出力
-		if len(wSTR_NewFollower)>0 :
-			wRes = cls.sSaveCSV_NewFollower( wSTR_NewFollower )
-			if wRes!="" :
-				wStr = "--------------------" + '\n'
-				wStr = "CSVファイルを出力しました: " + wRes + '\n'
-				CLS_OSIF.sPrn( wStr )
-		
-		return
-
-	#####################################################
-	@classmethod
-	def sSaveCSV_NewFollower( cls, inNewFollower ):
-		#############################
-		# 書き込みデータを作成
-		wSetLine = []
-		wKeylist = inNewFollower.keys()
-		
-		wLine = "user_name, screen_name, url, " + '\n'
-		wSetLine.append(wLine)
-		for iKey in wKeylist :
-			wLine = ""
-			wLine = wLine + str(inNewFollower[iKey]['user_name']) + ", "
-			wLine = wLine + str(inNewFollower[iKey]['screen_name']) + ", "
-			wLine = wLine + "https://twitter.com/" + str(inNewFollower[iKey]['user_name']) + ", "
-			wSetLine.append(wLine)
-		
-		#############################
-		# ファイル名の設定
-		wFile_path = gVal.DEF_USERDATA_PATH + str(gVal.STR_UserInfo['Account']) + ".csv"
-		
-		#############################
-		# ファイル上書き書き込み
-		if CLS_File.sWriteFile( wFile_path, wSetLine, inExist=False )!=True :
-			return ""	#失敗
-		
-		return wFile_path
 
 
 

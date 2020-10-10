@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/9
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -33,7 +33,6 @@ from twitter_use import CLS_Twitter_Use
 
 from osif import CLS_OSIF
 from filectrl import CLS_File
-from userdata import CLS_UserData
 from config import CLS_Config
 from gval import gVal
 #####################################################
@@ -52,6 +51,13 @@ class CLS_Setup():
 # セットアップ
 #####################################################
 	def Setup(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Setup"
+		wRes['Func']  = "Setup"
+		
 		CLS_OSIF.sPrn( "Lucibotをセットアップモードで起動しました" + '\n' )
 		
 		#############################
@@ -59,7 +65,8 @@ class CLS_Setup():
 		if CLS_File.sExist( gVal.DEF_USERDATA_PATH )!=True :
 			## フォルダがなければ作成する
 			if CLS_File.sMkdir( gVal.DEF_USERDATA_PATH )!=True :
-				CLS_OSIF.sPrn( "CLS_Setup: Setup: フォルダの作成に失敗しました: path=" + gVal.DEF_USERDATA_PATH )
+				wRes['Reason'] = "フォルダの作成に失敗しました: path=" + gVal.DEF_USERDATA_PATH
+				CLS_OSIF.sErr( wRes )
 				return False
 		
 		#############################
@@ -73,15 +80,17 @@ class CLS_Setup():
 		
 		###テスト
 		gVal.OBJ_DB = CLS_PostgreSQL_Use()
-		wRes = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
+		wResDBconn = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
 		wResDB = gVal.OBJ_DB.GetDbStatus()
-		if wRes!=True :
-			CLS_OSIF.sPrn( "CLS_Setup: Setup: DBの接続に失敗しました: 理由=" + wResDB['Reason'] )
+		if wResDBconn!=True :
+			wRes['Reason'] = "DBの接続に失敗しました: reason=" + wResDB['Reason']
+			CLS_OSIF.sErr( wRes )
 			return False
 		
 		###結果の確認
 		if wResDB['Init']!=True :
-			CLS_OSIF.sPrn( "CLS_Setup: Setup: DBが初期化できてません" )
+			wRes['Reason'] = "DBが初期化できてません"
+			CLS_OSIF.sErr( wRes )
 			return False
 		
 		wStr = "データベースへ正常に接続しました。" + '\n'
@@ -98,14 +107,15 @@ class CLS_Setup():
 		wFLG_UserRegisted = False
 		#############################
 		# DBの状態チェック
-		wDBRes = gVal.OBJ_DB.RunTblExist( "tbl_user_data" )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunTblExist( "tbl_user_data" )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##クエリ失敗
-			CLS_OSIF.sPrn( "CLS_Setup: Setup: DBの状態チェック失敗: " + wDBRes['Reason'] )
+			wRes['Reason'] = "DBの状態チェック失敗: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			CLS_OSIF.sErr( wRes )
 			gVal.OBJ_DB.Close()
 			return False
-		if wDBRes['Responce']!=True :
+		if wResDB['Responce']!=True :
 			##テーブルがない= 初期化してない
 			##DB初期化
 			self.__initDB( gVal.OBJ_DB )
@@ -117,17 +127,17 @@ class CLS_Setup():
 						"twitterid = '" + wTwitterAccount + "'" + \
 						";"
 			
-			wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-			wDBRes = gVal.OBJ_DB.GetQueryStat()
-			if wDBRes['Result']!=True :
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
 				##失敗
-				wStr = "CLS_Setup: Setup: Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
-				CLS_OSIF.sPrn( wStr )
+				wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				CLS_OSIF.sErr( wRes )
 				gVal.OBJ_DB.Close()
 				return False
 			
 			##登録あり
-			if len(wDBRes['Responce']['Data'])==1 :
+			if len(wResDB['Responce']['Data'])==1 :
 				wFLG_UserRegisted = True	#ユーザあり
 				wStr = "ユーザ " + wTwitterAccount + " は既に登録されています。キーの変更をおこないますか？" + '\n'
 				CLS_OSIF.sPrn( wStr )
@@ -144,12 +154,20 @@ class CLS_Setup():
 		wResAPI = wOBJ_Config.SetTwitterAPI( wTwitterAccount, False )
 		if wResAPI['Result']!=True :
 			###失敗
+			wRes['Reason'] = "Set Twitter API failed: " + wResAPI['Reason']
+			CLS_OSIF.sErr( wRes )
 			gVal.OBJ_DB.Close()
 			return False
 		
 		#############################
 		# Twitterリストの設定
 		wResList = wOBJ_Config.SetTwitterList( wTwitterAccount, False )
+		if wResList['Result']!=True :
+			###失敗
+			wRes['Reason'] = "Set Twitter List failed: " + wResList['Reason']
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
 		
 		#############################
 		# 登録してなければデータベースに登録する
@@ -166,12 +184,12 @@ class CLS_Setup():
 						"'" + wResList['Responce']['urflist'] + "' " + \
 						") ;"
 			
-			wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-			wDBRes = gVal.OBJ_DB.GetQueryStat()
-			if wDBRes['Result']!=True :
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
 				##失敗
-				wStr = "CLS_Setup: Setup: Run Query is failed(2): " + wDBRes['Reason']
-				CLS_OSIF.sPrn( wStr )
+				wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				CLS_OSIF.sErr( wRes )
 				gVal.OBJ_DB.Close()
 				return False
 			
@@ -191,12 +209,12 @@ class CLS_Setup():
 					"urflist = '" + wResList['Responce']['urflist'] + "' " + \
 					"where twitterid = '" + wTwitterAccount + "' ;"
 			
-			wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-			wDBRes = gVal.OBJ_DB.GetQueryStat()
-			if wDBRes['Result']!=True :
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
 				##失敗
-				wStr = "CLS_Setup: Setup: Run Query is failed(3): " + wDBRes['Reason']
-				CLS_OSIF.sPrn( wStr )
+				wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				CLS_OSIF.sErr( wRes )
 				gVal.OBJ_DB.Close()
 				return False
 			
@@ -216,6 +234,13 @@ class CLS_Setup():
 #####################################################
 	def AllInit(self):
 		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Setup"
+		wRes['Func']  = "AllInit"
+		
+		#############################
 		# 実行の確認
 		wStr = "データベースと全ての作業ファイルをクリアします。" + '\n'
 		CLS_OSIF.sPrn( wStr )
@@ -229,7 +254,8 @@ class CLS_Setup():
 		if CLS_File.sExist( gVal.DEF_USERDATA_PATH )!=True :
 			## フォルダがなければ作成する
 			if CLS_File.sMkdir( gVal.DEF_USERDATA_PATH )!=True :
-				CLS_OSIF.sPrn( "CLS_Setup: AllInit: フォルダの作成に失敗しました: path=" + gVal.DEF_USERDATA_PATH )
+				wRes['Reason'] = "フォルダの作成に失敗しました: path=" + gVal.DEF_USERDATA_PATH
+				CLS_OSIF.sErr( wRes )
 				return False
 		
 		#############################
@@ -243,17 +269,19 @@ class CLS_Setup():
 		
 		###接続
 		gVal.OBJ_DB = CLS_PostgreSQL_Use()
-		wRes = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
-		wRes = gVal.OBJ_DB.Connect()
+		wResDBconn = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
+		wResDBconn = gVal.OBJ_DB.Connect()
 		wResDB = gVal.OBJ_DB.GetDbStatus()
-		if wRes!=True :
-			CLS_OSIF.sPrn( "CLS_Setup: AllInit: DBの接続に失敗しました(1): 理由=" + wResDB['Reason'] )
+		if wResDBconn!=True :
+			wRes['Reason'] = "DBの接続に失敗しました: reason=" + wResDB['Reason']
+			CLS_OSIF.sErr( wRes )
 			gVal.OBJ_DB.Close()
 			return False
 		
 		###結果の確認
 		if wResDB['Init']!=True :
-			CLS_OSIF.sPrn( "CLS_Setup: AllInit: DBが初期化できてません(1)" )
+			wRes['Reason'] = "DBが初期化できてません"
+			CLS_OSIF.sErr( wRes )
 			gVal.OBJ_DB.Close()
 			return False
 		

@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/10/7
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -149,12 +149,15 @@ class CLS_Twitter_Use():
 
 ##		#############################
 ##		# 応答形式の取得
-##		#   "Result" : False, "Reason" : None, "Responce" : None
-##		wRes = CLS_OSIF.sGet_Resp()
+##		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+##		wRes = self.__Get_Resp()
+##		wRes['Func'] = "Function"
 
 	def __Get_Resp(self):
 		wRes = {
 			"Result"   : False,
+			"Class"    : "CLS_Twitter_Use",
+			"Func"     : None,
 			"Reason"   : None,
 			"Responce" : None }
 		
@@ -265,8 +268,9 @@ class CLS_Twitter_Use():
 	def Tweet( self, inTweet ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "Tweet"
 		
 		#############################
 		# 入力チェック
@@ -278,7 +282,7 @@ class CLS_Twitter_Use():
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -294,13 +298,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: Tweet: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		wRes['Result'] = True
@@ -314,14 +318,15 @@ class CLS_Twitter_Use():
 	def GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetTL"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -333,7 +338,7 @@ class CLS_Twitter_Use():
 		elif inTLmode=="list" and isinstance(inListID, int)==True :
 			wAPI = "https://api.twitter.com/1.1/lists/statuses.json"
 		else :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTL: inTLmode is invalid: " + str(inTLmode)
+			wRes['Reason'] = "inTLmode is invalid: " + str(inTLmode)
 			return wRes
 		
 		#############################
@@ -361,13 +366,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		#############################
@@ -387,14 +392,15 @@ class CLS_Twitter_Use():
 	def GetMyFollowList(self):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetMyFollowList"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetMyFollowList: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -438,7 +444,7 @@ class CLS_Twitter_Use():
 				wParams['cursor'] = wUsers['next_cursor_str']
 			
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetMyFollowList: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
@@ -455,7 +461,7 @@ class CLS_Twitter_Use():
 			if 'errors' in wUsers :
 				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
 			
-			wRes['Reason'] = "CLS_Twitter_Use: GetMyFollowList: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
 		
 		#############################
@@ -475,14 +481,15 @@ class CLS_Twitter_Use():
 	def GetFollowerList(self):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetFollowerList"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetFollowerList: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -526,7 +533,7 @@ class CLS_Twitter_Use():
 				wParams['cursor'] = wUsers['next_cursor_str']
 			
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetFollowerList: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
@@ -543,7 +550,7 @@ class CLS_Twitter_Use():
 			if 'errors' in wUsers :
 				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
 			
-			wRes['Reason'] = "CLS_Twitter_Use: GetFollowerList: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
 		
 		#############################
@@ -563,14 +570,15 @@ class CLS_Twitter_Use():
 	def RemoveFollow( self, inID ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "RemoveFollow"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveFollow: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -586,13 +594,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveFollow: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveFollow: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		wRes['Result'] = True
@@ -607,14 +615,15 @@ class CLS_Twitter_Use():
 	def GetFavolist(self):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetFavolist"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetFavolist: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -654,7 +663,7 @@ class CLS_Twitter_Use():
 				wParams['cursor'] = wUsers['next_cursor_str']
 			
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetFavolist: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
@@ -671,7 +680,7 @@ class CLS_Twitter_Use():
 			if 'errors' in wUsers :
 				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
 			
-			wRes['Reason'] = "CLS_Twitter_Use: GetFavolist: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
 		
 		#############################
@@ -691,14 +700,15 @@ class CLS_Twitter_Use():
 	def RemoveFavo( self, inID ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "RemoveFavo"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveFavo: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -714,13 +724,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveFavo: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveFavo: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		wRes['Result'] = True
@@ -734,14 +744,15 @@ class CLS_Twitter_Use():
 	def GetLists(self):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetLists"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter connect error: " + str(wResIni['Reason'])
+			wRes['Reason'] = "Twitter connect error: " + str(wResIni['Reason'])
 			return wRes
 		
 		#############################
@@ -759,13 +770,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: GetLists: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		#############################
@@ -805,14 +816,15 @@ class CLS_Twitter_Use():
 	def GetListMember( self, inListName ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetListMember"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: Twitter connect error: " + str(wResIni['Reason'])
+			wRes['Reason'] = "Twitter connect error: " + str(wResIni['Reason'])
 			return wRes
 		
 		#############################
@@ -826,7 +838,7 @@ class CLS_Twitter_Use():
 				break
 		
 		if wListID==-1 :
-			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: List is not found: " + inListName
+			wRes['Reason'] = "List is not found: " + inListName
 			return wRes
 		
 		#############################
@@ -870,7 +882,7 @@ class CLS_Twitter_Use():
 				wParams['cursor'] = wUsers['next_cursor_str']
 			
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
@@ -887,7 +899,7 @@ class CLS_Twitter_Use():
 			if 'errors' in wUsers :
 				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
 			
-			wRes['Reason'] = "CLS_Twitter_Use: GetListMember: Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
 		
 		#############################
@@ -908,14 +920,15 @@ class CLS_Twitter_Use():
 	def AddUserList( self, inListName, inUserID ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "AddUserList"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -929,7 +942,7 @@ class CLS_Twitter_Use():
 				break
 		
 		if wListID==-1 :
-			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: List is not found: " + inListName
+			wRes['Reason'] = "List is not found: " + inListName
 			return wRes
 		
 		#############################
@@ -947,13 +960,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: AddUserList: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		wRes['Result'] = True
@@ -967,14 +980,15 @@ class CLS_Twitter_Use():
 	def RemoveUserList( self, inListName, inUserID ):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "RemoveUserList"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -988,7 +1002,7 @@ class CLS_Twitter_Use():
 				break
 		
 		if wListID==-1 :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: List is not found: " + inListName
+			wRes['Reason'] = "List is not found: " + inListName
 			return wRes
 		
 		#############################
@@ -1006,13 +1020,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: Twitter error: " + err
+			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: RemoveUserList: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		wRes['Result'] = True
@@ -1026,14 +1040,15 @@ class CLS_Twitter_Use():
 	def GetTrends(self):
 		#############################
 		# 応答形式の取得
-		#  {"Result" : False, "Reason" : None, "Responce" : None}
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetTrends"
 		
 		#############################
 		# Twitter状態のチェック
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTrends: Twitter connect error: " + wResIni['Reason']
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
 			return wRes
 		
 		#############################
@@ -1051,13 +1066,13 @@ class CLS_Twitter_Use():
 		try:
 			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 		except ValueError as err :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTL: Twitter error: " + err
+			wRes['Reason'] = "GetTL: Twitter error: " + err
 			return wRes
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "CLS_Twitter_Use: GetTrends: Twitter responce failed: " + str(wTweetRes.status_code)
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
 		#############################

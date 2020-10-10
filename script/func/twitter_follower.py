@@ -7,23 +7,16 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/10/9
+# ::Update= 2020/10/10
 #####################################################
 # Private Function:
-#   __checkTwitterPatt( self, inROW ):
-#   __getTwitterPatt(self):
+#   (none)
 #
 # Instance Function:
 #   __init__(self):
-#   GetCope(self):
-#   GetNewFollower(self):
+#   Get(self):
+#   View(self):
 #   Run(self):
-
-#   __get_FavoInfo(self):
-#   ViewFavo(self):
-
-#   Get_RunFavoAdmin(self):
-#   Get_Run_FollowerAdmin(self):
 #
 # Class Function(static):
 #   (none)
@@ -41,9 +34,17 @@ class CLS_TwitterFollower():
 # Init
 #####################################################
 	def __init__( self, parentObj=None ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFollower"
+		wRes['Func']  = "__init__"
+		
 		if parentObj==None :
 			###親クラス実体の未設定
-			gVal.OBJ_L.Log( "A", "CLS_TwitterFollower", "__init__", "You have not set the parent class entity for parentObj" )
+			wRes['Reason'] = "You have not set the parent class entity for parentObj"
+			gVal.OBJ_L.Log( "A", wRes )
 			return
 		
 		self.OBJ_Parent = parentObj
@@ -57,8 +58,10 @@ class CLS_TwitterFollower():
 	def Get(self):
 		#############################
 		# 応答形式の取得
-		#   "Result" : False, "Reason" : None, "Responce" : None
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFollower"
+		wRes['Func']  = "Get"
 		
 		#############################
 		# DBのフォロワー一覧取得
@@ -66,23 +69,25 @@ class CLS_TwitterFollower():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					";"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
-		gVal.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_RateFollowers )
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 
 		#############################
 		# フォロー一覧 取得(idだけ)
 		wMyFollowRes = gVal.OBJ_Twitter.GetMyFollowList()
 		if wMyFollowRes['Result']!=True :
-			wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
+			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		wARR_MyFollowID = []
 		for wROW in wMyFollowRes['Responce'] :
@@ -93,7 +98,8 @@ class CLS_TwitterFollower():
 		# フォロワー一覧 取得
 		wFollowerRes = gVal.OBJ_Twitter.GetFollowerList()
 		if wFollowerRes['Result']!=True :
-			wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: Twitter API Error(GetFollowerList): " + wFollowerRes['Reason']
+			wRes['Reason'] = "Twitter API Error(GetFollowerList): " + wFollowerRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		wARR_FollowerID = []
 		for wROW in wFollowerRes['Responce'] :
@@ -104,11 +110,13 @@ class CLS_TwitterFollower():
 		# normal登録者 取得(idだけ)
 		wListsRes = gVal.OBJ_Twitter.GetLists()
 		if wListsRes['Result']!=True :
-			wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: Twitter API Error(GetLists): " + wListsRes['Reason']
+			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['NorList'] )
 		if wListsRes['Result']!=True :
-			wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: Twitter API Error(GetListMember): " + wListsRes['Reason']
+			wRes['Reason'] = "Twitter API Error(GetListMember): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		wARR_NormalListMenberID = []
 		for wROW in wListsRes['Responce'] :
@@ -119,7 +127,8 @@ class CLS_TwitterFollower():
 		wTD = CLS_OSIF.sGetTime()
 		if wTD['Result']!=True :
 			###時間取得失敗  時計壊れた？
-			wRes['Reason'] = "CLS_TwitterMain: __get_FollowerInfo: PC時間の取得に失敗しました"
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		### wTD['TimeDate']
 		
@@ -171,11 +180,12 @@ class CLS_TwitterFollower():
 								" and id = '" + str(wROW['id']) + "' ;"
 				
 				###フォロー済み 前回フォロワー状態、フォロー日時を記録
-				wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-				wDBRes = gVal.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
+				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+				wResDB = gVal.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
 					##失敗
-					wRes['Reason'] = "CLS_TwitterMain: __get_FollowerInfo: Run Query is failed(2): " + wDBRes['Reason']
+					wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				
 				###  カウント
@@ -200,11 +210,12 @@ class CLS_TwitterFollower():
 							"'" + str(wTD['TimeDate']) + "'" + \
 							") ;"
 				
-				wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-				wDBRes = gVal.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
+				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+				wResDB = gVal.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
 					##失敗
-					wRes['Reason'] = "CLS_TwitterMain: __get_FollowerInfo: Run Query is failed(3): " + wDBRes['Reason']
+					wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				
 				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
@@ -215,17 +226,18 @@ class CLS_TwitterFollower():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					";"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: Run Query is failed(4): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
-		gVal.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_RateFollowers )
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 		self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFollowers)
 		
 		#############################
@@ -260,7 +272,8 @@ class CLS_TwitterFollower():
 						break
 				
 				if wFLG_Ditect==False :
-					wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: key is not found"
+					wRes['Reason'] = "key is not found"
+					gVal.OBJ_L.Log( "C", wRes )
 					return wRes
 				###ツイート数変化 =更新あり
 				if str(wF_Count)!=wLast_Count :
@@ -293,7 +306,8 @@ class CLS_TwitterFollower():
 				wRemoveLimmin = gVal.DEF_STR_TLNUM['removeLimmin'] * 60	#秒に変換
 				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['foldate']), inThreshold=wRemoveLimmin )
 				if wGetLag['Result']!=True :
-					wRes['Reason'] = "CLS_Twitter_Ctrl: __get_FollowerInfo: sTimeLag failed"
+					wRes['Reason'] = "sTimeLag failed"
+					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				if wGetLag['Beyond']==False :
 					###期間内 =自動リムーブ対象外
@@ -328,11 +342,12 @@ class CLS_TwitterFollower():
 							" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
 			
 			###フォロー済み 前回フォロワー状態、フォロー日時を記録
-			wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-			wDBRes = gVal.OBJ_DB.GetQueryStat()
-			if wDBRes['Result']!=True :
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
 				##失敗
-				wRes['Reason'] = "CLS_TwitterMain: __get_FollowerInfo: Run Query is failed(5): " + wDBRes['Reason']
+				wRes['Reason'] = "Run Query is failed(5): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
 			
 			###  カウント
@@ -369,8 +384,10 @@ class CLS_TwitterFollower():
 	def View(self):
 		#############################
 		# 応答形式の取得
-		#   "Result" : False, "Reason" : None, "Responce" : None
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFollower"
+		wRes['Func']  = "View"
 		
 		#############################
 		# 集計のリセット
@@ -388,17 +405,18 @@ class CLS_TwitterFollower():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					";"
 		
-		wDBRes = gVal.OBJ_DB.RunQuery( wQuery )
-		wDBRes = gVal.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_TwitterMain: ViewFollower: Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
-		gVal.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_RateFollowers )
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFollowers)
 		
 		#############################
@@ -470,6 +488,49 @@ class CLS_TwitterFollower():
 
 
 
+
+
+
+
+
+
+
+#####################################################
+# フォロワー監視の実行
+#####################################################
+	def sSaveCSV_NewFollower( cls, inNewFollower ):
+		#############################
+		# 書き込みデータを作成
+		wSetLine = []
+		wKeylist = inNewFollower.keys()
+		
+		wLine = "user_name, screen_name, url, " + '\n'
+		wSetLine.append(wLine)
+		for iKey in wKeylist :
+			wLine = ""
+			wLine = wLine + str(inNewFollower[iKey]['user_name']) + ", "
+			wLine = wLine + str(inNewFollower[iKey]['screen_name']) + ", "
+			wLine = wLine + "https://twitter.com/" + str(inNewFollower[iKey]['user_name']) + ", "
+			wSetLine.append(wLine)
+		
+		#############################
+		# ファイル名の設定
+		wFile_path = gVal.DEF_USERDATA_PATH + str(gVal.STR_UserInfo['Account']) + ".csv"
+		
+		#############################
+		# ファイル上書き書き込み
+		if CLS_File.sWriteFile( wFile_path, wSetLine, inExist=False )!=True :
+			return ""	#失敗
+		
+		return wFile_path
+
+
+
+
+
+
+
+
 #####################################################
 # フォロワー監視の実行
 #####################################################
@@ -495,17 +556,17 @@ class CLS_TwitterFollower():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					";"
 		
-		wDBRes = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-		wDBRes = self.Obj_Parent.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
+		wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_Twitter_Ctrl: Get_Run_FollowerAdmin: Run Query is failed(1): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wRes['Reason'] = "CLS_Twitter_Ctrl: Get_Run_FollowerAdmin: Run Query is failed(1): " + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
-		self.Obj_Parent.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_RateFollowers )
+		self.Obj_Parent.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 ###		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_Followers)
 		
 		#############################
@@ -617,11 +678,11 @@ class CLS_TwitterFollower():
 							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 							" and id = '" + str(wSTR_wk_RateFollower['id']) + "' ;"
 				
-				wDBRes = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-				wDBRes = self.Obj_Parent.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
+				wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
+				wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
 					##失敗
-					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(2): " + wDBRes['Reason']
+					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(2): " + wResDB['Reason']
 					return wRes
 				
 			else:
@@ -657,11 +718,11 @@ class CLS_TwitterFollower():
 							"'" + str(wSTR_wk_RateFollower['created_at']) + "'" + \
 							") ;"
 				
-				wDBRes = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-				wDBRes = self.Obj_Parent.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
+				wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
+				wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
 					##失敗
-					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(3): " + wDBRes['Reason']
+					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(3): " + wResDB['Reason']
 					return wRes
 				
 				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
@@ -689,17 +750,17 @@ class CLS_TwitterFollower():
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					";"
 		
-		wDBRes = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-		wDBRes = self.Obj_Parent.OBJ_DB.GetQueryStat()
-		if wDBRes['Result']!=True :
+		wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
+		wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "CLS_Twitter_Ctrl: Get_Run_FollowerAdmin: Run Query is failed(4): " + wDBRes['Reason'] + " query=" + wDBRes['Query']
+			wRes['Reason'] = "CLS_Twitter_Ctrl: Get_Run_FollowerAdmin: Run Query is failed(4): " + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
-		self.Obj_Parent.OBJ_DB.ChgDict( wDBRes['Responce']['Collum'], wDBRes['Responce']['Data'], outDict=wARR_RateFollowers )
+		self.Obj_Parent.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFollowers)
 		
 		#############################
@@ -784,11 +845,11 @@ class CLS_TwitterFollower():
 							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 							" and id = '" + str(wROW['id']) + "' ;"
 				
-				wDBRes = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-				wDBRes = self.Obj_Parent.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
+				wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
+				wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
 					##失敗
-					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(11): " + wDBRes['Reason']
+					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(11): " + wResDB['Reason']
 					return wRes
 				
 				###  カウント
@@ -801,11 +862,11 @@ class CLS_TwitterFollower():
 							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 							" and id = '" + str(wROW['id']) + "' ;"
 				
-				wDBRes = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-				wDBRes = self.Obj_Parent.OBJ_DB.GetQueryStat()
-				if wDBRes['Result']!=True :
+				wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
+				wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
 					##失敗
-					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(12): " + wDBRes['Reason']
+					wRes['Reason'] = "CLS_Twitter_Ctrl: Get_RunFavoAdmin: Run Query is failed(12): " + wResDB['Reason']
 					return wRes
 				
 				###  カウント
