@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/11
 #####################################################
 # Private Function:
 #   (none)
@@ -64,6 +64,10 @@ class CLS_TwitterFollower():
 		wRes['Func']  = "Get"
 		
 		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "フォロワー情報を取得中。しばらくお待ちください......" )
+		
+		#############################
 		# DBのフォロワー一覧取得
 		wQuery = "select * from tbl_follower_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
@@ -89,10 +93,14 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-		wARR_MyFollowID = []
+###		wARR_MyFollowID = []
+###		for wROW in wMyFollowRes['Responce'] :
+###			wARR_MyFollowID.append( str(wROW['id']) )
+###		self.OBJ_Parent.STR_Cope['MyFollowNum'] = len(wARR_MyFollowID)
+		self.OBJ_Parent.ARR_MyFollowID = []
 		for wROW in wMyFollowRes['Responce'] :
-			wARR_MyFollowID.append( str(wROW['id']) )
-		self.OBJ_Parent.STR_Cope['MyFollowNum'] = len(wARR_MyFollowID)
+			self.OBJ_Parent.ARR_MyFollowID.append( str(wROW['id']) )
+		self.OBJ_Parent.STR_Cope['MyFollowNum'] = len(self.OBJ_Parent.ARR_MyFollowID)
 		
 		#############################
 		# フォロワー一覧 取得
@@ -101,26 +109,39 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Twitter API Error(GetFollowerList): " + wFollowerRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-		wARR_FollowerID = []
-		for wROW in wFollowerRes['Responce'] :
-			wARR_FollowerID.append( str(wROW['id']) )
-		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(wARR_FollowerID)
+###		wARR_FollowerID = []
+###		for wROW in wFollowerRes['Responce'] :
+###			wARR_FollowerID.append( str(wROW['id']) )
+###		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(wARR_FollowerID)
 		
 		#############################
-		# normal登録者 取得(idだけ)
+		# normal、un_refollowl登録者 取得(idだけ)
 		wListsRes = gVal.OBJ_Twitter.GetLists()
 		if wListsRes['Result']!=True :
 			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		
 		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['NorList'] )
 		if wListsRes['Result']!=True :
-			wRes['Reason'] = "Twitter API Error(GetListMember): " + wListsRes['Reason']
+			wRes['Reason'] = "Twitter API Error(GetListMember:NorList): " + wListsRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-		wARR_NormalListMenberID = []
+###		wARR_NormalListMenberID = []
+###		for wROW in wListsRes['Responce'] :
+###			wARR_NormalListMenberID.append( str(wROW['id']) )
+		self.OBJ_Parent.ARR_NormalListMenberID = []
 		for wROW in wListsRes['Responce'] :
-			wARR_NormalListMenberID.append( str(wROW['id']) )
+			self.OBJ_Parent.ARR_NormalListMenberID.append( str(wROW['id']) )
+		
+		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['UrfList'] )
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetListMember:UrfList): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		self.OBJ_Parent.ARR_UnRefollowListMenberID = []
+		for wROW in wListsRes['Responce'] :
+			self.OBJ_Parent.ARR_UnRefollowListMenberID.append( str(wROW['id']) )
 		
 		#############################
 		# 時間を取得
@@ -136,9 +157,9 @@ class CLS_TwitterFollower():
 		# Twitterのフォロワー一覧を取得
 		#   DBに記録されていなければ、記録する
 		#   DBに記録されていたら、フォロー状態を更新する
-		wARR_FollowerID = []
+		self.OBJ_Parent.ARR_FollowerID = []
 		for wROW in wFollowerRes['Responce'] :
-			wARR_FollowerID.append( str(wROW['id']) )	#フォロワーIDだけ記録
+			self.OBJ_Parent.ARR_FollowerID.append( str(wROW['id']) )	#フォロワーIDだけ記録
 			
 			###記録を探す
 			wFLG_Ditect = False
@@ -151,7 +172,7 @@ class CLS_TwitterFollower():
 			###フォロー状態
 			wFLG_MyFollow = False
 			wCHR_FolDate  = "1900-01-01 00:00:00"
-			if str(wROW['id']) in wARR_MyFollowID :
+			if str(wROW['id']) in self.OBJ_Parent.ARR_MyFollowID :
 				###フォロー済み
 				wFLG_MyFollow = True
 				wCHR_FolDate  = str(wTD['TimeDate'])
@@ -221,6 +242,10 @@ class CLS_TwitterFollower():
 				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
 		
 		#############################
+		# フォロワー数のセット
+		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(self.OBJ_Parent.ARR_FollowerID)
+		
+		#############################
 		# DBのフォロワー一覧 再取得
 		wQuery = "select * from tbl_follower_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
@@ -251,6 +276,9 @@ class CLS_TwitterFollower():
 ##		wFLG_UnRemove = False	#自動リムーブ対象外か
 ##		wFLG_UnFollow = False	#フォロー状態
 ##		wFLG_Follower = False	#フォロワー状態
+		
+		self.OBJ_Parent.ARR_OldUserID = []	#一度でもフォロー・リムーブしたことあるユーザID
+		
 		wKeylist = wARR_RateFollowers.keys()
 		for wIndex in wKeylist :
 			wFLG_UnRemove = False	#自動リムーブ対象外か
@@ -261,7 +289,7 @@ class CLS_TwitterFollower():
 			wLast_Date  = wARR_RateFollowers[wIndex]['lastdate']
 			
 			### フォロワーなら 自動リムーブ対象外
-			if str(wARR_RateFollowers[wIndex]['id']) in wARR_FollowerID :
+			if str(wARR_RateFollowers[wIndex]['id']) in self.OBJ_Parent.ARR_FollowerID :
 				wFLG_UnRemove = True
 				wFLG_Follower = True	#フォロワー
 				
@@ -284,16 +312,23 @@ class CLS_TwitterFollower():
 			###※少なくともフォロワーではない
 			
 			###  フォローしてないなら 自動リムーブ対象外
-			if str(wARR_RateFollowers[wIndex]['id']) not in wARR_MyFollowID :
+			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_MyFollowID :
 				wFLG_UnRemove = True
 				wFLG_UnFollow = True	#未フォロー
 			
 			###  一度リムーブしたことあるなら 自動リムーブ対象外
 			if wARR_RateFollowers[wIndex]['r_remove']==True :
 				wFLG_UnRemove = True
+				if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_OldUserID :
+					self.OBJ_Parent.ARR_OldUserID.append( str(wARR_RateFollowers[wIndex]['id']) )
+			
+			###  一度フォローしたことある
+			if wARR_RateFollowers[wIndex]['r_myfollow']==True :
+				if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_OldUserID :
+					self.OBJ_Parent.ARR_OldUserID.append( str(wARR_RateFollowers[wIndex]['id']) )
 			
 			###  normalリスト以外ならば  自動リムーブ対象外
-			if str(wROW['id']) not in wARR_NormalListMenberID :
+			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_NormalListMenberID :
 				wFLG_UnRemove = True
 			
 			###  既にリムーブ済みorリムーブ対象ならばスキップ
@@ -370,7 +405,7 @@ class CLS_TwitterFollower():
 #				#############################
 #				# 新規フォロワー
 #				### フォロワーではなければスキップ
-#				if str(wROW['id']) not in wARR_FollowerID :
+#				if str(wROW['id']) not in self.OBJ_Parent.ARR_FollowerID :
 #					continue
 #				
 
@@ -436,7 +471,7 @@ class CLS_TwitterFollower():
 			if wARR_RateFollowers[wIndex]['twitterid']!=gVal.STR_UserInfo['Account'] :
 				continue	#自分以外の情報はスキップ
 			
-			wStr = wStr + "ユーザ=" + str(wARR_RateFollowers[wIndex]['screen_name']) + "(@" + str(wARR_RateFollowers[wIndex]['user_name']) + ")" + '\n'
+			wStr = wStr + "ユーザ=" + str(wARR_RateFollowers[wIndex]['user_name']) + "(@" + str(wARR_RateFollowers[wIndex]['screen_name']) + ")" + '\n'
 			
 			wStr = wStr + "登録日=" + str(wARR_RateFollowers[wIndex]['regdate'])
 			if wARR_RateFollowers[wIndex]['removed']==True :

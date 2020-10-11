@@ -7,19 +7,24 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/11
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
 #   __Get_Resp(self):
 #   __twConnect(self):
 #   __TwitterPing(self):
+#   __set_API( self, inName, inMAX, outStatus ):
+#   __set_APIcolum( self, outStatus ):
+#   __set_APIcount( self, inName ):
+#   __get_APIrect( self, inName ):
 #
 # Instance Function:
 #   __init__(self):
 #   GetTwStatus(self):
 #   GetUsername(self):
 #   Create( self, inTwitterID, inAPIkey, inAPIsecret, inACCtoken, inACCsecret, inGetNum=200 ):
+#   ResetAPI( self, inName ):
 #
 # ◇Twitter接続・切断
 #   Connect(self):
@@ -69,8 +74,9 @@ class CLS_Twitter_Use():
 		"ACCsecret"		: ""				#Access token secret
 	}
 	
-	VAL_TwitNum     = 200
-	VAL_TwitListNum = 5000
+	VAL_TwitNum       = 200
+	VAL_TwitListNum   = 5000
+	VAL_TwitSearchNum = 100
 
 	DEF_TWITTER_HOSTNAME = "twitter.com"	#Twitterホスト名
 	DEF_MOJI_ENCODE      = 'utf-8'			#ファイル文字エンコード
@@ -108,6 +114,8 @@ class CLS_Twitter_Use():
 	# id    リストid
 	# name  リスト名
 
+	CHR_TimeDate = "1901-01-01 00:00:00"
+
 
 
 #####################################################
@@ -137,8 +145,74 @@ class CLS_Twitter_Use():
 		self.TwStatus = {
 			"Init"     : False,
 			"Reason"   : None,
-			"Responce" : None
+			"Responce" : None,
+			"APIrect"  : None
 		}
+		
+		#############################
+		# API規制値
+		#   ※アプリでの規制値は 15分 * 80% で計算する
+		self.TwStatus['APIrect'] = {}
+		###	POST														# リクエストとTwitter規制値
+		self.__set_API( "status",      20, self.TwStatus['APIrect'] )	# POST: 3h/300 (ツイートとリツイは共通)
+		self.__set_API( "favorites",    8, self.TwStatus['APIrect'] )	# POST: 24h/1000
+		self.__set_API( "friendships",  3, self.TwStatus['APIrect'] )	# POST: 24h/400
+		
+		###	GET
+		self.__set_API( "home_timeline",  12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "user_timeline", 720, self.TwStatus['APIrect'] )# GET: 15m/900
+		self.__set_API( "lists_status",  720, self.TwStatus['APIrect'] )# GET: 15m/900
+		self.__set_API( "search_tweets", 144, self.TwStatus['APIrect'] )# GET: 15m/180
+		self.__set_API( "friends_list",   12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "followers_list", 12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "favorites_list", 60, self.TwStatus['APIrect'] )# GET: 15m/75
+		self.__set_API( "lists_list",     12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "lists_members", 720, self.TwStatus['APIrect'] )# GET: 15m/900
+		self.__set_API( "trends_place",   60, self.TwStatus['APIrect'] )# GET: 15m/75
+		return
+
+	#####################################################
+	def __set_API( self, inName, inMAX, outStatus ):
+		pStatus = outStatus
+		pStatus.update({ inName : {} })
+		self.__set_APIcolum( inMAX, pStatus[inName] )
+		return
+
+	#####################################################
+	def __set_APIcolum( self, inMAX, outStatus ):
+		pStatus = outStatus
+		pStatus.update({ "num"    :  0 })
+		pStatus.update({ "max"    : inMAX })
+		pStatus.update({ "rect"   : False })
+		return
+
+
+
+#####################################################
+# API規制値カウント
+#####################################################
+	def __set_APIcount( self, inName ):
+		if self.TwStatus['APIrect'][inName]['rect']==True :
+			return	#規制中はカウントしない
+		
+		self.TwStatus['APIrect'][inName]['num'] += 1
+		if self.TwStatus['APIrect'][inName]['max']<=self.TwStatus['APIrect'][inName]['num'] :
+			self.TwStatus['APIrect'][inName]['rect'] = True	#規制
+		return
+
+	#####################################################
+	def __get_APIrect( self, inName ):
+		if self.TwStatus['APIrect'][inName]['rect']==True :
+			return False	#規制中
+		return True			#規制なし
+
+	#####################################################
+	### ※外部の時間差が分かる処理から呼び出してリセットすること
+	def ResetAPI(self):
+		wKeylist = self.TwStatus['APIrect'].keys()
+		for wKey in wKeylist :
+			self.TwStatus['APIrect'][wKey]['num']  = 0
+			self.TwStatus['APIrect'][wKey]['rect'] = False
 		return
 
 
@@ -273,6 +347,12 @@ class CLS_Twitter_Use():
 		wRes['Func'] = "Tweet"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "status" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# 入力チェック
 		if inTweet=='' :
 			wRes['Reason'] = "Twitter内容がない"
@@ -292,6 +372,10 @@ class CLS_Twitter_Use():
 		#############################
 		# パラメータの生成
 		wParams = { "status" : inTweet }
+		
+		#############################
+		# APIカウント
+		self.__set_APIcount( "status" )
 		
 		#############################
 		# ついーと
@@ -333,12 +417,21 @@ class CLS_Twitter_Use():
 		# APIの指定
 		if inTLmode=="home" :
 			wAPI = "https://api.twitter.com/1.1/statuses/home_timeline.json"
+			wAPIname = "home_timeline"
 		elif inTLmode=="user" :
 			wAPI = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+			wAPIname = "user_timeline"
 		elif inTLmode=="list" and isinstance(inListID, int)==True :
 			wAPI = "https://api.twitter.com/1.1/lists/statuses.json"
+			wAPIname = "lists_status"
 		else :
 			wRes['Reason'] = "inTLmode is invalid: " + str(inTLmode)
+			return wRes
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( wAPIname )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
 			return wRes
 		
 		#############################
@@ -346,7 +439,7 @@ class CLS_Twitter_Use():
 		if inTLmode=="list" :
 			wParams = {
 				"count"           : self.VAL_TwitNum,
-				"screen_name"     : self.STR_TWITTERdata['TwitterUser'],
+				"screen_name"     : self.STR_TWITTERdata['TwitterID'],
 				"exclude_replies" : inFLG_Rep,
 				"include_rts"     : inFLG_Rts,
 				"list_id"         : inListID
@@ -354,12 +447,16 @@ class CLS_Twitter_Use():
 		else :
 			wParams = {
 				"count"           : self.VAL_TwitNum,
-				"screen_name"     : self.STR_TWITTERdata['TwitterUser'],
+				"screen_name"     : self.STR_TWITTERdata['TwitterID'],
 				"exclude_replies" : inFLG_Rep,
 				"include_rts"     : inFLG_Rts
 			}
 			## exclude_replies  : リプライを除外する True=除外
 			## include_rts      : リツイートを含める True=含める
+		
+		#############################
+		# APIカウント
+		self.__set_APIcount( wAPIname )
 		
 		#############################
 		# タイムライン読み込み
@@ -378,6 +475,129 @@ class CLS_Twitter_Use():
 		#############################
 		# TLを取得
 		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 検索 読み込み処理
+#####################################################
+	def GetSearch( self, inKeyword=None, inRoundNum=1 ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetSearch"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "search_tweets" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# 入力チェック
+		if inKeyword=='' or inKeyword==None :
+			wRes['Reason'] = "検索キーがない"
+			return wRes
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/search/tweets.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"count"           : self.VAL_TwitSearchNum,
+			"q"               : inKeyword
+		}
+		
+		#############################
+		# タイムライン読み込み
+		wARR_TL = []
+		wRound  = 0
+		try:
+			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( "search_tweets" )
+				
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wTimeline = json.loads( wTweetRes.text )
+				
+				###要素チェック
+				if 'statuses' not in wTimeline :
+					break
+				
+				###情報抜き出し
+				if len(wTimeline['statuses'])>0 :
+					for wLine in wTimeline['statuses'] :
+						wARR_TL.append( wLine )
+				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( "search_tweets" )!=True :
+					break
+				###ページング処理
+				wRound += 1
+				if inRoundNum<=wRound :
+					break
+				wIndex = len(wTimeline['statuses']) - 1
+				wParams['max_id'] = wTimeline['statuses'][wIndex]['id']
+			
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wTimeline :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wTimeline['errors'][0]['code']) + ":" + str(wTimeline['errors'][0]['message'])
+			
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = wARR_TL
+		
+##		#############################
+##		# タイムライン読み込み
+##		try:
+##			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+##		except ValueError as err :
+##			wRes['Reason'] = "Twitter error: " + err
+##			return wRes
+##		
+##		#############################
+##		# 結果
+##		if wTweetRes.status_code != 200 :
+##			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+##			return wRes
+##		
+##		#############################
+##		# TLを取得
+##		wRes['Responce'] = json.loads( wTweetRes.text )
 		
 		#############################
 		# 正常
@@ -408,6 +628,12 @@ class CLS_Twitter_Use():
 		wAPI = "https://api.twitter.com/1.1/friends/list.json"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "friends_list" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# パラメータの生成
 		wParams = {
 			"count"			: self.VAL_TwitNum,
@@ -422,6 +648,10 @@ class CLS_Twitter_Use():
 		wFLG_Limit = False
 		try:
 			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( "friends_list" )
+				
 				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 				wUsers = json.loads( wTweetRes.text )
 				
@@ -436,6 +666,10 @@ class CLS_Twitter_Use():
 					for wLine in wUsers['users'] :
 						wARR_TL.append( wLine )
 				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( "friends_list" )!=True :
+					break
 				###ページング処理
 				if wParams['cursor']==wUsers['next_cursor_str'] :
 					break
@@ -497,6 +731,12 @@ class CLS_Twitter_Use():
 		wAPI = "https://api.twitter.com/1.1/followers/list.json"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "followers_list" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# パラメータの生成
 		wParams = {
 			"count"			: self.VAL_TwitNum,
@@ -511,6 +751,10 @@ class CLS_Twitter_Use():
 		wFLG_Limit = False
 		try:
 			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( "followers_list" )
+				
 				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 				wUsers = json.loads( wTweetRes.text )
 				
@@ -525,6 +769,10 @@ class CLS_Twitter_Use():
 					for wLine in wUsers['users'] :
 						wARR_TL.append( wLine )
 				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( "followers_list" )!=True :
+					break
 				###ページング処理
 				if wParams['cursor']==wUsers['next_cursor_str'] :
 					break
@@ -631,6 +879,12 @@ class CLS_Twitter_Use():
 		wAPI = "https://api.twitter.com/1.1/favorites/list.json"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "favorites_list" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# パラメータの生成
 		wParams = {
 			"count"			: self.VAL_TwitNum,
@@ -645,6 +899,10 @@ class CLS_Twitter_Use():
 		wFLG_Limit = False
 		try:
 			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( "favorites_list" )
+				
 				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 				wTL = json.loads( wTweetRes.text )
 				
@@ -653,6 +911,10 @@ class CLS_Twitter_Use():
 					for wLine in wTL :
 						wARR_TL.append( wLine )
 				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( "favorites_list" )!=True :
+					break
 				###ページング処理
 				if 'next_cursor_str' not in wTL :
 					break
@@ -760,10 +1022,20 @@ class CLS_Twitter_Use():
 		wAPI = "https://api.twitter.com/1.1/lists/list.json"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "lists_list" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# パラメータの生成
 		wParams = {
 			"screen_name" : self.STR_TWITTERdata['TwitterID']
 		}
+		
+		#############################
+		# APIカウント
+		self.__set_APIcount( "lists_list" )
 		
 		#############################
 		# タイムライン読み込み
@@ -846,6 +1118,12 @@ class CLS_Twitter_Use():
 		wAPI = "https://api.twitter.com/1.1/lists/members.json"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "lists_members" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# パラメータの生成
 		wParams = { "list_id"		: wListID,
 					"count"			: self.VAL_TwitListNum,
@@ -860,6 +1138,10 @@ class CLS_Twitter_Use():
 		wFLG_Limit = False
 		try:
 			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( "lists_members" )
+				
 				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 				wUsers = json.loads( wTweetRes.text )
 				
@@ -874,6 +1156,10 @@ class CLS_Twitter_Use():
 					for wLine in wUsers['users'] :
 						wARR_TL.append( wLine )
 				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( "lists_members" )!=True :
+					break
 				###ページング処理
 				if wParams['cursor']==wUsers['next_cursor_str'] :
 					break
@@ -1056,10 +1342,20 @@ class CLS_Twitter_Use():
 		wAPI = "https://api.twitter.com/1.1/trends/place.json"
 		
 		#############################
+		# API規制チェック
+		if self.__get_APIrect( "trends_place" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
 		# パラメータの生成
 		wParams = {
 			"id" : self.DEF_WOEID
 		}
+		
+		#############################
+		# APIカウント
+		self.__set_APIcount( "trends_place" )
 		
 		#############################
 		# タイムライン読み込み

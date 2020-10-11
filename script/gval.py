@@ -39,6 +39,7 @@ class gVal() :
 		"PythonVer"		: 0,
 		"HostName"		: "",
 		
+		"APIrect"		: "",
 		"RunMode"		: "normal"
 			# normal= 通常モード
 			# setup = セットアップモード
@@ -59,6 +60,7 @@ class gVal() :
 # Timeline調整数
 	DEF_STR_TLNUM = {
 
+		"resetAPImin"		: 15,						#APIリセット周期(分)
 		"lockLimmin"		: 2,						#排他保持時間
 
 		"favoLimmin"		: 4320,						#いいね解除時間 3日 (60x24)x3=4320(分)
@@ -69,6 +71,10 @@ class gVal() :
 		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=4320(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 185,						#自動リムーブ処理待ち(秒)   900秒
+
+		"searchRoundNum"	: 11,						#1検索の回数(ページング)
+		"maxKeywordNum"		: 6,						#最大キーワード数
+		"randKeyUserNum"	: 20,						#キーユーザ ランダム選出数
 
 		"getTwitTLnum"		: 200,						#TwitterのTL取得数(Twitter仕様は最大200)
 
@@ -90,22 +96,6 @@ class gVal() :
 		"MainConsole"			: DEF_DISPPATH + "main_console.disp",
 		"(dummy)"				: 0
 	}
-
-#############################
-# 時間情報
-	STR_TimeInfo = {
-		"Result"		: False,
-		
-		"Object"		: "",
-		"TimeDate"		: "",
-		"Hour"			: 0,
-		"Week"			: 0,
-		
-		"OneHour"		: False,
-		"OneDay"		: False
-	}
-
-
 
 #############################
 # 定数

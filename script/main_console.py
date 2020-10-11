@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/11
 #####################################################
 # Private Function:
 #   (none)
@@ -99,7 +99,25 @@ class CLS_Main_Console() :
 			wResCmd = cls().sRunCommand( wCommand )
 			if wResCmd==True :
 				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
-		
+			
+			#############################
+			# 開始or前回チェックから15分経ったか
+			wFLG_Err = False
+			wResetAPImin = gVal.DEF_STR_TLNUM['resetAPImin'] * 60	#秒に変換
+			wGetLag = CLS_OSIF.sTimeLag( gVal.STR_SystemInfo['APIrect'], inThreshold=wResetAPImin )
+			if wGetLag['Result']!=True :
+				wRes['Reason'] = "sTimeLag failed"
+				gVal.OBJ_L.Log( "B", wRes )
+				wFLG_Err = True
+			
+			if wGetLag['Beyond']==True or \
+			   wFLG_Err==True :
+				###前回から15分経ってるので更新
+				gVal.OBJ_Twitter.ResetAPI()
+				gVal.STR_SystemInfo['APIrect'] = str(wGetLag['NowTime'])
+				wRes['Reason'] = "TwitterAPI規制解除"
+				gVal.OBJ_L.Log( "R", wRes )
+			
 		return
 
 
@@ -138,17 +156,19 @@ class CLS_Main_Console() :
 		
 	#####################################################
 		#############################
-		# システム情報の表示
-		if inCommand=="\\v" :
-			cls().sView_Sysinfo()
-			wFlg = True
-		
-		#############################
 		# 監視情報の取得
 		if inCommand=="\\g" :
 			cls.OBJ_TwitterMain.Run()
 			wFlg = True
 		
+	#####################################################
+		#############################
+		# キーユーザCSV出力
+		if inCommand=="\\k" :
+			cls.OBJ_TwitterMain.KeyUserCSV()
+			wFlg = True
+		
+	#####################################################
 		#############################
 		# いいね情報の表示
 		if inCommand=="\\vi" :
@@ -178,10 +198,11 @@ class CLS_Main_Console() :
 #			wCLS_work.ManualToot()
 #			wFlg = True
 		
+	#####################################################
 		#############################
-		# ログの表示(全ログ)
+		# ログの表示(異常ログ)
 		if inCommand=="\\l" :
-			gVal.OBJ_L.View()
+			gVal.OBJ_L.View( inViewMode="E" )
 			wFlg = True
 		
 		#############################
@@ -191,15 +212,21 @@ class CLS_Main_Console() :
 			wFlg = True
 		
 		#############################
-		# ログの表示(異常ログ)
-		if inCommand=="\\le" :
-			gVal.OBJ_L.View( inViewMode="E" )
+		# ログの表示(全ログ)
+		if inCommand=="\\la" :
+			gVal.OBJ_L.View()
 			wFlg = True
 		
 		#############################
 		# ログクリア
 		if inCommand=="\\lc" :
 			gVal.OBJ_L.Clear()
+			wFlg = True
+		
+		#############################
+		# システム情報の表示
+		if inCommand=="\\v" :
+			cls().sView_Sysinfo()
 			wFlg = True
 		
 	#####################################################

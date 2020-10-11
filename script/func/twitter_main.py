@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/11
 #####################################################
 # Private Function:
 #   (none)
@@ -27,6 +27,7 @@
 #####################################################
 from twitter_favo import CLS_TwitterFavo
 from twitter_follower import CLS_TwitterFollower
+from twitter_keyword import CLS_TwitterKeyword
 ###import threading
 ###import sys, time
 
@@ -38,6 +39,9 @@ class CLS_TwitterMain():
 #####################################################
 
 	STR_Cope = {				#処理カウンタ
+		"TimelineNum"		: 0,	#タイムライン数
+		"KeyUserNum"		: 0,	#キーユーザ数
+		
 		"FavoNum"			: 0,	#現いいね数
 		"tFavoRemove"		: 0,	#解除対象 いいね数
 		"FavoRemove"		: 0,	#解除実行 いいね数
@@ -58,11 +62,21 @@ class CLS_TwitterMain():
 
 ###	VAL_WaitCount = 0
 
+	STR_KeyUser     = ""
+	STR_Keywords    = ""
+	
+	ARR_MyFollowID = []
+	ARR_FollowerID = []
+	ARR_NormalListMenberID = []
+	ARR_UnRefollowListMenberID = []
+	ARR_OldUserID = []
+	
 	STR_newFollower = {}
 	VAL_newFollower = 0
-
+	
 	OBJ_TwitterFavo = ""
 	OBJ_TwitterFollower = ""
+	OBJ_TwitterKeyword = ""
 
 
 
@@ -88,6 +102,7 @@ class CLS_TwitterMain():
 	def __init__(self):
 		self.OBJ_TwitterFavo     = CLS_TwitterFavo( parentObj=self )
 		self.OBJ_TwitterFollower = CLS_TwitterFollower( parentObj=self )
+		self.OBJ_TwitterKeyword  = CLS_TwitterKeyword( parentObj=self )
 		return
 
 
@@ -105,6 +120,9 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 集計のリセット
+		self.STR_Cope['TimelineNum'] = 0
+		self.STR_Cope['KeyUserNum']  = 0
+		
 		self.STR_Cope['FavoNum'] = 0
 		self.STR_Cope['tFavoRemove'] = 0
 		self.STR_Cope['FavoRemove']  = 0
@@ -125,7 +143,7 @@ class CLS_TwitterMain():
 		wResSub = self.OBJ_TwitterFavo.Get()
 		if wResSub['Result']!=True :
 			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
-			wRes['Reason'] = "TwitterFavo.Get failed: " + wResSub_Reason
+			wRes['Reason'] = "OBJ_TwitterFavo.Get failed: " + wResSub_Reason
 			return wRes
 		
 		#############################
@@ -134,6 +152,14 @@ class CLS_TwitterMain():
 		if wResSub['Result']!=True :
 			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
 			wRes['Reason'] = "OBJ_TwitterFollower.Get failed: " + wResSub_Reason
+			return wRes
+		
+		#############################
+		# キーユーザの取得
+		wResSub = self.OBJ_TwitterKeyword.Get()
+		if wResSub['Result']!=True :
+			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
+			wRes['Reason'] = "OBJ_TwitterKeyword.Get failed: " + wResSub_Reason
 			return wRes
 		
 		#############################
@@ -148,6 +174,9 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 情報組み立て
+		wStr = wStr + "タイムライン数    = " + str(self.STR_Cope['TimelineNum']) + '\n'
+		wStr = wStr + "キーユーザ数      = " + str(self.STR_Cope['KeyUserNum']) + '\n'
+		wStr = wStr + '\n'
 		wStr = wStr + "現いいね数        = " + str(self.STR_Cope['FavoNum']) + '\n'
 		wStr = wStr + "解除対象 いいね数 = " + str(self.STR_Cope['tFavoRemove']) + '\n'
 		wStr = wStr + "解除済み いいね数 = " + str(self.STR_Cope['FavoRemove']) + '\n'
@@ -163,6 +192,13 @@ class CLS_TwitterMain():
 		wStr = wStr + "DB更新   = " + str(self.STR_Cope['DB_Update']) + '\n'
 		wStr = wStr + "DB削除   = " + str(self.STR_Cope['DB_Delete']) + '\n'
 		
+		wStr = wStr + '\n'
+		wStr = wStr + " キーワードごとのヒット数" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wKeylist = self.STR_Keywords.keys()
+		for wWord in wKeylist :
+			wStr = wStr + wWord + " = " + str(self.STR_Keywords[wWord]) + '\n'
+		
 		#############################
 		# コンソールに表示
 		CLS_OSIF.sPrn( wStr )
@@ -170,6 +206,15 @@ class CLS_TwitterMain():
 		#############################
 		# 完了
 		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# キーユーザCSV出力
+#####################################################
+	def KeyUserCSV(self):
+		wRes = self.OBJ_TwitterKeyword.OutCSV()
 		return wRes
 
 

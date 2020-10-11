@@ -4,8 +4,8 @@
 ::Admin= Lucida（lucida3hai@twitter.com）
 ::TwitterURL= https://twitter.com/lucida3hai
 
-::Update= 2020/10/10
-::Version= 0.1.0.2
+::Update= 2020/10/11
+::Version= 0.2.0.0
 
 
 <a id="iSystemSummary"></a>
@@ -444,8 +444,8 @@ Twitterでおこなっているいいね、フォロー、フォロワーの状�
 
 
 <a id="iFunc_Keyword"></a>
-#### キーワード抽出
-直近1日間で入力したキーワードのツイートしたユーザの一覧をCSVで出力します。
+#### キーユーザCSVの出力
+直近数時間のうち指定したキーワードのツイートしたユーザの一覧をランダムにCSVで出力します。
 今までフォローしたことがなくて、興味があいそうなユーザを検索する機能です。
 un_followerに入っているユーザ、今まで一度でもフォロー、リムーブしたユーザは含みません。
 

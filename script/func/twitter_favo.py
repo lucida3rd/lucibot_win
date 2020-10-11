@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/11
 #####################################################
 # Private Function:
 #   (none)
@@ -62,6 +62,10 @@ class CLS_TwitterFavo():
 		wRes = CLS_OSIF.sGet_Resp()
 		wRes['Class'] = "CLS_TwitterFavo"
 		wRes['Func']  = "Get"
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "いいね情報を取得中。しばらくお待ちください......" )
 		
 		#############################
 		# DBのいいね一覧取得
@@ -481,7 +485,7 @@ class CLS_TwitterFavo():
 				#############################
 				# 1行にカウントを表示
 				# ctrl+cでウェイト中止
-				wStr = "残り待機時間 " + str(self.VAL_WaitCount) + " 秒"
+				wStr = "残り待機時間 " + str( wCount ) + " 秒"
 				CLS_OSIF.sPrnER( wStr )
 				CLS_OSIF.sSleep(1)
 				wCount -= 1

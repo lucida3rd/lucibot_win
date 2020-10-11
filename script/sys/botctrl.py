@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : bot制御(共通)
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/11
 #####################################################
 # Private Function:
 #   (none)
@@ -214,6 +214,7 @@ class CLS_BotCtrl():
 			cls.sBotEnd()	#bot終了
 			return
 		### wTD['TimeDate']
+		gVal.STR_SystemInfo['APIrect'] = str(wTD['TimeDate'])
 		
 		#############################
 		# るしぼっとVersion
