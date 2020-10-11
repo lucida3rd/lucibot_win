@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   (none)
@@ -64,6 +64,9 @@ class CLS_TwitterMain():
 
 	STR_KeyUser     = ""
 	STR_Keywords    = ""
+	
+	FLG_Search_JP    = False		#検索は日本語のみ
+	FLG_Search_IncRt = False		#検索にリツイートを含める
 	
 	ARR_MyFollowID = []
 	ARR_FollowerID = []

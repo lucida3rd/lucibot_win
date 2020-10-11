@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/9
+# ::Update= 2020/10/12
 #####################################################
 
 #####################################################
@@ -72,7 +72,7 @@ class gVal() :
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 185,						#自動リムーブ処理待ち(秒)   900秒
 
-		"searchRoundNum"	: 11,						#1検索の回数(ページング)
+		"searchRoundNum"	: 7,						#1検索の回数(ページング)
 		"maxKeywordNum"		: 6,						#最大キーワード数
 		"randKeyUserNum"	: 20,						#キーユーザ ランダム選出数
 

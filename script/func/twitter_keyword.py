@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -77,7 +77,10 @@ class CLS_TwitterKeyword():
 			"#ATS OR American Truck"					: 0,
 			"ホロライブ OR Hololive"					: 0
 		}
+		self.OBJ_Parent.FLG_Search_JP    = True		#検索は日本語のみ
+		self.OBJ_Parent.FLG_Search_IncRt = False	#検索にリツイートを含める
 		
+		#############################
 		self.OBJ_Parent.STR_KeyUser = {}
 		#############################
 		# 取得
@@ -95,6 +98,16 @@ class CLS_TwitterKeyword():
 			#############################
 			# 必要な情報だけ抜き出す
 			for wLine in wTwitterRes['Responce'] :
+				###検索は日本語のみの場合、
+				###  日本語以外はスキップする
+				if self.OBJ_Parent.FLG_Search_JP==True :
+					if str(wLine['lang'])!="ja" :
+						continue
+				###検索にリツイートを含めない場合、
+				###  リツイートはスキップする
+				if self.OBJ_Parent.FLG_Search_IncRt==False :
+					if "retweeted_status" in wLine :
+						continue
 				###既に同じユーザを抽出した
 				if str(wLine['user']['id']) in self.OBJ_Parent.STR_KeyUser :
 					continue
