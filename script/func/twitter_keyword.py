@@ -24,6 +24,7 @@
 
 from osif import CLS_OSIF
 from filectrl import CLS_File
+from mydisp import CLS_MyDisp
 from gval import gVal
 #####################################################
 class CLS_TwitterKeyword():
@@ -77,8 +78,8 @@ class CLS_TwitterKeyword():
 			"#ATS OR American Truck"					: 0,
 			"ホロライブ OR Hololive"					: 0
 		}
-		self.OBJ_Parent.FLG_Search_JP    = True		#検索は日本語のみ
-		self.OBJ_Parent.FLG_Search_IncRt = False	#検索にリツイートを含める
+###		self.OBJ_Parent.FLG_Search_JP    = True		#検索は日本語のみ
+###		self.OBJ_Parent.FLG_Search_IncRt = False	#検索にリツイートを含める
 		
 		#############################
 		self.OBJ_Parent.STR_KeyUser = {}
@@ -100,17 +101,19 @@ class CLS_TwitterKeyword():
 			for wLine in wTwitterRes['Responce'] :
 				###検索は日本語のみの場合、
 				###  日本語以外はスキップする
-				if self.OBJ_Parent.FLG_Search_JP==True :
+###				if self.OBJ_Parent.FLG_Search_JP==True :
+				if gVal.STR_SearchMode['JPonly']==True :
 					if str(wLine['lang'])!="ja" :
 						continue
 				###検索にリツイートを含めない場合、
 				###  リツイートはスキップする
-				if self.OBJ_Parent.FLG_Search_IncRt==False :
+###				if self.OBJ_Parent.FLG_Search_IncRt==False :
+				if gVal.STR_SearchMode['IncRT']==False :
 					if "retweeted_status" in wLine :
 						continue
-				###既に同じユーザを抽出した
-				if str(wLine['user']['id']) in self.OBJ_Parent.STR_KeyUser :
-					continue
+###				###既に同じユーザを抽出した
+###				if str(wLine['user']['id']) in self.OBJ_Parent.STR_KeyUser :
+###					continue
 				###既にフォローしているユーザ
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
 					continue
@@ -121,19 +124,26 @@ class CLS_TwitterKeyword():
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_UnRefollowListMenberID :
 					continue
 				
-				wSTR_Cell = {}
-				wSTR_Cell.update({ "id"          : str(wLine['user']['id']) })
-				wSTR_Cell.update({ "user_name"   : str(wLine['user']['name']) })
-				wSTR_Cell.update({ "screen_name" : str(wLine['user']['screen_name']) })
-				wSTR_Cell.update({ "hit_word"    : wWord })
-				self.OBJ_Parent.STR_KeyUser.update({ str(wLine['user']['id']) : wSTR_Cell })
+###				wSTR_Cell = {}
+###				wSTR_Cell.update({ "id"          : str(wLine['user']['id']) })
+###				wSTR_Cell.update({ "user_name"   : str(wLine['user']['name']) })
+###				wSTR_Cell.update({ "screen_name" : str(wLine['user']['screen_name']) })
+###				wSTR_Cell.update({ "hit_word"    : wWord })
+###				self.OBJ_Parent.STR_KeyUser.update({ str(wLine['user']['id']) : wSTR_Cell })
+				self.__set_KeyUser( wLine['user'], wWord )
 				self.OBJ_Parent.STR_Keywords[wWord] += 1
 				
 				###リツイート元
 				if "retweeted_status" in wLine :
-					###既に同じユーザを抽出した
-					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.STR_KeyUser :
-						continue
+					###検索は日本語のみの場合、
+					###  日本語以外はスキップする
+###					if self.OBJ_Parent.FLG_Search_JP==True :
+					if gVal.STR_SearchMode['JPonly']==True :
+						if str(wLine['retweeted_status']['lang'])!="ja" :
+							continue
+###					###既に同じユーザを抽出した
+###					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.STR_KeyUser :
+###						continue
 					###既にフォローしているユーザ
 					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
 						continue
@@ -144,12 +154,14 @@ class CLS_TwitterKeyword():
 					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.ARR_UnRefollowListMenberID :
 						continue
 					
-					wSTR_Cell = {}
-					wSTR_Cell.update({ "id"          : str(wLine['retweeted_status']['user']['id']) })
-					wSTR_Cell.update({ "user_name"   : str(wLine['retweeted_status']['user']['name']) })
-					wSTR_Cell.update({ "screen_name" : str(wLine['retweeted_status']['user']['screen_name']) })
-					wSTR_Cell.update({ "hit_word"    : wWord })
-					self.OBJ_Parent.STR_KeyUser.update({ str(wLine['retweeted_status']['user']['id']) : wSTR_Cell })
+###					wSTR_Cell = {}
+###					wSTR_Cell.update({ "id"          : str(wLine['retweeted_status']['user']['id']) })
+###					wSTR_Cell.update({ "user_name"   : str(wLine['retweeted_status']['user']['name']) })
+###					wSTR_Cell.update({ "screen_name" : str(wLine['retweeted_status']['user']['screen_name']) })
+###					wSTR_Cell.update({ "hit_word"    : wWord })
+###					self.OBJ_Parent.STR_KeyUser.update({ str(wLine['retweeted_status']['user']['id']) : wSTR_Cell })
+					self.__set_KeyUser( wLine['retweeted_status']['user'], wWord )
+
 					self.OBJ_Parent.STR_Keywords[wWord] += 1
 		
 		#############################
@@ -160,6 +172,21 @@ class CLS_TwitterKeyword():
 		# 正常終了
 		wRes['Result'] = True
 		return wRes
+
+	#####################################################
+	def __set_KeyUser( self, inLine, inWord ):
+		###既に同じユーザを抽出した
+		if str(inLine['id']) in self.OBJ_Parent.STR_KeyUser :
+			return False
+		
+		###セット
+		wSTR_Cell = {}
+		wSTR_Cell.update({ "id"          : str(inLine['id']) })
+		wSTR_Cell.update({ "user_name"   : str(inLine['name']) })
+		wSTR_Cell.update({ "screen_name" : str(inLine['screen_name']) })
+		wSTR_Cell.update({ "hit_word"    : inWord })
+		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['id']) : wSTR_Cell })
+		return True
 
 
 
@@ -219,7 +246,8 @@ class CLS_TwitterKeyword():
 		# CSV書き込み
 		
 		# ファイル名の設定
-		wCHR_File_path = gVal.DEF_USERDATA_PATH + "keyusers_" + str(gVal.STR_UserInfo['Account']) + ".csv"
+###		wCHR_File_path = gVal.DEF_USERDATA_PATH + "keyusers_" + str(gVal.STR_UserInfo['Account']) + ".csv"
+		wCHR_File_path = self.__get_CSVpath()
 		
 		if self.__out_CSV( wCHR_File_path, wARR_RandID )!=True :
 			###失敗
@@ -235,6 +263,11 @@ class CLS_TwitterKeyword():
 		# 正常終了
 		wRes['Result'] = True
 		return wRes
+
+	#####################################################
+	def __get_CSVpath(self):
+		wPath = gVal.DEF_USERDATA_PATH + "keyusers_" + str(gVal.STR_UserInfo['Account']) + ".csv"
+		return wPath
 
 	#####################################################
 	def __out_CSV( self, inPath, inARR_List ):
@@ -266,168 +299,184 @@ class CLS_TwitterKeyword():
 
 
 
-
-
-
-
-
-
-
 #####################################################
-# タイムラインの表示
+# ツイート検索
 #####################################################
-#	def View(self):
-#		#############################
-#		# 応答形式の取得
-#		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
-#		wRes = CLS_OSIF.sGet_Resp()
-#		wRes['Class'] = "CLS_TwitterKeyword"
-#		wRes['Func']  = "View"
-#		
-#		#############################
-#		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['TimelineNum'] = 0
-###		self.OBJ_Parent.STR_Cope['KeywordNum']  = 0
-###		self.OBJ_Parent.STR_Cope['KeywordHit']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Num']    = 0
-#		
-#		#############################
-#		# 画面クリア
-#		CLS_OSIF.sDispClr()
-#		
-#		#############################
-#		# ヘッダ表示
-#		wStr = "--------------------" + '\n'
-#		wStr = wStr + " キーユーザの表示" + '\n'
-#		wStr = wStr + "--------------------" + '\n'
-#		
-#		#############################
-#		# 情報組み立て
-#		wKeylist = self.OBJ_Parent.STR_KeyUser.keys()
-#		for wKey in wKeylist :
-#			wStr = wStr + "ユーザ=" + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + "(@" + self.OBJ_Parent.STR_KeyUser[wKey]['user_name'] + ")" + '\n'
-#			wStr = wStr + "Hitワード=" + self.OBJ_Parent.STR_KeyUser[wKey]['hit_word'] + '\n'
-#			wStr = wStr + "--------------------" + '\n'
-#		
-#		#############################
-#		# 統計
-#		wStr = wStr + "--------------------" + '\n'
-#####		wStr = wStr + "DB登録数          = " + str(self.OBJ_Parent.STR_Cope['DB_Num']) + '\n'
-#		wStr = wStr + "タイムライン数    = " + str(self.OBJ_Parent.STR_Cope['TimelineNum']) + '\n'
-#		wStr = wStr + "キーユーザ数      = " + str(self.OBJ_Parent.STR_Cope['KeyUserNum']) + '\n'
-#		wStr = wStr + '\n'
-#		
-#		wKeylist = self.OBJ_Parent.STR_Keywords.keys()
-#		for wWord in wKeylist :
-#			wStr = wStr + wWord + " = " + str(self.OBJ_Parent.STR_Keywords[wWord]) + '\n'
-#		
-#		#############################
-#		# コンソールに表示
-#		CLS_OSIF.sPrn( wStr )
-#		
-#		#############################
-#		# 完了
-#		wRes['Result'] = True
-#		return wRes
-#
-#
+	def TweetSearch(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "TweetSearch"
+		
+		#############################
+		# コンソールを表示
+		while True :
+			wWord = self.__view_TweetSearch()
+			
+			if wWord=="\\q" :
+				###終了
+				break
+			
+			wResSearch = self.__run_TweetSearch( wWord )
+			if wResSearch['Result']==True :
+				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
+		
+		wRes['Result'] = True
+		return wRes
 
-#####################################################
-# タイムラインの表示
-#####################################################
-#	def View(self):
-#		#############################
-#		# 応答形式の取得
-#		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
-#		wRes = CLS_OSIF.sGet_Resp()
-#		wRes['Class'] = "CLS_TwitterKeyword"
-#		wRes['Func']  = "View"
-#		
-#		#############################
-#		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['TimelineNum'] = 0
-###		self.OBJ_Parent.STR_Cope['KeywordNum']  = 0
-###		self.OBJ_Parent.STR_Cope['KeywordHit']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Num']    = 0
-#		
-#		#############################
-#		# 画面クリア
-#		CLS_OSIF.sDispClr()
-#		
-#		#############################
-#		# ヘッダ表示
-#		wStr = "--------------------" + '\n'
-#		wStr = wStr + " 保持中のタイムライン" + '\n'
-#		wStr = wStr + "--------------------" + '\n'
-#		
-#		#############################
-#		# 情報組み立て
-#		for wLine in self.OBJ_Parent.STR_Timeline :
-####			wStr = wStr + str(wLine) + '\n'
-#
-#			wFLG_Retweet = False
-#			if "retweeted_status" in wLine :
-#				wFLG_Retweet = True
-#			else:
-#				###準ツイート
-#				self.OBJ_Parent.STR_Cope['OrTweetNum'] += 1
-#			
-#
-###			if "created_at" not in wLine :
-###				print("xxxx1")
-###				continue
-#
-#			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
-#			if wTime['Result']!=True :
-#				wRes['Reason'] = "sGetTimeformat_Twitter is failed: " + str(wLine['created_at'])
-#				gVal.OBJ_L.Log( "B", wRes )
-#				return wRes
-#			
-#			wStr = wStr + str(wLine['text']) + '\n'
-#			wStr = wStr + "ツイ日=" + str(wTime['TimeDate'])
-#			wStr = wStr + "  ユーザ=" + str(wLine['user']['screen_name']) + "(@" + str(wLine['user']['name']) + ")" + '\n'
-#			if wFLG_Retweet==True :
-#				wStr = wStr + "[Ｒ]リツイート" + '\n'
-#			else:
-#				wStr = wStr + "[〇]純ツイート" + '\n'
-#			
-#			wStr = wStr + "--------------------" + '\n'
-#			
-#			###リツイート元
-#			if wFLG_Retweet==True :
-#				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['retweeted_status']['created_at'] )
-#				if wTime['Result']!=True :
-#					wRes['Reason'] = "sGetTimeformat_Twitter is failed: " + str(wLine['retweeted_status']['created_at'])
-#					gVal.OBJ_L.Log( "B", wRes )
-#					return wRes
-#				
-#				wStr = wStr + str(wLine['retweeted_status']['text']) + '\n'
-#				wStr = wStr + "ツイ日=" + str(wTime['TimeDate'])
-#				wStr = wStr + "  ユーザ=" + str(wLine['retweeted_status']['user']['screen_name']) + "(@" + str(wLine['retweeted_status']['user']['name']) + ")" + '\n'
-#				wStr = wStr + "[★]リツイート元" + '\n'
-#				
-#				wStr = wStr + "--------------------" + '\n'
-#
-#		
-#		#############################
-#		# 統計
-#		wStr = wStr + "--------------------" + '\n'
-####		wStr = wStr + "DB登録数          = " + str(self.OBJ_Parent.STR_Cope['DB_Num']) + '\n'
-#		wStr = wStr + "タイムライン数    = " + str(self.OBJ_Parent.STR_Cope['TimelineNum']) + '\n'
-#		wStr = wStr + "純ツイート数      = " + str(self.OBJ_Parent.STR_Cope['OrTweetNum']) + '\n'
-#		
-#		#############################
-#		# コンソールに表示
-#		CLS_OSIF.sPrn( wStr )
-#		
-#		#############################
-#		# 完了
-#		wRes['Result'] = True
-#		return wRes
-#
-#
+	#####################################################
+	# ツイート検索 画面表示
+	#####################################################
+	def __view_TweetSearch(self):
+		wResDisp = CLS_MyDisp.sViewDisp( "SearchConsole" )
+		if wResDisp['Result']==False :
+			gVal.OBJ_L.Log( "D", wResDisp )
+			return "\\q"	#失敗=強制終了
+		
+		wWord = CLS_OSIF.sInp( "検索文字？=> " )
+		return wWord
+
+	#####################################################
+	# ツイート検索 実行
+	#####################################################
+	def __run_TweetSearch( self, inWord ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "__run_TweetSearch"
+		
+		#############################
+		# コマンド入力の場合
+		if inWord.find("\\")==0 :
+			if inWord=="\\jp" :
+				if gVal.STR_SearchMode['JPonly']==True :
+					gVal.STR_SearchMode['JPonly'] = False
+				else:
+					gVal.STR_SearchMode['JPonly'] = True
+				CLS_OSIF.sPrn( "検索モードを変更しました: 日本語のみ=" + str(gVal.STR_SearchMode['JPonly']) )
+			
+			elif inWord=="\\rt" :
+				if gVal.STR_SearchMode['IncRT']==True :
+					gVal.STR_SearchMode['IncRT'] = False
+				else:
+					gVal.STR_SearchMode['IncRT'] = True
+				CLS_OSIF.sPrn( "検索モードを変更しました: リツイートを含める=" + str(gVal.STR_SearchMode['IncRT']) )
+			
+			else:
+				###ないコマンド
+				CLS_OSIF.sPrn( "そのコマンドはありません: " + inWord )
+			
+			wRes['Result'] = True
+			return wRes
+		
+		###※以下コマンド以外の場合
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "タイムラインサーチ中。しばらくお待ちください......" )
+		CLS_OSIF.sPrn( "取得中... 検索語=" + inWord )
+		
+		#############################
+		# Twitterで検索 取得
+		wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=inWord, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
+		if wTwitterRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		self.OBJ_Parent.STR_KeyUser = {}
+		wARR_UserID = []
+		wVAL_AllCount = len(wTwitterRes['Responce'])
+		wVAL_Count    = 0
+		#############################
+		# 結果の表示
+		for wLine in wTwitterRes['Responce'] :
+			###検索は日本語のみの場合、
+			###  日本語以外はスキップする
+			if gVal.STR_SearchMode['JPonly']==True :
+				if str(wLine['lang'])!="ja" :
+					continue
+			###検索にリツイートを含めない場合、
+			###  リツイートはスキップする
+			if gVal.STR_SearchMode['IncRT']==False :
+				if "retweeted_status" in wLine :
+					continue
+			
+			wStrLine = self.__getStr_TweetSearch( wLine )
+			CLS_OSIF.sPrn( wStrLine )
+			wARR_UserID.append( str(wLine['user']['id']) )
+			self.__set_KeyUser( wLine['user'], inWord )
+			wVAL_Count += 1
+			
+			###リツイート元
+			if "retweeted_status" in wLine :
+				###検索は日本語のみの場合、
+				###  日本語以外はスキップする
+				if gVal.STR_SearchMode['JPonly']==True :
+					if str(wLine['retweeted_status']['lang'])!="ja" :
+						continue
+				
+				wStrLine = self.__getStr_TweetSearch( wLine['retweeted_status'] )
+				CLS_OSIF.sPrn( wStrLine )
+				wARR_UserID.append( str(wLine['retweeted_status']['user']['id']) )
+				self.__set_KeyUser( wLine['retweeted_status']['user'], inWord )
+				wVAL_Count += 1
+		
+		#############################
+		# 統計
+		wStr = "--------------------" + '\n'
+		wStr = wStr + "検索ワード     = " + inWord + '\n'
+		wStr = wStr + "結果ツイート数 = " + str( wVAL_AllCount ) + '\n'
+		wStr = wStr + "ツイート合計数 = " + str( wVAL_Count ) + '\n'
+		wStr = wStr + '\n'
+		
+		#############################
+		# コンソールに表示
+		CLS_OSIF.sPrn( wStr )
+		
+
+		#############################
+		# CSV書き込み
+		
+		# ファイル名の設定
+		wCHR_File_path = self.__get_CSVpath()
+		
+		if self.__out_CSV( wCHR_File_path, wARR_UserID )!=True :
+			###失敗
+			wRes['Reason'] = "sWriteFile is failed: " + wCHR_File_path
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "ユーザ一覧をCSVに出力しました: " + wCHR_File_path + '\n' )
+		
+		#############################
+		# 正常終了
+		wRes['Result'] = True
+		return wRes
+
+	#####################################################
+	# 結果文字を組み立てて返す
+	#####################################################
+	def __getStr_TweetSearch( self, inLine ):
+		wStr = inLine['text'] + '\n'
+		wStr = wStr + "  ユーザ=" + inLine['user']['screen_name'] + "(@" + inLine['user']['name'] + ")" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		return wStr
+
+
+
+
+
+
+
+
+
 
 #####################################################
 # いいね監視の実行

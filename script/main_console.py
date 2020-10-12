@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   (none)
@@ -19,7 +19,6 @@
 #   sRun(cls):
 #   sViewMainConsole(cls):
 #   sRunCommand( cls, inCommand ):
-#   sViewDisp( cls, inDisp ):
 #   sView_Sysinfo(cls):
 #
 #####################################################
@@ -28,6 +27,7 @@ from osif import CLS_OSIF
 from filectrl import CLS_File
 from setup import CLS_Setup
 from botctrl import CLS_BotCtrl
+from mydisp import CLS_MyDisp
 from twitter_main import CLS_TwitterMain
 from gval import gVal
 #####################################################
@@ -130,9 +130,14 @@ class CLS_Main_Console() :
 		
 		#############################
 		# メインコンソール画面
-		wRes = cls().sViewDisp( "MainConsole" )
-		if wRes==False :
-			return "q"	#失敗=強制終了
+###		wRes = cls().sViewDisp( "MainConsole" )
+###		if wRes==False :
+###			return "q"	#失敗=強制終了
+		wResDisp = CLS_MyDisp.sViewDisp( "MainConsole" )
+		if wResDisp['Result']==False :
+			gVal.OBJ_L.Log( "D", wResDisp )
+###			return "q"	#失敗=強制終了
+			return "\\q"	#失敗=強制終了
 		
 		wCommand = CLS_OSIF.sInp( "コマンド？=> " )
 		return wCommand
@@ -192,6 +197,12 @@ class CLS_Main_Console() :
 
 	#####################################################
 		#############################
+		# ツイート検索
+		elif inCommand=="\\s" :
+			cls.OBJ_TwitterMain.TweetSearch()
+			wFlg = True
+		
+		#############################
 		# 手動トゥートモード
 #		elif inCommand=="\\t" :
 #			wCLS_work = CLS_Toot()
@@ -244,67 +255,59 @@ class CLS_Main_Console() :
 #####################################################
 # ディスプレイ表示
 #####################################################
-	@classmethod
-	def sViewDisp( cls, inDisp ):
-		#############################
-		# 応答形式の取得
-		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
-		wRes = CLS_OSIF.sGet_Resp()
-		wRes['Class'] = "CLS_Main_Console"
-		wRes['Func']  = "sViewDisp"
-		
-		#############################
-		# ディスプレイファイルの確認
-		wKeylist = gVal.DEF_STR_DISPFILE.keys()
-		if inDisp not in wKeylist :
-			###キーがない(指定ミス)
-###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display key is not found: inDisp= " + inDisp )
-###			gVal.OBJ_L.Log( "C", "CLS_Main_Console", "sViewDisp", "Display key is not found: inDisp= " + inDisp )
-			wRes['Reason'] = "Display key is not found: inDisp= " + inDisp
-			gVal.OBJ_L.Log( "C", wRes )
-			return False
-		
-		if CLS_File.sExist( gVal.DEF_STR_DISPFILE[inDisp] )!=True :
-			###ファイルがない...(消した？)
-###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Display file is not found: " + gVal.DEF_STR_DISPFILE[inDisp] )
-###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
-			wRes['Reason'] = "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp]
-			gVal.OBJ_L.Log( "D", wRes )
-			return False
-		
-		#############################
-		# 画面クリア
-		CLS_OSIF.sDispClr()
-		
-		#############################
-		# 中身表示
-		wDispFile = []
-		if CLS_File.sReadFile( gVal.DEF_STR_DISPFILE[inDisp], outLine=wDispFile )!=True :
-###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが見つかりません: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
-###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp] )
-			wRes['Reason'] = "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp]
-			gVal.OBJ_L.Log( "D", wRes )
-			return False
-		
-		if len(wDispFile)<=1 :
-###			CLS_OSIF.sPrn( "CLS_Main_Console: __viewDisp: Dispファイルが空です: path=" + gVal.DEF_STR_DISPFILE[inDisp] )
-###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sViewDisp", "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp] )
-			wRes['Reason'] = "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp]
-			gVal.OBJ_L.Log( "D", wRes )
-			return False
-		
-		wStr = "--------------------" + '\n'
-		wStr = wStr + "るしぼっとCONSOLE" + '\n'
-		wStr = wStr + "--------------------" + '\n'
-		wStr = wStr + "Twitter ID : " + gVal.STR_UserInfo['Account'] + '\n'
-		wStr = wStr + '\n'
-		for wLine in wDispFile :
-			wStr = wStr + "    " + wLine + '\n'
-		
-		CLS_OSIF.sPrn( wStr )
-		return True
-
-
+#	@classmethod
+#	def sViewDisp( cls, inDisp ):
+#		#############################
+#		# 応答形式の取得
+#		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+#		wRes = CLS_OSIF.sGet_Resp()
+#		wRes['Class'] = "CLS_Main_Console"
+#		wRes['Func']  = "sViewDisp"
+#		
+#		#############################
+#		# ディスプレイファイルの確認
+#		wKeylist = gVal.DEF_STR_DISPFILE.keys()
+#		if inDisp not in wKeylist :
+#			###キーがない(指定ミス)
+#			wRes['Reason'] = "Display key is not found: inDisp= " + inDisp
+#			gVal.OBJ_L.Log( "C", wRes )
+#			return False
+#		
+#		if CLS_File.sExist( gVal.DEF_STR_DISPFILE[inDisp] )!=True :
+#			###ファイルがない...(消した？)
+#			wRes['Reason'] = "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp]
+#			gVal.OBJ_L.Log( "D", wRes )
+#			return False
+#		
+#		#############################
+#		# 画面クリア
+#		CLS_OSIF.sDispClr()
+#		
+#		#############################
+#		# 中身表示
+#		wDispFile = []
+#		if CLS_File.sReadFile( gVal.DEF_STR_DISPFILE[inDisp], outLine=wDispFile )!=True :
+#			wRes['Reason'] = "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp]
+#			gVal.OBJ_L.Log( "D", wRes )
+#			return False
+#		
+#		if len(wDispFile)<=1 :
+#			wRes['Reason'] = "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp]
+#			gVal.OBJ_L.Log( "D", wRes )
+#			return False
+#		
+#		wStr = "--------------------" + '\n'
+#		wStr = wStr + "るしぼっとCONSOLE" + '\n'
+#		wStr = wStr + "--------------------" + '\n'
+#		wStr = wStr + "Twitter ID : " + gVal.STR_UserInfo['Account'] + '\n'
+#		wStr = wStr + '\n'
+#		for wLine in wDispFile :
+#			wStr = wStr + "    " + wLine + '\n'
+#		
+#		CLS_OSIF.sPrn( wStr )
+#		return True
+#
+#
 
 #####################################################
 # システム情報の表示

@@ -57,6 +57,13 @@ class gVal() :
 	}
 
 #############################
+# 検索モード
+	STR_SearchMode = {
+		"JPonly"	: True,			#検索は日本語のみ
+		"IncRT"		: False			#検索にリツイートを含める
+	}
+
+#############################
 # Timeline調整数
 	DEF_STR_TLNUM = {
 
@@ -94,6 +101,8 @@ class gVal() :
 
 	DEF_STR_DISPFILE = {
 		"MainConsole"			: DEF_DISPPATH + "main_console.disp",
+		"SearchConsole"			: DEF_DISPPATH + "search_console.disp",
+		
 		"(dummy)"				: 0
 	}
 

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : OS I/F (OS向け共通処理)
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   (none)
@@ -29,6 +29,7 @@
 #   sPrn( cls, inMsg ):
 #   sInp( cls, inMsg ):
 #   sGpp( cls, inMsg ):
+#   sPrnWAIT( cls, inCount ):
 #   sDel_HTML( cls, inCont ):
 #   sChkREMString( cls, inStr, inSpace=True ):
 #   sRe_Search( cls, inPatt, inCont ):
@@ -477,7 +478,8 @@ class CLS_OSIF() :
 #####################################################
 	@classmethod
 	def sPrnER( cls, inMsg ):
-		sys.stdout.write( "\033[2K\033[G%s" % inMsg )
+###		sys.stdout.write( "\033[2K\033[G%s" % inMsg )
+		sys.stdout.write( "\r%s" % inMsg )
 		sys.stdout.flush()
 		return
 
@@ -500,6 +502,32 @@ class CLS_OSIF() :
 	def sGpp( cls, inMsg ):
 		wInput = getpass( inMsg ).strip()
 		return wInput
+
+
+
+#####################################################
+# コンソール待機
+#####################################################
+	@classmethod
+	def sPrnWAIT( cls, inCount ):
+		wCount = inCount
+		try:
+			while True:
+				if wCount==0 :
+					break
+				
+				#############################
+				# 1行にカウントを表示
+				# ctrl+cでウェイト中止
+				wStr = "残り待機時間 " + str( wCount ) + " 秒"
+				cls.sPrnER( wStr )
+				cls.sSleep(1)
+				wCount -= 1
+		
+		except KeyboardInterrupt:
+			return False 	#ウェイト中止
+		
+		return True			#ウェイト完了
 
 
 

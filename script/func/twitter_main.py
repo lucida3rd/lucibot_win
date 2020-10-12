@@ -65,8 +65,8 @@ class CLS_TwitterMain():
 	STR_KeyUser     = ""
 	STR_Keywords    = ""
 	
-	FLG_Search_JP    = False		#検索は日本語のみ
-	FLG_Search_IncRt = False		#検索にリツイートを含める
+###	FLG_Search_JP    = True			#検索は日本語のみ
+###	FLG_Search_IncRt = False		#検索にリツイートを含める
 	
 	ARR_MyFollowID = []
 	ARR_FollowerID = []
@@ -245,6 +245,15 @@ class CLS_TwitterMain():
 #####################################################
 	def ViewFollower(self):
 		wRes = self.OBJ_TwitterFollower.View()
+		return wRes
+
+
+
+#####################################################
+# ツイート検索
+#####################################################
+	def TweetSearch(self):
+		wRes = self.OBJ_TwitterKeyword.TweetSearch()
 		return wRes
 
 

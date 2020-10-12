@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : bot制御(共通)
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   (none)
@@ -168,20 +168,28 @@ class CLS_BotCtrl():
 		# 排他開始
 		wLock = cls.sLock()
 		if wLock['Result']!=True :
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "排他取得失敗(1): " + wLock['Reason'] )
 			wRes['Reason'] = "排他取得失敗: " + wLock['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			gVal.OBJ_DB.Close()
 			return
-		elif wLock['Responce']==True :
-###			gVal.OBJ_L.Log( "R", "CLS_BotCtrl", "sBotTest", "排他中" )
+###		elif wLock['Responce']==True :
+		elif wLock['Responce']!=None :
 			wRes['Reason'] = "排他中"
 			gVal.OBJ_L.Log( "R", wRes )
 			
-			CLS_OSIF.sPrn( "処理中です。しばらくお待ちください。" )
-			CLS_OSIF.sPrn( wLock['Reason'] )
-			gVal.OBJ_DB.Close()
-			return
+###			CLS_OSIF.sPrn( "処理中です。しばらくお待ちください。" )
+###			CLS_OSIF.sPrn( wLock['Reason'] )
+###			gVal.OBJ_DB.Close()
+###			return
+			CLS_OSIF.sPrn( "処理待機中です。CTRL+Cで中止することもできます。" )
+			CLS_OSIF.sPrn( wLock['Reason'] + '\n' )
+			
+			wResStop = CLS_OSIF.sPrnWAIT( wLock['Responce'] )
+			if wResStop==False :
+				###ウェイト中止
+				CLS_OSIF.sPrn( '\n' + "待機を中止しました。プログラムを停止しました。" )
+				gVal.OBJ_DB.Close()
+				return
 		
 		#############################
 		# Twitterに接続
@@ -360,7 +368,8 @@ class CLS_BotCtrl():
 				wAtSec = wReaRIPmin - wGetLag['RateSec']
 				wAtSec = CLS_OSIF.sGetFloor( wAtSec )	#小数点切り捨て
 				wRes['Reason'] = "処理終了まであと " + str(wAtSec) + " 秒です"
-				wRes['Responce'] = True
+###				wRes['Responce'] = True
+				wRes['Responce'] = wAtSec
 				wRes['Result']   = True
 				return wRes
 		

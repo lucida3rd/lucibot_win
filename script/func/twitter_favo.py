@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   (none)
@@ -452,7 +452,8 @@ class CLS_TwitterFavo():
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
 				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )
 				
-				wResStop = self.__wait_FavoRemove( gVal.DEF_STR_TLNUM['favoLimWait'] )
+###				wResStop = self.__wait_FavoRemove( gVal.DEF_STR_TLNUM['favoLimWait'] )
+				wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['favoLimWait'] )
 				if wResStop==False :
 					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
 					break	#ウェイト中止
@@ -474,26 +475,26 @@ class CLS_TwitterFavo():
 		wRes['Result'] = True
 		return wRes
 
-	#####################################################
-	def __wait_FavoRemove( self, inCount ):
-		wCount = inCount
-		try:
-			while True:
-				if wCount==0 :
-					break
-				
-				#############################
-				# 1行にカウントを表示
-				# ctrl+cでウェイト中止
-				wStr = "残り待機時間 " + str( wCount ) + " 秒"
-				CLS_OSIF.sPrnER( wStr )
-				CLS_OSIF.sSleep(1)
-				wCount -= 1
-		
-		except KeyboardInterrupt:
-			return False 	#ウェイト中止
-		
-		return True			#ウェイト完了
-
-
+###	#####################################################
+###	def __wait_FavoRemove( self, inCount ):
+###		wCount = inCount
+###		try:
+###			while True:
+###				if wCount==0 :
+###					break
+###				
+###				#############################
+###				# 1行にカウントを表示
+###				# ctrl+cでウェイト中止
+###				wStr = "残り待機時間 " + str( wCount ) + " 秒"
+###				CLS_OSIF.sPrnER( wStr )
+###				CLS_OSIF.sSleep(1)
+###				wCount -= 1
+###		
+###		except KeyboardInterrupt:
+###			return False 	#ウェイト中止
+###		
+###		return True			#ウェイト完了
+###
+###
 

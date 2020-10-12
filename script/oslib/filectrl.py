@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ファイル制御
 # 
-# ::Update= 2020/9/28
+# ::Update= 2020/10/12
 #####################################################
 # Private Function:
 #   (none)
@@ -338,7 +338,8 @@ class CLS_File() :
 # ファイル読み込み
 #####################################################
 	@classmethod
-	def sReadFile( cls, inPath, outLine ):
+###	def sReadFile( cls, inPath, outLine ):
+	def sReadFile( cls, inPath, outLine, inStrip=True, inRT=False ):
 		
 		pList = outLine		#アドレス渡し
 		#############################
@@ -359,7 +360,14 @@ class CLS_File() :
 		try:
 ###			for wLine in open( inPath, 'r'):	#ファイルを開く
 			for wLine in open( inPath, 'r', encoding=cls.DEF_MOJI_ENCODE ):	#ファイルを開く
-				wLine = wLine.strip()
+				if inStrip==True :
+					###両端の空白を消す
+					wLine = wLine.strip()
+				else:
+					if inRT==False :
+						###両端の空白を残して、改行は消す
+						wLine = wLine.replace( "\n", "" )
+				
 				pList.append( wLine )
 		except ValueError as err :
 			return False
