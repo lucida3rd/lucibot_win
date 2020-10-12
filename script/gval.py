@@ -70,12 +70,14 @@ class gVal() :
 		"resetAPImin"		: 15,						#APIリセット周期(分)
 		"lockLimmin"		: 2,						#排他保持時間
 
-		"favoLimmin"		: 4320,						#いいね解除時間 3日 (60x24)x3=4320(分)
+###		"favoLimmin"		: 4320,						#いいね解除時間 3日 (60x24)x3=4320(分)
+		"favoLimmin"		: 2880,						#いいね解除時間 2日 (60x24)x2=2880(分)
 		"favoDBLimmin"		: 20160,					#DBのいいね削除時間 14日 (60x24)x14=20160(分)
 		"rFavoLimNum"		: 5,						# 1回のいいね解除数
 		"favoLimWait"		: 185,						#いいね解除処理待ち(秒)   900秒
 
-		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=4320(分)
+###		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=4320(分)
+		"removeLimmin"		: 7200,						#自動リムーブ時間 5日 (60x24)x5=7200(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 185,						#自動リムーブ処理待ち(秒)   900秒
 

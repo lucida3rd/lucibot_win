@@ -168,13 +168,14 @@ class CLS_TwitterFavo():
 				wText = str(wROW['text'])
 				wText = wText.replace( "'", "''" )
 				
+				wName = str(wROW['user']['name']).replace( "'", "''" )
 				wQuery = "insert into tbl_favo_data values (" + \
 							"'" + gVal.STR_UserInfo['Account'] + "'," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"False," + \
 							"False," + \
 							"'" + str(wROW['id']) + "'," + \
-							"'" + str(wROW['user']['name']) + "'," + \
+							"'" + wName + "'," + \
 							"'" + str(wROW['user']['screen_name']) + "'," + \
 							"'" + wText + "'," + \
 							"'" + str(wTime['TimeDate']) + "'" + \

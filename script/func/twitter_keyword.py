@@ -283,8 +283,11 @@ class CLS_TwitterKeyword():
 		#############################
 		# データ部
 		for wKey in inARR_List :
+			wUserName = self.OBJ_Parent.STR_KeyUser[wKey]['user_name'].replace( ",", "" )
+			
 			wLine = ""
-			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['user_name'] + ", "
+###			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['user_name'] + ", "
+			wLine = wLine + wUserName + ", "
 			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", "
 			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['hit_word'] + ", "
 			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", " + '\n'

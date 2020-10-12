@@ -5,7 +5,7 @@
 ::TwitterURL= https://twitter.com/lucida3hai
 
 ::Update= 2020/10/12
-::Version= 0.3.0.0
+::Version= 0.3.0.1
 
 
 <a id="iSystemSummary"></a>

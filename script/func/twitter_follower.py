@@ -215,6 +215,7 @@ class CLS_TwitterFollower():
 			else:
 				###DBに記録されていない
 				###  記録する
+				wName = str(wROW['name']).replace( "'", "''" )
 				wQuery = "insert into tbl_follower_data values (" + \
 							"'" + gVal.STR_UserInfo['Account'] + "'," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
@@ -225,7 +226,7 @@ class CLS_TwitterFollower():
 							"False," + \
 							"False," + \
 							"'" + str(wROW['id']) + "'," + \
-							"'" + str(wROW['name']) + "'," + \
+							"'" + wName + "'," + \
 							"'" + str(wROW['screen_name']) + "'," + \
 							str(wROW['statuses_count']) + "," + \
 							"'" + str(wTD['TimeDate']) + "'" + \
