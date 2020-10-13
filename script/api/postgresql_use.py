@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ぽすぐれユーズ
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   __initDbStatus(self):
@@ -503,7 +503,7 @@ class CLS_PostgreSQL_Use():
 			wGetTap = []
 			for wCel in wLineTap :
 				wGetTap.append( wCel )
-			wList.append( wGetTap )
+			wList.extend( wGetTap )
 		
 		return True
 

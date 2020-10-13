@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -21,7 +21,7 @@
 #
 # Instance Function:
 #   __init__(self):
-#   Setup(self):
+#   Setup( self, inPassWD=None ):
 #   AllInit(self):
 #
 # Class Function(static):
@@ -50,7 +50,8 @@ class CLS_Setup():
 #####################################################
 # セットアップ
 #####################################################
-	def Setup(self):
+###	def Setup(self):
+	def Setup( self, inPassWD=None ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -71,12 +72,16 @@ class CLS_Setup():
 		
 		#############################
 		# DBに接続
-		wStr = "データベースに接続します。データベースのパスワードを入力してください。" + '\n'
-		wStr = wStr + "  Hostname=" + gVal.DEF_BD_HOST + " Database=" + gVal.DEF_BD_NAME + " Username=" + gVal.DEF_BD_USER
-		CLS_OSIF.sPrn( wStr )
+		wPassword = inPassWD
 		
-		###入力受け付け
-		wPassword = CLS_OSIF.sGpp( "Password: " )
+		###パスワードが未設定なら入力を要求する
+		if wPassword==None :
+			wStr = "データベースに接続します。データベースのパスワードを入力してください。" + '\n'
+			wStr = wStr + "  Hostname=" + gVal.DEF_BD_HOST + " Database=" + gVal.DEF_BD_NAME + " Username=" + gVal.DEF_BD_USER
+			CLS_OSIF.sPrn( wStr )
+			
+			###入力受け付け
+			wPassword = CLS_OSIF.sGpp( "Password: " )
 		
 		###テスト
 		gVal.OBJ_DB = CLS_PostgreSQL_Use()
@@ -292,8 +297,8 @@ class CLS_Setup():
 		
 		#############################
 		# 終わり
-		CLS_OSIF.sPrn( "全初期化が正常終了しました。" )
 		gVal.OBJ_DB.Close()
+		CLS_OSIF.sPrn( "全初期化が正常終了しました。" )
 		
 		#############################
 		# セットアップの確認
@@ -304,7 +309,232 @@ class CLS_Setup():
 			##キャンセル
 			return True
 		
-		self.Setup()
+		###入力の手間を省くため、パスワードを引き継ぐ
+		self.Setup( inPassWD=wPassword )
+		self.Add( inPassWD=wPassword )
+		return True
+
+
+
+#####################################################
+# データ追加モード
+#####################################################
+	def Add( self, inPassWD=None, inDBInit=False ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Setup"
+		wRes['Func']  = "Add"
+		
+		CLS_OSIF.sPrn( "追加データをデータベースに追加します" + '\n' )
+		
+		#############################
+		# ユーザフォルダの存在チェック
+		if CLS_File.sExist( gVal.DEF_USERDATA_PATH )!=True :
+			## フォルダがないと失敗扱い
+			wRes['Reason'] = "ユーザフォルダがありません: path=" + gVal.DEF_USERDATA_PATH
+			CLS_OSIF.sErr( wRes )
+			return False
+		
+		#############################
+		# デフォルトの除外ユーザ・文字の読み出し
+		# ・除外ファイルの解凍
+		# ・読み出し
+		# ・解凍の削除
+		
+		###デフォルト除外文字ファイルの解凍
+		wExcWordArc_Path = gVal.DEF_STR_FILE['ExcWordArc']											#アーカイブ
+		wMelt_ExcWordArc_Path = gVal.DEF_USERDATA_PATH + gVal.DEF_STR_FILE['Melt_ExcWordArc_path']	#アーカイブ解凍先
+		if CLS_File.sArciveMelt( inSrcPath=wExcWordArc_Path, inDstPath=gVal.DEF_USERDATA_PATH )!=True :
+			wRes['Reason'] = "デフォルト除外文字ファイルの解凍に失敗しました: srcpath=" + wExcWordArc_Path + " dstpath=" + wMelt_ExcWordArc_Path
+			CLS_OSIF.sErr( wRes )
+			return False
+		
+		###ローカルに読み出し
+		wFilePath = gVal.DEF_USERDATA_PATH + gVal.DEF_STR_FILE['Melt_ExcUserName']
+		wARR_ExcUserName = []
+		if CLS_File.sReadFile( wFilePath, outLine=wARR_ExcUserName )!=True :
+			wRes['Reason'] = "解凍ファイルが見つかりません: path=" + wFilePath
+			CLS_OSIF.sErr( wRes )
+			return False
+		
+		wFilePath = gVal.DEF_USERDATA_PATH + gVal.DEF_STR_FILE['Melt_ExcWord']
+		wARR_ExcWord = []
+		if CLS_File.sReadFile( wFilePath, outLine=wARR_ExcWord )!=True :
+			wRes['Reason'] = "解凍ファイルが見つかりません: path=" + wFilePath
+			CLS_OSIF.sErr( wRes )
+			return False
+		
+		###解凍したフォルダ削除
+		if CLS_File.sRmtree( wMelt_ExcWordArc_Path )!=True :
+			wRes['Reason'] = "解凍フォルダの削除に失敗しました: path=" + wMelt_ExcWordArc_Path
+			CLS_OSIF.sErr( wRes )
+			return False
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			CLS_OSIF.sErr( wRes )
+			return False
+		### wTD['TimeDate']
+		
+		#############################
+		# DBに接続 (接続情報の作成)
+		wPassword = inPassWD
+		
+		###パスワードが未設定なら入力を要求する
+		if wPassword==None :
+			wStr = "データベースに接続します。データベースのパスワードを入力してください。" + '\n'
+			wStr = wStr + "  Hostname=" + gVal.DEF_BD_HOST + " Database=" + gVal.DEF_BD_NAME + " Username=" + gVal.DEF_BD_USER
+			CLS_OSIF.sPrn( wStr )
+			
+			###入力受け付け
+			wPassword = CLS_OSIF.sGpp( "Password: " )
+		
+		###接続
+		gVal.OBJ_DB = CLS_PostgreSQL_Use()
+		wResDBconn = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
+		wResDBconn = gVal.OBJ_DB.Connect()
+		wResDB = gVal.OBJ_DB.GetDbStatus()
+		if wResDBconn!=True :
+			wRes['Reason'] = "DBの接続に失敗しました: reason=" + wResDB['Reason']
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
+		
+		###結果の確認
+		if wResDB['Init']!=True :
+			wRes['Reason'] = "DBが初期化できてません"
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
+		
+		#############################
+		# データベースを初期化する
+		# ※初期化しないほうが便利
+		if inDBInit==True :
+			self.__create_TBL_EXC_USERNAME( gVal.OBJ_DB )
+			self.__create_TBL_EXC_WORD( gVal.OBJ_DB )
+		
+		#############################
+		# データベースから除外ユーザ名を取得
+		wQuery = "select word from tbl_exc_username " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
+		
+		### リスト型に整形
+		wARR_RateWord = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=wARR_RateWord )
+		
+		gVal.STR_ExcUserName = []
+		#############################
+		# アーカイブの除外ユーザ名を検索
+		#   データベースになければ登録する
+		# 除外ユーザ名を登録する
+		wFLG_newAdd = False
+		for wWord in wARR_ExcUserName :
+			if wWord in wARR_RateWord :
+				###既登録
+				gVal.STR_ExcUserName.append( wWord )
+				continue
+			
+			wFLG_newAdd = True
+			wWord = wWord.replace( "'", "''" )
+			wQuery = "insert into tbl_exc_username values (" + \
+						"'" + str(wTD['TimeDate']) + "'," + \
+						"True," + \
+						"'" + wWord + "'" + \
+						") ;"
+			
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				CLS_OSIF.sErr( wRes )
+				gVal.OBJ_DB.Close()
+				return False
+			
+			###追加
+			gVal.STR_ExcUserName.append( wWord )
+			CLS_OSIF.sPrn( "除外ユーザ名が追加されました: " + wWord )
+		
+		if wFLG_newAdd==False :
+			CLS_OSIF.sPrn( "新規の除外ユーザ名はありませんでした" )
+		
+		#############################
+		# データベースから除外文字を取得
+		wQuery = "select word from tbl_exc_word " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
+		
+		### リスト型に整形
+		wARR_RateWord = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=wARR_RateWord )
+		
+		gVal.STR_ExcWord = []
+		#############################
+		# アーカイブの除外文字を検索
+		#   データベースになければ登録する
+		# 除外文字を登録する
+		wFLG_newAdd = False
+		for wWord in wARR_ExcWord :
+			if wWord in wARR_RateWord :
+				###既登録
+				gVal.STR_ExcWord.append( wWord )
+				continue
+			
+			wFLG_newAdd = True
+			wWord = wWord.replace( "'", "''" )
+			wQuery = "insert into tbl_exc_word values (" + \
+						"'" + str(wTD['TimeDate']) + "'," + \
+						"True," + \
+						"'" + wWord + "'" + \
+						") ;"
+			
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				CLS_OSIF.sErr( wRes )
+				gVal.OBJ_DB.Close()
+				return False
+			
+			###追加
+			gVal.STR_ExcWord.append( wWord )
+			CLS_OSIF.sPrn( "除外文字が追加されました: " + wWord )
+		
+		if wFLG_newAdd==False :
+			CLS_OSIF.sPrn( "新規の除外文字はありませんでした" )
+		
+		#############################
+		# DBを閉じる
+		gVal.OBJ_DB.Close()
+		
+		#############################
+		# 正常終了
+		CLS_OSIF.sPrn( "データの追加が正常終了しました。" )
 		return True
 
 
@@ -318,6 +548,8 @@ class CLS_Setup():
 		self.__create_TBL_FAVO_DATA( inDBobj )
 		self.__create_TBL_FOLLOWER_DATA( inDBobj )
 		self.__create_TBL_KEYWORD_DATA( inDBobj )
+		self.__create_TBL_EXC_USERNAME( inDBobj )
+		self.__create_TBL_EXC_WORD( inDBobj )
 		return True
 
 	#####################################################
@@ -331,6 +563,10 @@ class CLS_Setup():
 		wQuery = "drop table if exists tbl_follower_data ;"
 		inOBJ_DB.RunQuery( wQuery )
 		wQuery = "drop table if exists tbl_keyword_data ;"
+		inOBJ_DB.RunQuery( wQuery )
+		wQuery = "drop table if exists tbl_exc_username ;"
+		inOBJ_DB.RunQuery( wQuery )
+		wQuery = "drop table if exists tbl_exc_word ;"
 		inOBJ_DB.RunQuery( wQuery )
 		return True
 
@@ -506,6 +742,56 @@ class CLS_Setup():
 ##					"select      選択中
 ##					"keyword     検索キーワード
 
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_EXC_USERNAME
+#####################################################
+	def __create_TBL_EXC_USERNAME( self, inOBJ_DB, inTBLname="tbl_exc_username" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"regdate     TIMESTAMP," + \
+					"choice      BOOL  DEFAULT true," + \
+					"word        TEXT  NOT NULL, " + \
+					" PRIMARY KEY ( word ) ) ;"
+		
+##					"regdate     DB登録日時
+##					"keyword     検索キーワード
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_EXC_WORD
+#####################################################
+	def __create_TBL_EXC_WORD( self, inOBJ_DB, inTBLname="tbl_exc_word" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"regdate     TIMESTAMP," + \
+					"choice      BOOL  DEFAULT true," + \
+					"word        TEXT  NOT NULL, " + \
+					" PRIMARY KEY ( word ) ) ;"
+		
+##					"regdate     DB登録日時
+##					"keyword     検索キーワード
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return

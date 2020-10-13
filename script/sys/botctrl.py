@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : bot制御(共通)
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   (none)
@@ -57,9 +57,10 @@ class CLS_BotCtrl():
 		elif len(wArg)==2 :	#モード
 			###セットアップモード
 			###全初期化モード
+			###データ追加モード
 			if wArg[1]!="setup" and \
-			   wArg[1]!="init" :
-###				CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: 存在しないモードです" )
+			   wArg[1]!="init" and \
+			   wArg[1]!="add" :
 				wRes['Reason'] = "存在しないモードです"
 				CLS_OSIF.sErr( wRes )
 				return False
@@ -68,8 +69,6 @@ class CLS_BotCtrl():
 			return True
 		
 		elif len(wArg)!=3 :	#引数が足りない
-###			wStr = "CLS_BotCtrl: sBotTest: 引数が足りません= " + str( wArg )
-###			CLS_OSIF.sPrn( wStr  )	#メールに頼る
 			wRes['Reason'] = "CLS_BotCtrl: sBotTest: 引数が足りません= " + str( wArg )
 			CLS_OSIF.sErr( wRes )
 			return False
@@ -148,8 +147,7 @@ class CLS_BotCtrl():
 		wChgDict = {}
 		if gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wChgDict )!=True :
 			##ないケースかも
-###			gVal.OBJ_L.Log( "C", "CLS_BotCtrl", "sBotTest", "恐らくDBに未登録: ChgList is failed" )
-			wRes['Reason'] = "恐らくDBに未登録: ChgList is failed"
+			wRes['Reason'] = "恐らくDBに未登録: ChgDict is failed"
 			gVal.OBJ_L.Log( "C", wRes )
 			gVal.OBJ_DB.Close()
 			return False

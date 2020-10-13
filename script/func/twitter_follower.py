@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   (none)
@@ -286,6 +286,7 @@ class CLS_TwitterFollower():
 			wFLG_UnFollow = False	#フォロー状態
 			wFLG_Follower = False	#フォロワー状態
 			wFLG_LastCount = False
+			wFLG_Ditect = False
 			wLast_Count = str(wARR_RateFollowers[wIndex]['lastcount'])
 			wLast_Date  = wARR_RateFollowers[wIndex]['lastdate']
 			
@@ -298,6 +299,7 @@ class CLS_TwitterFollower():
 				for wF_ROW in wFollowerRes['Responce'] :
 					if wARR_RateFollowers[wIndex]['id']==str(wF_ROW['id']) :
 						wF_Count = wF_ROW['statuses_count']
+						wFLG_Ditect = True
 						break
 				
 				if wFLG_Ditect==False :

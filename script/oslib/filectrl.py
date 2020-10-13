@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ファイル制御
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   (none)
@@ -29,6 +29,8 @@
 #   sAddFile( cls, inPath, inSetLine ):
 #   sReadFile( cls, inPath, outLine ):
 #   sChmod( cls, inPath, inMod ):
+#   sFolderArcive( cls, inDstPath, inFolderList ):
+#   sArciveMelt( cls, inSrcPath, inDstPath, inPassWD=None ):
 #   sGetTimedate( cls, inPath ) :
 #
 #####################################################
@@ -421,6 +423,48 @@ class CLS_File() :
 		# エラーの場合
 		if wFLG_Err==True :
 			### ***消す
+			return False
+		
+		#############################
+		# OK
+		return True
+
+
+
+#####################################################
+# アーカイブ解凍
+#####################################################
+	@classmethod
+	def sArciveMelt( cls, inSrcPath, inDstPath, inPassWD=None ):
+		#############################
+		# 元ファイル存在チェック
+		if cls().sExist( inSrcPath )!=True :
+			return False
+		
+		wFLG_Err = False
+		#############################
+		# 解凍処理(パスなし)
+		if inPassWD==None :
+			try:
+				with zipfile.ZipFile( inSrcPath) as wMyzip:
+					wMyzip.extractall( inDstPath )
+			
+			except ValueError as err :
+				wFLG_Err = True
+		
+		#############################
+		# 解凍処理(パスあり)
+		else:
+			try:
+				with zipfile.ZipFile( inSrcPath) as wMyzip:
+					wMyzip.extractall( inDstPath, inPassWD )
+			
+			except ValueError as err :
+				wFLG_Err = True
+		
+		#############################
+		# エラーの場合
+		if wFLG_Err==True :
 			return False
 		
 		#############################

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   (none)
@@ -76,6 +76,14 @@ class CLS_Main_Console() :
 		elif gVal.STR_SystemInfo['RunMode']=="init" :
 			wCLS_Setup = CLS_Setup()
 			wCLS_Setup.AllInit()
+			CLS_OSIF.sInp( '\n' + "リターンキーを押して再度コンソールアプリを起動してください。[RT]" )
+			return
+		
+		#############################
+		# データ追加モードで実行
+		elif gVal.STR_SystemInfo['RunMode']=="add" :
+			wCLS_Setup = CLS_Setup()
+			wCLS_Setup.Add()
 			CLS_OSIF.sInp( '\n' + "リターンキーを押して再度コンソールアプリを起動してください。[RT]" )
 			return
 		
