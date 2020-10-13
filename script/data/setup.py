@@ -156,7 +156,7 @@ class CLS_Setup():
 		# Twitterキーの入力と接続テスト
 		gVal.OBJ_Twitter = CLS_Twitter_Use()
 		wOBJ_Config = CLS_Config()
-		wResAPI = wOBJ_Config.SetTwitterAPI( wTwitterAccount, False )
+		wResAPI = wOBJ_Config.SetTwitterAPI( wTwitterAccount )
 		if wResAPI['Result']!=True :
 			###失敗
 			wRes['Reason'] = "Set Twitter API failed: " + wResAPI['Reason']
@@ -166,7 +166,7 @@ class CLS_Setup():
 		
 		#############################
 		# Twitterリストの設定
-		wResList = wOBJ_Config.SetTwitterList( wTwitterAccount, False )
+		wResList = wOBJ_Config.SetTwitterList( wTwitterAccount )
 		if wResList['Result']!=True :
 			###失敗
 			wRes['Reason'] = "Set Twitter List failed: " + wResList['Reason']

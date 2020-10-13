@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/10
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   (none)
@@ -38,7 +38,7 @@ class CLS_Config() :
 #####################################################
 # Twitter API設定
 #####################################################
-	def SetTwitterAPI( self, inTwitterID, inSave=True ):
+	def SetTwitterAPI( self, inTwitterID, inConf=False, inSave=False ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -62,6 +62,15 @@ class CLS_Config() :
 			wRes['Responce']['APIsecret'] = "(none)"
 			wRes['Responce']['ACCtoken']  = "(none)"
 			wRes['Responce']['ACCsecret'] = "(none)"
+			
+			#############################
+			# 実行の確認
+			if inConf==True :
+				wSelect = CLS_OSIF.sInp( "キャンセルしますか？(y)=> " )
+				if wSelect=="y" :
+					# 完了
+					wRes['Result'] = True
+					return wRes
 			
 			#############################
 			# 入力
@@ -158,7 +167,7 @@ class CLS_Config() :
 #####################################################
 # Twitterリスト設定
 #####################################################
-	def SetTwitterList( self, inTwitterID, inSave=True ):
+	def SetTwitterList( self, inTwitterID, inConf=False, inSave=False ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -193,6 +202,15 @@ class CLS_Config() :
 		#############################
 		# 入力
 		while True :
+			#############################
+			# 実行の確認
+			if inConf==True :
+				wSelect = CLS_OSIF.sInp( "キャンセルしますか？(y)=> " )
+				if wSelect=="y" :
+					# 完了
+					wRes['Result'] = True
+					return wRes
+			
 			#############################
 			# normalリストの選択
 			wStr = "normalリストに設定するリスト名を入力してください。(=自動リムーブ監視対象のユーザ)"

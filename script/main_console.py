@@ -28,6 +28,7 @@ from filectrl import CLS_File
 from setup import CLS_Setup
 from botctrl import CLS_BotCtrl
 from mydisp import CLS_MyDisp
+from config import CLS_Config
 from twitter_main import CLS_TwitterMain
 from gval import gVal
 #####################################################
@@ -203,6 +204,30 @@ class CLS_Main_Console() :
 
 
 
+	#####################################################
+		#############################
+		# Twitterリストの変更
+		elif inCommand=="\\cl" :
+			wOBJ_Config = CLS_Config()
+			wResList = wOBJ_Config.SetTwitterList( gVal.STR_UserInfo['Account'], True, True )
+			if wResList['Result']!=True :
+				###失敗
+				wRes['Reason'] = "Set Twitter List failed: " + wResList['Reason']
+				gVal.OBJ_L.Log( "D", wRes )
+			
+			wFlg = True
+		
+		#############################
+		# Twitter APIの変更
+		elif inCommand=="\\ca" :
+			wOBJ_Config = CLS_Config()
+			wResAPI = wOBJ_Config.SetTwitterAPI( gVal.STR_UserInfo['Account'], True, True )
+			if wResAPI['Result']!=True :
+				wRes['Reason'] = "Set Twitter API failed: " + wResAPI['Reason']
+				gVal.OBJ_L.Log( "D", wRes )
+			
+			wFlg = True
+		
 	#####################################################
 		#############################
 		# ツイート検索
