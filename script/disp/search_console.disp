@@ -16,16 +16,20 @@
     since:yyyy-mm-dd       指定した日から現在までのツイート
     until:yyyy-mm-dd       過去から指定した日までのツイート
 
-    filter:images          画像を含んだツイートだけ
-    filter:videos          動画を含んだツイートだけ
-    filter:links           リンクを含んだツイートだけ
-    filter:verified        公式マークがついたユーザのツイートだけ
-
-    lang:[国]              [国]語のツイートだけ。ja=日本語、en=英語
+#   filter:images          画像を含んだツイートだけ
+#   filter:videos          動画を含んだツイートだけ
+#   filter:links           リンクを含んだツイートだけ
+#   filter:verified        公式マークがついたユーザのツイートだけ
+#   lang:[国]              [国]語のツイートだけ。ja=日本語、en=英語
     source:[投稿元]        [投稿元]のツイートだけ。instagram=インスタグラム
 
+[@SEARCH-IMAGE@]
+[@SEARCH-VIDEO@]
+[@SEARCH-LINK@]
+[@SEARCH-OFFICIAL@]
 [@SEARCH-JPONLY@]
-[@SEARCH-INCRT@]
+[@SEARCH-RT@]
+[@SEARCH-SENSI@]
 
     [\q]                   コンソール終了
 

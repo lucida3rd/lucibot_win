@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/13
 #####################################################
 # Private Function:
 #   (none)
@@ -119,6 +119,7 @@ class CLS_TwitterFavo():
 				wRes['Reason'] = "sGetTimeformat_Twitter is failed: " + str(wROW['created_at'])
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
+			###wTime['TimeDate']
 			
 			###記録を探す
 			wFLG_Ditect = False
@@ -319,7 +320,7 @@ class CLS_TwitterFavo():
 			
 			wStr = wStr + str(wARR_RateFavoID[wIndex]['text']) + '\n'
 			wStr = wStr + "ツイ日=" + str(wARR_RateFavoID[wIndex]['created_at'])
-			wStr = wStr + "  ユーザ=" + str(wARR_RateFavoID[wIndex]['screen_name']) + "(@" + str(wARR_RateFavoID[wIndex]['user_name']) + ")" + '\n'
+			wStr = wStr + "  ユーザ=" + str(wARR_RateFavoID[wIndex]['user_name']) + "(@" + str(wARR_RateFavoID[wIndex]['screen_name']) + ")" + '\n'
 			wStr = wStr + "登録日=" + str(wARR_RateFavoID[wIndex]['regdate'])
 			if wARR_RateFavoID[wIndex]['removed']==True :
 				wStr = wStr + " [☆いいね解除済み]"
@@ -417,7 +418,7 @@ class CLS_TwitterFavo():
 			###  解除したいいねを表示
 			wStr = str(wARR_RateFavoID[wIndex]['text']) + '\n'
 			wStr = wStr + "ツイ日=" + str(wARR_RateFavoID[wIndex]['created_at'])
-			wStr = wStr + "  ユーザ=" + str(wARR_RateFavoID[wIndex]['screen_name']) + "(@" + str(wARR_RateFavoID[wIndex]['user_name']) + ")" + '\n'
+			wStr = wStr + "  ユーザ=" + str(wARR_RateFavoID[wIndex]['user_name']) + "(@" + str(wARR_RateFavoID[wIndex]['screen_name']) + ")" + '\n'
 			wStr = wStr + "登録日=" + str(wARR_RateFavoID[wIndex]['regdate'])
 			wStr = wStr + " [☆いいね解除済み]"
 			wStr = wStr + '\n'

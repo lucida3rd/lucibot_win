@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/13
 #####################################################
 
 #####################################################
@@ -59,9 +59,35 @@ class gVal() :
 #############################
 # 検索モード
 	STR_SearchMode = {
+		"IncImage"	: False,		#検索に画像を含める
+		"ExcImage"	: False,		#検索は画像を除外
+		"IncVideo"	: False,		#検索に動画を含める
+		"ExcVideo"	: False,		#検索は動画を除外
+		"IncLink"	: False,		#検索にリンクを含める
+		"ExcLink"	: False,		#検索はリンクを除外
+		"OFonly"	: False,		#検索は公式マークのみ
 		"JPonly"	: True,			#検索は日本語のみ
-		"IncRT"		: False			#検索にリツイートを含める
+		
+		"ExcRT"		: False,		#検索にリツイートを含めない
+		"ExcSensi"	: True			#検索にセンシティブな内容を含めない
 	}
+
+#############################
+# 除外ユーザ名
+	STR_ExcUserName = [
+		"高額",
+		"攻略",
+		"速報",
+		"bot",
+		"(**********)"
+	]
+
+#############################
+# 除外文字
+	STR_ExcWord = [
+		"高額",
+		"(**********)"
+	]
 
 #############################
 # Timeline調整数
@@ -81,7 +107,8 @@ class gVal() :
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 185,						#自動リムーブ処理待ち(秒)   900秒
 
-		"searchRoundNum"	: 7,						#1検索の回数(ページング)
+#		"searchRoundNum"	: 7,						#1検索の回数(ページング)
+		"searchRoundNum"	: 1,						#1検索の回数(ページング)
 		"maxKeywordNum"		: 6,						#最大キーワード数
 		"randKeyUserNum"	: 20,						#キーユーザ ランダム選出数
 

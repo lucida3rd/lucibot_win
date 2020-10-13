@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/13
 #####################################################
 # Private Function:
 #   (none)
@@ -255,6 +255,28 @@ class CLS_TwitterMain():
 	def TweetSearch(self):
 		wRes = self.OBJ_TwitterKeyword.TweetSearch()
 		return wRes
+
+
+
+#####################################################
+# 除外ユーザ名 チェック
+#####################################################
+	def CheckExcUserName( self, inUserName ):
+		for wLine in gVal.STR_ExcUserName :
+			if inUserName.find( wLine )>=0 :
+				return False
+		return True
+
+
+
+#####################################################
+# 除外文字 チェック
+#####################################################
+	def CheckExcWord( self, inWord ):
+		for wLine in gVal.STR_ExcWord :
+			if inWord.find( wLine )>=0 :
+				return False
+		return True
 
 
 

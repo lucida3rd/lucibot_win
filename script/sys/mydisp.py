@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/13
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -79,13 +79,45 @@ class CLS_MyDisp():
 			if "[@USER-ACCOUNT@]"==wLine :
 				wLine = "Twitter ID : " + gVal.STR_UserInfo['Account']
 			
+			###インプリ：検索 画像を含める
+			if "[@SEARCH-IMAGE@]"==wLine :
+				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncImage'], gVal.STR_SearchMode['ExcImage'] )
+				if wJPstr==None :
+					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
+					return wRes
+				wLine = "    検索に画像を含める    [\\i]: " + wJPstr
+			
+			###インプリ：検索 動画を含める
+			if "[@SEARCH-VIDEO@]"==wLine :
+				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncVideo'], gVal.STR_SearchMode['ExcVideo'] )
+				if wJPstr==None :
+					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
+					return wRes
+				wLine = "    検索に動画を含める    [\\v]: " + wJPstr
+			
+			###インプリ：検索 リンクを含める
+			if "[@SEARCH-LINK@]"==wLine :
+				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncLink'], gVal.STR_SearchMode['ExcLink'] )
+				if wJPstr==None :
+					wRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
+					return wRes
+				wLine = "    検索にリンクを含める  [\\l]: " + wJPstr
+			
+			###インプリ：検索 公式マークのみ
+			if "[@SEARCH-OFFICIAL@]"==wLine :
+				wLine = "    検索は公式マークのみ  [\\o]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['OFonly'] )
+			
 			###インプリ：検索 日本語のみ
 			if "[@SEARCH-JPONLY@]"==wLine :
-				wLine = "    検索は日本語のみ [\\jp] : " + str(gVal.STR_SearchMode['JPonly'])
+				wLine = "    検索は日本語のみ     [\\jp]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['JPonly'] )
 			
 			###インプリ：検索 リツイート含む
-			if "[@SEARCH-INCRT@]"==wLine :
-				wLine = "    リツイート含む   [\\rt] : " + str(gVal.STR_SearchMode['IncRT'])
+			if "[@SEARCH-RT@]"==wLine :
+				wLine = "    リツイート含めない   [\\rt]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcRT'] )
+			
+			###インプリ：検索 センシティブな内容を含めない
+			if "[@SEARCH-SENSI@]"==wLine :
+				wLine = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcSensi'] )
 			
 			#############################
 			# print表示
@@ -95,6 +127,29 @@ class CLS_MyDisp():
 		# 正常処理
 		wRes['Result'] = True
 		return wRes
+
+	#####################################################
+	@classmethod
+	def __get_JPstr_Single( cls, inFLG_Inc ):
+		if inFLG_Inc==True :
+			wStr = "はい"
+		else:
+			wStr = "いいえ"
+		return wStr
+
+
+	#####################################################
+	@classmethod
+	def __get_JPstr_Dual( cls, inFLG_Inc, inFLG_Exc ):
+		if inFLG_Inc==True and inFLG_Exc==False :
+			wStr = "含める"
+		elif inFLG_Inc==False and inFLG_Exc==True :
+			wStr = "除外する"
+		elif inFLG_Inc==False and inFLG_Exc==False :
+			wStr = "無条件"
+		else:
+			wStr = None
+		return wStr
 
 
 

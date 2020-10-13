@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/13
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -86,10 +86,21 @@ class CLS_TwitterKeyword():
 		#############################
 		# 取得
 		wKeylist = self.OBJ_Parent.STR_Keywords.keys()
-		for wWord in wKeylist :
-			CLS_OSIF.sPrn( "取得中... 検索語=" + wWord )
+		for wKey in wKeylist :
+			#############################
+			# コマンド付加
+			wResCmd = self.IncSearchMode( wKey )
+			if wResCmd['Result']!=True :
+				###やらかし
+				wResCmd['Reason'] = "IncSearchModeのやらかし: reason=" + wResCmd['Reason']
+				gVal.OBJ_L.Log( "A", wResCmd )
+				CLS_OSIF.sPrn( "プログラムミスのためこの用語はスキップされます 検索語=" + wKey )
+				continue
+			wCommand = wResCmd['Responce']
 			
-			wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=wWord, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
+			CLS_OSIF.sPrn( "取得中... 検索語=" + wCommand )
+			
+			wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=wCommand, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
 			if wTwitterRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
@@ -99,21 +110,30 @@ class CLS_TwitterKeyword():
 			#############################
 			# 必要な情報だけ抜き出す
 			for wLine in wTwitterRes['Responce'] :
-				###検索は日本語のみの場合、
-				###  日本語以外はスキップする
+##				###検索は日本語のみの場合、
+##				###  日本語以外はスキップする
 ###				if self.OBJ_Parent.FLG_Search_JP==True :
-				if gVal.STR_SearchMode['JPonly']==True :
-					if str(wLine['lang'])!="ja" :
-						continue
+##				if gVal.STR_SearchMode['JPonly']==True :
+##					if str(wLine['lang'])!="ja" :
+##						continue
 				###検索にリツイートを含めない場合、
 				###  リツイートはスキップする
 ###				if self.OBJ_Parent.FLG_Search_IncRt==False :
-				if gVal.STR_SearchMode['IncRT']==False :
+				if gVal.STR_SearchMode['ExcRT']==True :
 					if "retweeted_status" in wLine :
 						continue
+				###検索からセンシティブを除外する場合、
+				###  センシティブツイートはスキップする
+				if gVal.STR_SearchMode['ExcSensi']==True :
+					if "possibly_sensitive" in wLine :
+						if wLine['possibly_sensitive']==True :
+							continue
 ###				###既に同じユーザを抽出した
 ###				if str(wLine['user']['id']) in self.OBJ_Parent.STR_KeyUser :
 ###					continue
+				###ユーザ名に除外文字が含まれている
+				if self.OBJ_Parent.CheckExcUserName( wLine['user']['name'] )==False :
+					continue
 				###既にフォローしているユーザ
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
 					continue
@@ -128,22 +148,31 @@ class CLS_TwitterKeyword():
 ###				wSTR_Cell.update({ "id"          : str(wLine['user']['id']) })
 ###				wSTR_Cell.update({ "user_name"   : str(wLine['user']['name']) })
 ###				wSTR_Cell.update({ "screen_name" : str(wLine['user']['screen_name']) })
-###				wSTR_Cell.update({ "hit_word"    : wWord })
+###				wSTR_Cell.update({ "hit_word"    : wKey })
 ###				self.OBJ_Parent.STR_KeyUser.update({ str(wLine['user']['id']) : wSTR_Cell })
-				self.__set_KeyUser( wLine['user'], wWord )
-				self.OBJ_Parent.STR_Keywords[wWord] += 1
+				self.__set_KeyUser( wLine['user'], wKey )
+				self.OBJ_Parent.STR_Keywords[wKey] += 1
 				
 				###リツイート元
 				if "retweeted_status" in wLine :
-					###検索は日本語のみの場合、
-					###  日本語以外はスキップする
+##					###検索は日本語のみの場合、
+##					###  日本語以外はスキップする
 ###					if self.OBJ_Parent.FLG_Search_JP==True :
-					if gVal.STR_SearchMode['JPonly']==True :
-						if str(wLine['retweeted_status']['lang'])!="ja" :
-							continue
+##					if gVal.STR_SearchMode['JPonly']==True :
+##						if str(wLine['retweeted_status']['lang'])!="ja" :
+##							continue
 ###					###既に同じユーザを抽出した
 ###					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.STR_KeyUser :
 ###						continue
+					###検索からセンシティブを除外する場合、
+					###  センシティブツイートはスキップする
+					if gVal.STR_SearchMode['ExcSensi']==True :
+						if "possibly_sensitive" in wLine['retweeted_status'] :
+							if wLine['retweeted_status']['possibly_sensitive']==True :
+								continue
+					###ユーザ名に除外文字が含まれている
+					if self.OBJ_Parent.CheckExcUserName( wLine['retweeted_status']['user']['name'] )==False :
+						continue
 					###既にフォローしているユーザ
 					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
 						continue
@@ -158,11 +187,11 @@ class CLS_TwitterKeyword():
 ###					wSTR_Cell.update({ "id"          : str(wLine['retweeted_status']['user']['id']) })
 ###					wSTR_Cell.update({ "user_name"   : str(wLine['retweeted_status']['user']['name']) })
 ###					wSTR_Cell.update({ "screen_name" : str(wLine['retweeted_status']['user']['screen_name']) })
-###					wSTR_Cell.update({ "hit_word"    : wWord })
+###					wSTR_Cell.update({ "hit_word"    : wKey })
 ###					self.OBJ_Parent.STR_KeyUser.update({ str(wLine['retweeted_status']['user']['id']) : wSTR_Cell })
-					self.__set_KeyUser( wLine['retweeted_status']['user'], wWord )
+					self.__set_KeyUser( wLine['retweeted_status']['user'], wKey )
 
-					self.OBJ_Parent.STR_Keywords[wWord] += 1
+					self.OBJ_Parent.STR_Keywords[wKey] += 1
 		
 		#############################
 		# キーユーザ数
@@ -187,6 +216,243 @@ class CLS_TwitterKeyword():
 		wSTR_Cell.update({ "hit_word"    : inWord })
 		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['id']) : wSTR_Cell })
 		return True
+
+
+
+#####################################################
+# 検索コマンド変更
+#####################################################
+	def ChangeSearchMode( self, inWord ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "ChangeSearchMode"
+		
+		if inWord.find("\\")!=0 :
+			###先頭が \\ 以外はコマンドではない
+			wRes['Reason'] = "コマンド以外: " + str(inWord)
+			return wRes
+		
+		###コマンド処理なので 以後は全て正常で返す仕様
+		wRes['Result'] = True
+		
+		wMsg = None
+		#############################
+		# [\jp] 日本語のみ：いいえ→[はい]
+		if inWord=="\\jp" :
+			if gVal.STR_SearchMode['JPonly']==True :
+				###はい→いいえ
+				gVal.STR_SearchMode['JPonly'] = False
+				wMsg = "いいえ"
+			else:
+				###いいえ→はい
+				gVal.STR_SearchMode['JPonly'] = True
+				wMsg = "はい"
+			wMsg = "日本語のみ=" + wMsg
+		
+		#############################
+		# [\i] 検索に画像を含める：含める→除外する→[無条件]
+		elif inWord=="\\i" :
+			if gVal.STR_SearchMode['IncImage']==True and gVal.STR_SearchMode['ExcImage']==False :
+				###含める→除外する
+				gVal.STR_SearchMode['IncImage'] = False
+				gVal.STR_SearchMode['ExcImage'] = True
+				wMsg = "除外する"
+			elif gVal.STR_SearchMode['IncImage']==False and gVal.STR_SearchMode['ExcImage']==True :
+				###除外する→無条件
+				gVal.STR_SearchMode['IncImage'] = False
+				gVal.STR_SearchMode['ExcImage'] = False
+				wMsg = "無条件"
+			elif gVal.STR_SearchMode['IncImage']==False and gVal.STR_SearchMode['ExcImage']==False :
+				###無条件→含める
+				gVal.STR_SearchMode['IncImage'] = True
+				gVal.STR_SearchMode['ExcImage'] = False
+				wMsg = "含める"
+			else:
+				###両方Trueは矛盾
+				wRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
+				gVal.OBJ_L.Log( "A", wRes )
+				return wRes	#正常扱い
+			wMsg = "画像を含める=" + wMsg
+		
+		#############################
+		# [\v] 検索に動画を含める：含める→除外する→[無条件]
+		elif inWord=="\\v" :
+			if gVal.STR_SearchMode['IncVideo']==True and gVal.STR_SearchMode['ExcVideo']==False :
+				###含める→除外する
+				gVal.STR_SearchMode['IncVideo'] = False
+				gVal.STR_SearchMode['ExcVideo'] = True
+				wMsg = "除外する"
+			elif gVal.STR_SearchMode['IncVideo']==False and gVal.STR_SearchMode['ExcVideo']==True :
+				###除外する→無条件
+				gVal.STR_SearchMode['IncVideo'] = False
+				gVal.STR_SearchMode['ExcVideo'] = False
+				wMsg = "無条件"
+			elif gVal.STR_SearchMode['IncVideo']==False and gVal.STR_SearchMode['ExcVideo']==False :
+				###無条件→含める
+				gVal.STR_SearchMode['IncVideo'] = True
+				gVal.STR_SearchMode['ExcVideo'] = False
+				wMsg = "含める"
+			else:
+				###両方Trueは矛盾
+				wRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
+				gVal.OBJ_L.Log( "A", wRes )
+				return wRes	#正常扱い
+			wMsg = "動画を含める=" + wMsg
+		
+		#############################
+		# [\l] 検索にリンクを含める：含める→除外する→[無条件]
+		elif inWord=="\\l" :
+			if gVal.STR_SearchMode['IncLink']==True and gVal.STR_SearchMode['ExcLink']==False :
+				###含める→除外する
+				gVal.STR_SearchMode['IncLink'] = False
+				gVal.STR_SearchMode['ExcLink'] = True
+				wMsg = "除外する"
+			elif gVal.STR_SearchMode['IncLink']==False and gVal.STR_SearchMode['ExcLink']==True :
+				###除外する→無条件
+				gVal.STR_SearchMode['IncLink'] = False
+				gVal.STR_SearchMode['ExcLink'] = False
+				wMsg = "無条件"
+			elif gVal.STR_SearchMode['IncLink']==False and gVal.STR_SearchMode['ExcLink']==False :
+				###無条件→含める
+				gVal.STR_SearchMode['IncLink'] = True
+				gVal.STR_SearchMode['ExcLink'] = False
+				wMsg = "含める"
+			else:
+				###両方Trueは矛盾
+				wRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
+				gVal.OBJ_L.Log( "A", wRes )
+				return wRes	#正常扱い
+			wMsg = "リンクを含める=" + wMsg
+		
+		#############################
+		# [\o] 公式マークのみ：いいえ→はい
+		elif inWord=="\\o" :
+			if gVal.STR_SearchMode['OFonly']==True :
+				###はい→いいえ
+				gVal.STR_SearchMode['OFonly'] = False
+				wMsg = "いいえ"
+			else:
+				###いいえ→はい
+				gVal.STR_SearchMode['OFonly'] = True
+				wMsg = "はい"
+			wMsg = "公式マークのみ=" + wMsg
+		
+		#############################
+		# [\rt] リツイートを含めない：いいえ→[はい]
+		elif inWord=="\\rt" :
+			if gVal.STR_SearchMode['ExcRT']==True :
+				###はい→いいえ
+				gVal.STR_SearchMode['ExcRT'] = False
+				wMsg = "いいえ"
+			else:
+				###いいえ→はい
+				gVal.STR_SearchMode['ExcRT'] = True
+				wMsg = "はい"
+			wMsg = "リツイートを含めない=" + wMsg
+		
+		#############################
+		# [\sn] センシティブを除外する：いいえ→[はい]
+		elif inWord=="\\sn" :
+			if gVal.STR_SearchMode['ExcSensi']==True :
+				###はい→いいえ
+				gVal.STR_SearchMode['ExcSensi'] = False
+				wMsg = "いいえ"
+			else:
+				###いいえ→はい
+				gVal.STR_SearchMode['ExcSensi'] = True
+				wMsg = "はい"
+			wMsg = "センシティブを除外する=" + wMsg
+		
+		else:
+			###ないコマンド
+			CLS_OSIF.sPrn( "そのコマンドはありません: " + inWord + '\n' )
+			return wRes	#コマンドの処理をした扱い
+		
+		#############################
+		if wMsg==None :
+			###やらかしてる
+			wRes['Reason'] = "メッセージ抜け: wMsg=None"
+			gVal.OBJ_L.Log( "A", wRes )
+			return wRes	#正常扱い
+		
+		#############################
+		# 結果表示
+		CLS_OSIF.sPrn( "検索モードを変更しました: " + wMsg + '\n' )
+		return wRes	#コマンドの処理をした
+
+
+
+#####################################################
+# 検索コマンド追加
+#####################################################
+	def IncSearchMode( self, inCommand ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "IncSearchMode"
+		
+		wCommand = inCommand + ""
+		#############################
+		# [\j] 日本語のみ
+		if gVal.STR_SearchMode['JPonly']==True :
+			###はい
+			wCommand = wCommand + " lang:ja"
+		
+		#############################
+		# [\i] 検索に画像を含める
+		if gVal.STR_SearchMode['IncImage']==True and gVal.STR_SearchMode['ExcImage']==False :
+			###含める
+			wCommand = wCommand + " filter:images"
+		elif gVal.STR_SearchMode['IncImage']==False and gVal.STR_SearchMode['ExcImage']==True :
+			###除外する
+			wCommand = wCommand + " -filter:images"
+		elif gVal.STR_SearchMode['IncImage']==True and gVal.STR_SearchMode['ExcImage']==True :
+			###両方Trueは矛盾
+			wRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
+			return wRes
+		
+		#############################
+		# [\v] 検索に動画を含める
+		if gVal.STR_SearchMode['IncVideo']==True and gVal.STR_SearchMode['ExcVideo']==False :
+			###含める
+			wCommand = wCommand + " filter:videos"
+		elif gVal.STR_SearchMode['IncVideo']==False and gVal.STR_SearchMode['ExcVideo']==True :
+			###除外する
+			wCommand = wCommand + " -filter:videos"
+		elif gVal.STR_SearchMode['IncVideo']==True and gVal.STR_SearchMode['ExcVideo']==True :
+			###両方Trueは矛盾
+			wRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
+			return wRes
+		
+		#############################
+		# [\l] 検索にリンクを含める
+		if gVal.STR_SearchMode['IncLink']==True and gVal.STR_SearchMode['ExcLink']==False :
+			###含める
+			wCommand = wCommand + " filter:links"
+		elif gVal.STR_SearchMode['IncLink']==False and gVal.STR_SearchMode['ExcLink']==True :
+			###除外する
+			wCommand = wCommand + " -filter:links"
+		elif gVal.STR_SearchMode['IncLink']==True and gVal.STR_SearchMode['ExcLink']==True :
+			###両方Trueは矛盾
+			wRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
+			return wRes
+		
+		#############################
+		# [\o] 公式マークのみ
+		if gVal.STR_SearchMode['OFonly']==True :
+			###はい
+			wCommand = wCommand + " filter:verified"
+		
+		#############################
+		# 正常
+		wRes['Responce'] = wCommand
+		wRes['Result']   = True
+		return wRes
 
 
 
@@ -352,40 +618,54 @@ class CLS_TwitterKeyword():
 		wRes['Class'] = "CLS_TwitterKeyword"
 		wRes['Func']  = "__run_TweetSearch"
 		
+###		#############################
+###		# コマンド入力の場合
+###		if inWord.find("\\")==0 :
+###			if inWord=="\\jp" :
+###				if gVal.STR_SearchMode['JPonly']==True :
+###					gVal.STR_SearchMode['JPonly'] = False
+###				else:
+###					gVal.STR_SearchMode['JPonly'] = True
+###				CLS_OSIF.sPrn( "検索モードを変更しました: 日本語のみ=" + str(gVal.STR_SearchMode['JPonly']) )
+###			
+###			elif inWord=="\\rt" :
+###				if gVal.STR_SearchMode['IncRT']==True :
+###					gVal.STR_SearchMode['IncRT'] = False
+###				else:
+###					gVal.STR_SearchMode['IncRT'] = True
+###				CLS_OSIF.sPrn( "検索モードを変更しました: リツイートを含める=" + str(gVal.STR_SearchMode['IncRT']) )
+###			
+###			else:
+###				###ないコマンド
+###				CLS_OSIF.sPrn( "そのコマンドはありません: " + inWord )
 		#############################
-		# コマンド入力の場合
-		if inWord.find("\\")==0 :
-			if inWord=="\\jp" :
-				if gVal.STR_SearchMode['JPonly']==True :
-					gVal.STR_SearchMode['JPonly'] = False
-				else:
-					gVal.STR_SearchMode['JPonly'] = True
-				CLS_OSIF.sPrn( "検索モードを変更しました: 日本語のみ=" + str(gVal.STR_SearchMode['JPonly']) )
-			
-			elif inWord=="\\rt" :
-				if gVal.STR_SearchMode['IncRT']==True :
-					gVal.STR_SearchMode['IncRT'] = False
-				else:
-					gVal.STR_SearchMode['IncRT'] = True
-				CLS_OSIF.sPrn( "検索モードを変更しました: リツイートを含める=" + str(gVal.STR_SearchMode['IncRT']) )
-			
-			else:
-				###ないコマンド
-				CLS_OSIF.sPrn( "そのコマンドはありません: " + inWord )
-			
+		# コマンド入力か
+		wResCmd = self.ChangeSearchMode( inWord )
+		if wResCmd['Result']==True :
+			### 先頭が\\ =コマンド処理をした
 			wRes['Result'] = True
 			return wRes
 		
 		###※以下コマンド以外の場合
 		
 		#############################
+		# コマンド付加
+		wResCmd = self.IncSearchMode( inWord )
+		if wResCmd['Result']!=True :
+			###やらかし
+			wRes['Reason'] = "IncSearchModeのやらかし: reason=" + wResCmd['Reason']
+			gVal.OBJ_L.Log( "A", wRes )
+			return wRes
+		wCommand = wResCmd['Responce']
+		
+		#############################
 		# 取得開始の表示
 		CLS_OSIF.sPrn( "タイムラインサーチ中。しばらくお待ちください......" )
-		CLS_OSIF.sPrn( "取得中... 検索語=" + inWord )
+		CLS_OSIF.sPrn( "取得中... 検索語=" + wCommand )
 		
 		#############################
 		# Twitterで検索 取得
-		wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=inWord, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
+		wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=wCommand, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
 		if wTwitterRes['Result']!=True :
 			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
@@ -398,41 +678,79 @@ class CLS_TwitterKeyword():
 		#############################
 		# 結果の表示
 		for wLine in wTwitterRes['Responce'] :
-			###検索は日本語のみの場合、
-			###  日本語以外はスキップする
-			if gVal.STR_SearchMode['JPonly']==True :
-				if str(wLine['lang'])!="ja" :
-					continue
+##			###検索は日本語のみの場合、
+##			###  日本語以外はスキップする
+##			if gVal.STR_SearchMode['JPonly']==True :
+##				if str(wLine['lang'])!="ja" :
+##					continue
 			###検索にリツイートを含めない場合、
 			###  リツイートはスキップする
-			if gVal.STR_SearchMode['IncRT']==False :
+			if gVal.STR_SearchMode['ExcRT']==True :
 				if "retweeted_status" in wLine :
 					continue
+			###検索からセンシティブを除外する場合、
+			###  センシティブツイートはスキップする
+			if gVal.STR_SearchMode['ExcSensi']==True :
+				if "possibly_sensitive" in wLine :
+					if wLine['possibly_sensitive']==True :
+						continue
+			###ユーザ名に除外文字が含まれている
+			if self.OBJ_Parent.CheckExcUserName( wLine['user']['name'] )==False :
+				continue
+			
+			###日時の変換
+			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+			if wTime['Result']!=True :
+				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+				gVal.OBJ_L.Log( "B", wRes )
+				continue
+			wLine['created_at'] = wTime['TimeDate']
 			
 			wStrLine = self.__getStr_TweetSearch( wLine )
 			CLS_OSIF.sPrn( wStrLine )
-			wARR_UserID.append( str(wLine['user']['id']) )
-			self.__set_KeyUser( wLine['user'], inWord )
+###			wARR_UserID.append( str(wLine['user']['id']) )
+			if str(wLine['user']['id']) not in wARR_UserID :
+				wARR_UserID.append( str(wLine['user']['id']) )
+			self.__set_KeyUser( wLine['user'], wCommand )
 			wVAL_Count += 1
 			
 			###リツイート元
 			if "retweeted_status" in wLine :
-				###検索は日本語のみの場合、
-				###  日本語以外はスキップする
-				if gVal.STR_SearchMode['JPonly']==True :
-					if str(wLine['retweeted_status']['lang'])!="ja" :
-						continue
+##				###検索は日本語のみの場合、
+##				###  日本語以外はスキップする
+##				if gVal.STR_SearchMode['JPonly']==True :
+##					if str(wLine['retweeted_status']['lang'])!="ja" :
+##						continue
+				###検索からセンシティブを除外する場合、
+				###  センシティブツイートはスキップする
+				if gVal.STR_SearchMode['ExcSensi']==True :
+					if "possibly_sensitive" in wLine['retweeted_status'] :
+						if wLine['retweeted_status']['possibly_sensitive']==True :
+							continue
+				###ユーザ名に除外文字が含まれている
+				if self.OBJ_Parent.CheckExcUserName( wLine['retweeted_status']['user']['name'] )==False :
+					continue
+				
+				###日時の変換
+				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['retweeted_status']['created_at'] )
+				if wTime['Result']!=True :
+					wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wLine['retweeted_status']['created_at'])
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				wLine['retweeted_status']['created_at'] = wTime['TimeDate']
 				
 				wStrLine = self.__getStr_TweetSearch( wLine['retweeted_status'] )
 				CLS_OSIF.sPrn( wStrLine )
-				wARR_UserID.append( str(wLine['retweeted_status']['user']['id']) )
-				self.__set_KeyUser( wLine['retweeted_status']['user'], inWord )
+###				wARR_UserID.append( str(wLine['retweeted_status']['user']['id']) )
+				if str(wLine['retweeted_status']['user']['id']) not in wARR_UserID :
+					wARR_UserID.append( str(wLine['retweeted_status']['user']['id']) )
+				self.__set_KeyUser( wLine['retweeted_status']['user'], wCommand )
 				wVAL_Count += 1
 		
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-		wStr = wStr + "検索ワード     = " + inWord + '\n'
+		wStr = wStr + "検索ワード     = " + wCommand + '\n'
 		wStr = wStr + "結果ツイート数 = " + str( wVAL_AllCount ) + '\n'
 		wStr = wStr + "ツイート合計数 = " + str( wVAL_Count ) + '\n'
 		wStr = wStr + '\n'
@@ -468,7 +786,8 @@ class CLS_TwitterKeyword():
 	#####################################################
 	def __getStr_TweetSearch( self, inLine ):
 		wStr = inLine['text'] + '\n'
-		wStr = wStr + "  ユーザ=" + inLine['user']['screen_name'] + "(@" + inLine['user']['name'] + ")" + '\n'
+		wStr = wStr + "ツイ日=" + str(inLine['created_at'])
+		wStr = wStr + "  ユーザ=" + inLine['user']['name'] + "(@" + inLine['user']['screen_name'] + ")" + '\n'
 		wStr = wStr + "--------------------" + '\n'
 		return wStr
 
