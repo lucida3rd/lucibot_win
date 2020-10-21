@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/22
 #####################################################
 # Private Function:
 #   (none)
@@ -93,10 +93,6 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-###		wARR_MyFollowID = []
-###		for wROW in wMyFollowRes['Responce'] :
-###			wARR_MyFollowID.append( str(wROW['id']) )
-###		self.OBJ_Parent.STR_Cope['MyFollowNum'] = len(wARR_MyFollowID)
 		self.OBJ_Parent.ARR_MyFollowID = []
 		for wROW in wMyFollowRes['Responce'] :
 			self.OBJ_Parent.ARR_MyFollowID.append( str(wROW['id']) )
@@ -109,10 +105,6 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Twitter API Error(GetFollowerList): " + wFollowerRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-###		wARR_FollowerID = []
-###		for wROW in wFollowerRes['Responce'] :
-###			wARR_FollowerID.append( str(wROW['id']) )
-###		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(wARR_FollowerID)
 		
 		#############################
 		# normal、un_refollowl登録者 取得(idだけ)
@@ -127,9 +119,6 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Twitter API Error(GetListMember:NorList): " + wListsRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-###		wARR_NormalListMenberID = []
-###		for wROW in wListsRes['Responce'] :
-###			wARR_NormalListMenberID.append( str(wROW['id']) )
 		self.OBJ_Parent.ARR_NormalListMenberID = []
 		for wROW in wListsRes['Responce'] :
 			self.OBJ_Parent.ARR_NormalListMenberID.append( str(wROW['id']) )
@@ -183,7 +172,6 @@ class CLS_TwitterFollower():
 				###記録上フォローしたことある かつ 未フォローなら記録
 				if wARR_RateFollowers[wIndex]['r_myfollow']==True and \
 				   wFLG_MyFollow==False :
-###					continue
 					wQuery = "update tbl_follower_data set " + \
 								"r_myfollow = True, " + \
 								"rc_follower = True, " + \
@@ -247,6 +235,79 @@ class CLS_TwitterFollower():
 		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(self.OBJ_Parent.ARR_FollowerID)
 		
 		#############################
+		# 片フォローをDBに記録する
+		#   ・一度もフォローされたことがない(DBに記録がない)
+		#   ・フォロー者
+		#   ・normalリスト
+		
+		###フォロー一覧
+		for wMyFollowID in self.OBJ_Parent.ARR_MyFollowID :
+			### normalリスト以外ならば対象外
+			if wMyFollowID not in self.OBJ_Parent.ARR_NormalListMenberID :
+				continue
+			### フォロワー(=相互フォロー)ならば対象外
+			if wMyFollowID in self.OBJ_Parent.ARR_FollowerID :
+				continue
+			### DBに記録されていれば対象外
+			wFLG_Ditect = False
+			wKeylist = wARR_RateFollowers.keys()
+			for wIndex in wKeylist :
+				if str(wARR_RateFollowers[wIndex]['id'])==wMyFollowID :
+					wFLG_Ditect = True
+					break
+			if wFLG_Ditect==True :
+				continue
+			
+			# ※片フォロー確定
+			
+			#############################
+			# Twitterフォロー情報から情報を抜き出す
+			wFLG_Ditect = False
+			wMyFollow_Key = 0
+			for wROW in wMyFollowRes['Responce'] :
+				if str(wROW['id'])==wMyFollowID :
+					wFLG_Ditect = True
+					break
+				wMyFollow_Key += 1
+			if wFLG_Ditect!=True :
+				##フォロー一覧に id が見当たらない=失敗(ありえない)
+				wRes['Reason'] = "Key ditect is not found: Follow ID=" + wMyFollowID
+				gVal.OBJ_L.Log( "B", wRes )
+				continue
+			
+			### 情報を抜く
+			wName = str(wMyFollowRes['Responce'][wMyFollow_Key]['name']).replace( "'", "''" )
+			wScreenName = str(wMyFollowRes['Responce'][wMyFollow_Key]['screen_name'])
+			wStatusCount = str(wMyFollowRes['Responce'][wMyFollow_Key]['statuses_count'])
+			
+			### 記録する
+			wQuery = "insert into tbl_follower_data values (" + \
+						"'" + gVal.STR_UserInfo['Account'] + "'," + \
+						"'" + str(wTD['TimeDate']) + "'," + \
+						str(wFLG_MyFollow) + "," + \
+						"True," + \
+						"False," + \
+						"'" + str(wTD['TimeDate']) + "'," + \
+						"False," + \
+						"False," + \
+						"'" + str(wROW['id']) + "'," + \
+						"'" + wName + "'," + \
+						"'" + wScreenName + "'," + \
+						wStatusCount + "," + \
+						"'" + str(wTD['TimeDate']) + "'" + \
+						") ;"
+			
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			
+			self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
+		
+		#############################
 		# DBのフォロワー一覧 再取得
 		wQuery = "select * from tbl_follower_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
@@ -256,7 +317,7 @@ class CLS_TwitterFollower():
 		wResDB = gVal.OBJ_DB.GetQueryStat()
 		if wResDB['Result']!=True :
 			##失敗
-			wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			wRes['Reason'] = "Run Query is failed(5): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
@@ -273,10 +334,6 @@ class CLS_TwitterFollower():
 		#   ・normalリスト
 		#   ・フォローしてから一定期間過ぎた
 		# 自動リムーブ対象で、既にアンフォロワーならリムーブ済みにする
-		
-##		wFLG_UnRemove = False	#自動リムーブ対象外か
-##		wFLG_UnFollow = False	#フォロー状態
-##		wFLG_Follower = False	#フォロワー状態
 		
 		self.OBJ_Parent.ARR_OldUserID = []	#一度でもフォロー・リムーブしたことあるユーザID
 		
@@ -318,6 +375,10 @@ class CLS_TwitterFollower():
 			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_MyFollowID :
 				wFLG_UnRemove = True
 				wFLG_UnFollow = True	#未フォロー
+			else :
+				### フォロー かつ 非フォロワー = 片フォロー
+				if wFLG_Follower==False :
+					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
 			
 			###  一度リムーブしたことあるなら 自動リムーブ対象外
 			if wARR_RateFollowers[wIndex]['r_remove']==True :
@@ -384,7 +445,7 @@ class CLS_TwitterFollower():
 			wResDB = gVal.OBJ_DB.GetQueryStat()
 			if wResDB['Result']!=True :
 				##失敗
-				wRes['Reason'] = "Run Query is failed(5): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				wRes['Reason'] = "Run Query is failed(6): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
 			
@@ -431,6 +492,7 @@ class CLS_TwitterFollower():
 		# 集計のリセット
 		self.OBJ_Parent.STR_Cope['MyFollowNum'] = 0
 		self.OBJ_Parent.STR_Cope['FollowerNum'] = 0
+		self.OBJ_Parent.STR_Cope['PieceFollowNum'] = 0
 		self.OBJ_Parent.STR_Cope['NewFollowerNum']  = 0
 		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
 		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
@@ -479,12 +541,15 @@ class CLS_TwitterFollower():
 			wStr = wStr + "登録日=" + str(wARR_RateFollowers[wIndex]['regdate'])
 			if wARR_RateFollowers[wIndex]['removed']==True :
 				wStr = wStr + " [●非フォロー]"
-##				self.OBJ_Parent.STR_Cope['MyFollowRemove'] += 1
 			else:
 				wStr = wStr + " [〇フォロー]  "
 			
 			if wARR_RateFollowers[wIndex]['rc_follower']==False :
 				wStr = wStr + " [●非フォロワー]"
+				if wARR_RateFollowers[wIndex]['removed']==False :
+					# フォロー かつ 非フォロワー = 片フォロー
+					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
+			
 			else:
 				wStr = wStr + " [〇フォロワー]  "
 				self.OBJ_Parent.STR_Cope['FollowerNum'] += 1
@@ -492,8 +557,8 @@ class CLS_TwitterFollower():
 					self.OBJ_Parent.STR_Cope['MyFollowNum'] += 1
 			
 			if wARR_RateFollowers[wIndex]['limited']==True :
-				wStr = wStr + " [★いいね解除対象]"
-				self.OBJ_Parent.STR_Cope['tFavoRemove'] += 1
+				wStr = wStr + " [★自動リムーブ対象]"
+				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
 			
 			wStr = wStr + '\n'
 			
@@ -508,6 +573,7 @@ class CLS_TwitterFollower():
 		wStr = wStr + '\n'
 		wStr = wStr + "現フォロワー数   = " + str(self.OBJ_Parent.STR_Cope['FollowerNum']) + '\n'
 		wStr = wStr + "相互フォロー数   = " + str(self.OBJ_Parent.STR_Cope['MyFollowNum']) + '\n'
+		wStr = wStr + "片フォロー数     = " + str(self.OBJ_Parent.STR_Cope['PieceFollowNum']) + '\n'
 		wStr = wStr + "自動リムーブ対象 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
 		
 		#############################
@@ -518,15 +584,6 @@ class CLS_TwitterFollower():
 		# 完了
 		wRes['Result'] = True
 		return wRes
-
-
-
-
-
-
-
-
-
 
 
 
@@ -561,8 +618,6 @@ class CLS_TwitterFollower():
 			return ""	#失敗
 		
 		return wFile_path
-
-
 
 
 

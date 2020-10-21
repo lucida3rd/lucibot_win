@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2020/10/13
+# ::Update= 2020/10/22
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -29,10 +29,159 @@ class CLS_MyDisp():
 #####################################################
 
 #####################################################
+# インプリメント処理
+#####################################################
+	@classmethod
+	def sDispInp( cls, inDisp, inLine, inIndex ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_MyDisp"
+		wRes['Func']  = "sDispInp"
+		
+		###メイン画面
+		if inDisp=="MainConsole" :
+			cls.__dispInp_Main( inLine, wRes )
+		###検索モード画面
+		elif inDisp=="SearchConsole" :
+			cls.__dispInp_SearchMode( inLine, inIndex, wRes )
+		###キーユーザ変更画面
+		elif inDisp=="KeyuserConsole" :
+			cls.__dispInp_Keyuser( inLine, wRes )
+		
+		return wRes
+
+	#####################################################
+	# メイン画面
+	@classmethod
+	def __dispInp_Main( cls, inLine, outRes ):
+		pRes = outRes
+		#############################
+		# インプリメント処理
+		
+		###インプリ：ユーザアカウント
+		if "[@USER-ACCOUNT@]"==inLine :
+			pRes['Responce'] = "Twitter ID : " + gVal.STR_UserInfo['Account']
+		
+		#############################
+		# 正常
+		pRes['Result'] = True
+		return
+
+	#####################################################
+	# 検索モード画面
+	@classmethod
+	def __dispInp_SearchMode( cls, inLine, inIndex, outRes ):
+		pRes = outRes
+		#############################
+		# Indexが範囲内かチェック
+		wLen = len(gVal.STR_SearchMode)
+		if inIndex<=-1 and wLen<=inIndex :
+			pRes['Reason'] = "Index is out of range value=" + str(inIndex)
+			return
+		
+		#############################
+		# インプリメント処理
+		
+		###インプリ：検索 画像を含める
+		if "[@SEARCH-IMAGE@]"==inLine :
+			wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode[inIndex]['IncImage'], gVal.STR_SearchMode[inIndex]['ExcImage'] )
+			if wJPstr==None :
+				pRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
+				return
+			pRes['Responce'] = "    検索に画像を含める    [\\i]: " + wJPstr
+		
+		###インプリ：検索 動画を含める
+		elif "[@SEARCH-VIDEO@]"==inLine :
+			wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode[inIndex]['IncVideo'], gVal.STR_SearchMode[inIndex]['ExcVideo'] )
+			if wJPstr==None :
+				pRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
+				return
+			pRes['Responce'] = "    検索に動画を含める    [\\v]: " + wJPstr
+		
+		###インプリ：検索 リンクを含める
+		elif "[@SEARCH-LINK@]"==inLine :
+			wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode[inIndex]['IncLink'], gVal.STR_SearchMode[inIndex]['ExcLink'] )
+			if wJPstr==None :
+				pRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
+				return
+			pRes['Responce'] = "    検索にリンクを含める  [\\l]: " + wJPstr
+		
+		###インプリ：検索 公式マークのみ
+		elif "[@SEARCH-OFFICIAL@]"==inLine :
+			pRes['Responce'] = "    検索は公式マークのみ  [\\o]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['OFonly'] )
+		
+		###インプリ：検索 日本語のみ
+		elif "[@SEARCH-JPONLY@]"==inLine :
+			pRes['Responce'] = "    検索は日本語のみ     [\\jp]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['JPonly'] )
+		
+		###インプリ：検索 リツイート含む
+		elif "[@SEARCH-RT@]"==inLine :
+			pRes['Responce'] = "    リツイート含めない   [\\rt]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['ExcRT'] )
+		
+		###インプリ：検索 センシティブな内容を含めない
+		elif "[@SEARCH-SENSI@]"==inLine :
+			pRes['Responce'] = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['ExcSensi'] )
+		
+		###インプリ：検索文字
+		elif "[@SEARCH-KEYWORD@]"==inLine :
+			if gVal.STR_SearchMode[inIndex]['Keyword']=="" :
+				pRes['Responce'] = "    検索文字: " + "(未設定)"
+			else:
+				pRes['Responce'] = "    検索文字: " + gVal.STR_SearchMode[inIndex]['Keyword']
+		
+		#############################
+		# 正常
+		pRes['Result'] = True
+		return
+
+	#####################################################
+	# キーユーザ変更画面
+	@classmethod
+	def __dispInp_Keyuser( cls, inLine, outRes ):
+		pRes = outRes
+		#############################
+		# インプリメント処理
+		
+		###インプリ：キーユーザ一覧
+		if "[@KEYUSER-LIST@]"==inLine :
+			wRange = len( gVal.STR_SearchMode )
+			wList = ""
+			wNum  = 0
+			for wIndex in range( wRange ) :
+				if gVal.STR_SearchMode[wIndex]['id']==0 :
+					###手動用は表示しない
+					continue
+				
+				wList = wList + "    "
+				if gVal.STR_SearchMode[wIndex]['Choice']==True :
+					wList = wList + "■ "
+				else :
+					wList = wList + "□ "
+				
+				wList = wList + str(gVal.STR_SearchMode[wIndex]['id']) + ": "
+				wList = wList + str(gVal.STR_SearchMode[wIndex]['Keyword']) + '\n'
+				wNum += 1
+			
+			if wNum>0 :
+				pRes['Responce'] = wList
+			else:
+				pRes['Responce'] = "    (キーユーザ設定がありません)" + '\n'
+		
+		#############################
+		# 正常
+		pRes['Result'] = True
+		return
+
+
+
+#####################################################
 # ディスプレイファイル 読み込み→画面表示
 #####################################################
 	@classmethod
-	def sViewDisp( cls, inDisp ):
+###	def sViewDisp( cls, inDisp ):
+	def sViewDisp( cls, inDisp, inIndex=-1 ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -75,49 +224,59 @@ class CLS_MyDisp():
 			if wLine.find("#")==0 :
 				continue
 			
-			###インプリ：ユーザアカウント
-			if "[@USER-ACCOUNT@]"==wLine :
-				wLine = "Twitter ID : " + gVal.STR_UserInfo['Account']
-			
-			###インプリ：検索 画像を含める
-			if "[@SEARCH-IMAGE@]"==wLine :
-				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncImage'], gVal.STR_SearchMode['ExcImage'] )
-				if wJPstr==None :
-					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
-					return wRes
-				wLine = "    検索に画像を含める    [\\i]: " + wJPstr
-			
-			###インプリ：検索 動画を含める
-			if "[@SEARCH-VIDEO@]"==wLine :
-				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncVideo'], gVal.STR_SearchMode['ExcVideo'] )
-				if wJPstr==None :
-					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
-					return wRes
-				wLine = "    検索に動画を含める    [\\v]: " + wJPstr
-			
-			###インプリ：検索 リンクを含める
-			if "[@SEARCH-LINK@]"==wLine :
-				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncLink'], gVal.STR_SearchMode['ExcLink'] )
-				if wJPstr==None :
-					wRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
-					return wRes
-				wLine = "    検索にリンクを含める  [\\l]: " + wJPstr
-			
-			###インプリ：検索 公式マークのみ
-			if "[@SEARCH-OFFICIAL@]"==wLine :
-				wLine = "    検索は公式マークのみ  [\\o]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['OFonly'] )
-			
-			###インプリ：検索 日本語のみ
-			if "[@SEARCH-JPONLY@]"==wLine :
-				wLine = "    検索は日本語のみ     [\\jp]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['JPonly'] )
-			
-			###インプリ：検索 リツイート含む
-			if "[@SEARCH-RT@]"==wLine :
-				wLine = "    リツイート含めない   [\\rt]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcRT'] )
-			
-			###インプリ：検索 センシティブな内容を含めない
-			if "[@SEARCH-SENSI@]"==wLine :
-				wLine = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcSensi'] )
+###			###インプリ：ユーザアカウント
+###			if "[@USER-ACCOUNT@]"==wLine :
+###				wLine = "Twitter ID : " + gVal.STR_UserInfo['Account']
+###			
+###			###インプリ：検索 画像を含める
+###			if "[@SEARCH-IMAGE@]"==wLine :
+###				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncImage'], gVal.STR_SearchMode['ExcImage'] )
+###				if wJPstr==None :
+###					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
+###					return wRes
+###				wLine = "    検索に画像を含める    [\\i]: " + wJPstr
+###			
+###			###インプリ：検索 動画を含める
+###			if "[@SEARCH-VIDEO@]"==wLine :
+###				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncVideo'], gVal.STR_SearchMode['ExcVideo'] )
+###				if wJPstr==None :
+###					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
+###					return wRes
+###				wLine = "    検索に動画を含める    [\\v]: " + wJPstr
+###			
+###			###インプリ：検索 リンクを含める
+###			if "[@SEARCH-LINK@]"==wLine :
+###				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncLink'], gVal.STR_SearchMode['ExcLink'] )
+###				if wJPstr==None :
+###					wRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
+###					return wRes
+###				wLine = "    検索にリンクを含める  [\\l]: " + wJPstr
+###			
+###			###インプリ：検索 公式マークのみ
+###			if "[@SEARCH-OFFICIAL@]"==wLine :
+###				wLine = "    検索は公式マークのみ  [\\o]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['OFonly'] )
+###			
+###			###インプリ：検索 日本語のみ
+###			if "[@SEARCH-JPONLY@]"==wLine :
+###				wLine = "    検索は日本語のみ     [\\jp]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['JPonly'] )
+###			
+###			###インプリ：検索 リツイート含む
+###			if "[@SEARCH-RT@]"==wLine :
+###				wLine = "    リツイート含めない   [\\rt]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcRT'] )
+###			
+###			###インプリ：検索 センシティブな内容を含めない
+###			if "[@SEARCH-SENSI@]"==wLine :
+###				wLine = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcSensi'] )
+###			
+###
+			###インプリメント
+			wResInp = cls.sDispInp( inDisp, wLine, inIndex )
+			if wResInp['Result']!=True :
+				wRes['Reason'] = "sDispInp is failed: reasin=" + wResInp['Reason']
+				return wRes
+			if wResInp['Responce']!=None :
+				###インプリメントされていれば差し替える
+				wLine = wResInp['Responce']
 			
 			#############################
 			# print表示

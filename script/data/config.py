@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/22
 #####################################################
 # Private Function:
 #   (none)
@@ -293,6 +293,214 @@ class CLS_Config() :
 		#############################
 		# 完了
 		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 検索モード 読み込み
+#####################################################
+	def GetSearchMode(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetSearchMode"
+		
+		#############################
+		# DBの検索モード取得
+###		wQuery = "select * from tbl_keyword_data where " + \
+###					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+###					" and choice = True ;"
+		wQuery = "select * from tbl_keyword_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 辞書型に整形
+		wARR_RateSearchMode = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateSearchMode )
+		
+		#############################
+		# ローカル初期化
+		gVal.STR_SearchMode = {}
+		
+		#############################
+		# ローカルに読み込み
+		# ※レコードがない場合はこっち =初期状態
+		if len(wARR_RateSearchMode)==0 :
+			gVal.sStruct_SearchMode()
+			gVal.STR_SearchMode[0]['id'] = 0
+			gVal.STR_SearchMode[0]['Update'] = True
+			
+			###完了
+			wRes['Result'] = True
+			return wRes
+		
+		#############################
+		# ローカルに読み込み
+		wIndex = 0
+		wKeylist = wARR_RateSearchMode.keys()
+		for wIndex in wKeylist :
+			###行を挿入
+			gVal.sStruct_SearchMode()
+			
+			gVal.STR_SearchMode[wIndex]['id'] = wARR_RateSearchMode[wIndex]['id']
+			gVal.STR_SearchMode[wIndex]['Choice']  = wARR_RateSearchMode[wIndex]['choice']
+			gVal.STR_SearchMode[wIndex]['Keyword'] = wARR_RateSearchMode[wIndex]['keyword']
+			
+			gVal.STR_SearchMode[wIndex]['IncImage'] = wARR_RateSearchMode[wIndex]['incimage']
+			gVal.STR_SearchMode[wIndex]['ExcImage'] = wARR_RateSearchMode[wIndex]['excimage']
+			gVal.STR_SearchMode[wIndex]['IncVideo'] = wARR_RateSearchMode[wIndex]['incvideo']
+			gVal.STR_SearchMode[wIndex]['ExcVideo'] = wARR_RateSearchMode[wIndex]['excvideo']
+			gVal.STR_SearchMode[wIndex]['IncLink']  = wARR_RateSearchMode[wIndex]['inclink']
+			gVal.STR_SearchMode[wIndex]['ExcLink']  = wARR_RateSearchMode[wIndex]['exclink']
+			
+			gVal.STR_SearchMode[wIndex]['OFonly'] = wARR_RateSearchMode[wIndex]['ofonly']
+			gVal.STR_SearchMode[wIndex]['JPonly'] = wARR_RateSearchMode[wIndex]['jponly']
+			gVal.STR_SearchMode[wIndex]['ExcRT']    = wARR_RateSearchMode[wIndex]['excrt']
+			gVal.STR_SearchMode[wIndex]['ExcSensi'] = wARR_RateSearchMode[wIndex]['excsensi']
+			wIndex += 1
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 検索モード 設定
+#####################################################
+	def SetSearchMode_All(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetSearchMode_All"
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			return wRes
+		### wTD['TimeDate']
+		
+		#############################
+		# 設定
+		wRange = len(gVal.STR_SearchMode)
+		for wIndex in range( wRange ) :
+			wResSub = self.SetSearchMode( wIndex, wTD['TimeDate'] )
+			if wResSub['Result']!=True :
+				###失敗
+				wRes['Reason'] = CLS_OSIF.sCatErr( wResSub )
+				return wRes
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+	#####################################################
+	def SetSearchMode( self, inIndex, inTimeDate ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetSearchMode"
+		
+		wRes['Responce'] = False
+		#############################
+		# 更新フラグ=なし
+		if gVal.STR_SearchMode[inIndex]['Update']==False :
+			###完了扱いにする
+			wRes['Result'] = True
+			return wRes
+		
+		#############################
+		# DBの検索モード取得
+		wQuery = "select id from tbl_keyword_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+					" and id = " + str(inIndex) + " " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# DBになければinsertする
+		if len(wResDB['Responce']['Data'])==0 :
+			wQuery = "insert into tbl_keyword_data values (" + \
+						"'" + gVal.STR_UserInfo['Account'] + "'," + \
+						"'" + str(inTimeDate) + "'," + \
+						str( gVal.STR_SearchMode[inIndex]['Choice'] ) + "," + \
+						str( inIndex ) + "," + \
+						"'" + str( gVal.STR_SearchMode[inIndex]['Keyword'] ) + "'," + \
+						str( gVal.STR_SearchMode[inIndex]['IncImage'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['ExcImage'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['IncVideo'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['ExcVideo'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['IncLink'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['ExcLink'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['OFonly'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['JPonly'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['ExcRT'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + \
+						") ;"
+		
+		#############################
+		# DBにあれば更新する
+		else:
+			wQuery = "update tbl_keyword_data set " + \
+					"regdate = '" + str(inTimeDate) + "', " + \
+					"choice = " + str( gVal.STR_SearchMode[inIndex]['Choice'] ) + ", " + \
+					"keyword = '" + str( gVal.STR_SearchMode[inIndex]['Keyword'] ) + "', " + \
+					"incimage = " + str( gVal.STR_SearchMode[inIndex]['IncImage'] ) + ", " + \
+					"excimage = " + str( gVal.STR_SearchMode[inIndex]['ExcImage'] ) + ", " + \
+					"incvideo = " + str( gVal.STR_SearchMode[inIndex]['IncVideo'] ) + ", " + \
+					"excvideo = " + str( gVal.STR_SearchMode[inIndex]['ExcVideo'] ) + ", " + \
+					"inclink = " + str( gVal.STR_SearchMode[inIndex]['IncLink'] ) + ", " + \
+					"exclink = " + str( gVal.STR_SearchMode[inIndex]['ExcLink'] ) + ", " + \
+					"ofonly = " + str( gVal.STR_SearchMode[inIndex]['OFonly'] ) + ", " + \
+					"jponly = " + str( gVal.STR_SearchMode[inIndex]['JPonly'] ) + ", " + \
+					"excrt = " + str( gVal.STR_SearchMode[inIndex]['ExcRT'] ) + ", " + \
+					"excsensi = " + str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + " " + \
+					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
+					" and id = " + str(inIndex) + " ;"
+		
+		#############################
+		# Query実行
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 更新フラグ落とす
+		gVal.STR_SearchMode[inIndex]['Update'] = False
+		
+		#############################
+		# 完了
+		wRes['Responce'] = True
+		wRes['Result']   = True
 		return wRes
 
 

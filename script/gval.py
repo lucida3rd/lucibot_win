@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/22
 #####################################################
 
 #####################################################
@@ -58,19 +58,26 @@ class gVal() :
 
 #############################
 # 検索モード
-	STR_SearchMode = {
-		"IncImage"	: False,		#検索に画像を含める
-		"ExcImage"	: False,		#検索は画像を除外
-		"IncVideo"	: False,		#検索に動画を含める
-		"ExcVideo"	: False,		#検索は動画を除外
-		"IncLink"	: False,		#検索にリンクを含める
-		"ExcLink"	: False,		#検索はリンクを除外
-		"OFonly"	: False,		#検索は公式マークのみ
-		"JPonly"	: True,			#検索は日本語のみ
-		
-		"ExcRT"		: False,		#検索にリツイートを含めない
-		"ExcSensi"	: True			#検索にセンシティブな内容を含めない
-	}
+###	STR_SearchMode = {
+###		"IncImage"	: False,		#検索に画像を含める
+###		"ExcImage"	: False,		#検索は画像を除外
+###		"IncVideo"	: False,		#検索に動画を含める
+###		"ExcVideo"	: False,		#検索は動画を除外
+###		"IncLink"	: False,		#検索にリンクを含める
+###		"ExcLink"	: False,		#検索はリンクを除外
+###		"OFonly"	: False,		#検索は公式マークのみ
+###		"JPonly"	: True,			#検索は日本語のみ
+###		
+###		"ExcRT"		: False,		#検索にリツイートを含めない
+###		"ExcSensi"	: True			#検索にセンシティブな内容を含めない
+###	}
+###	STR_SearchMode_Auto   = {}
+###	STR_SearchMode_Manual = {}
+	STR_SearchMode = {}
+	# [0]..手動用
+	# [1]以降..自動用
+
+
 
 #############################
 # 除外ユーザ名・除外文字
@@ -123,6 +130,7 @@ class gVal() :
 	DEF_STR_DISPFILE = {
 		"MainConsole"			: DEF_DISPPATH + "main_console.disp",
 		"SearchConsole"			: DEF_DISPPATH + "search_console.disp",
+		"KeyuserConsole"		: DEF_DISPPATH + "keyuser_console.disp",
 		
 		"(dummy)"				: 0
 	}
@@ -154,14 +162,63 @@ class gVal() :
 
 
 #####################################################
+# 構造体構築：検索モード
+#####################################################
+	@classmethod
+	def sStruct_SearchMode(cls):
+		#############################
+		# 行の挿入
+		wIndex = len(gVal.STR_SearchMode)
+		gVal.STR_SearchMode.update({ wIndex : {} })
+		
+		gVal.STR_SearchMode[wIndex].update({ "Update"  : False })	#ローカル更新あり
+		
+		gVal.STR_SearchMode[wIndex].update({ "Choice"  : False })	#選択中
+		gVal.STR_SearchMode[wIndex].update({ "id"      : -1 })		#検索キー番号
+		gVal.STR_SearchMode[wIndex].update({ "Keyword" : "" })		#検索文字
+		
+		gVal.STR_SearchMode[wIndex].update({ "IncImage" : False })	#検索に画像を含める
+		gVal.STR_SearchMode[wIndex].update({ "ExcImage" : False })	#検索は画像を除外
+		gVal.STR_SearchMode[wIndex].update({ "IncVideo" : False })	#検索に動画を含める
+		gVal.STR_SearchMode[wIndex].update({ "ExcVideo" : False })	#検索は動画を除外
+		gVal.STR_SearchMode[wIndex].update({ "IncLink"  : False })	#検索にリンクを含める
+		gVal.STR_SearchMode[wIndex].update({ "ExcLink"  : False })	#検索はリンクを除外
+		
+		gVal.STR_SearchMode[wIndex].update({ "OFonly"   : False })	#検索は公式マークのみ
+		gVal.STR_SearchMode[wIndex].update({ "JPonly"   : True })		#検索は日本語のみ
+		
+		gVal.STR_SearchMode[wIndex].update({ "ExcRT"    : False })	#検索にリツイートを含めない
+		gVal.STR_SearchMode[wIndex].update({ "ExcSensi" : True })	#検索にセンシティブな内容を含めない
+		
+		return
+
+
+
+#####################################################
+# Init
+#####################################################
+	@classmethod
+	def sInit(cls):
+		#############################
+		# 検索モード
+		gVal.STR_SearchMode = {}
+		return
+
+
+
+#####################################################
 # Init
 #####################################################
 ##	def __init__(self):
-##		self.STR_SystemInfo = {
-##			"BotName"		: "",
-##			"HostName"		: ""
-##		}
 ##		return
+##
+##
 
-
+#####################################################
+# Delete
+#####################################################
+##	def __del__(self):
+##		return
+##
+##
 

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2020/10/13
+# ::Update= 2020/10/17
 #####################################################
 # Private Function:
 #   (none)
@@ -460,6 +460,11 @@ class CLS_TwitterFavo():
 					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
 					break	#ウェイト中止
 				wFavoLimNum = 0
+			
+			#############################
+			# 残り処理回数がまだあるなら、5秒ウェイトする
+			elif wVAL_ZanNum>0 :
+				CLS_OSIF.sSleep( 5 )
 		
 		#############################
 		# 統計

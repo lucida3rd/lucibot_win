@@ -7,13 +7,14 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/13
+# ::Update= 2020/10/14
 #####################################################
 # Private Function:
 #   (none)
 #
 # Instance Function:
 #   __init__(self):
+#   Init(self):
 #   GetCope(self):
 #   GetNewFollower(self):
 #   Run(self):
@@ -33,6 +34,7 @@ from twitter_keyword import CLS_TwitterKeyword
 
 from osif import CLS_OSIF
 ###from filectrl import CLS_File
+from config import CLS_Config
 from gval import gVal
 #####################################################
 class CLS_TwitterMain():
@@ -48,6 +50,7 @@ class CLS_TwitterMain():
 		
 		"MyFollowNum"		: 0,	#現フォロー数
 		"FollowerNum"		: 0,	#現フォロワー数
+		"PieceFollowNum"	: 0,	#片フォロー数
 		"NewFollowerNum"	: 0,	#新規フォロワー数
 		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
 		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
@@ -63,7 +66,7 @@ class CLS_TwitterMain():
 ###	VAL_WaitCount = 0
 
 	STR_KeyUser     = ""
-	STR_Keywords    = ""
+###	STR_Keywords    = ""
 	
 ###	FLG_Search_JP    = True			#検索は日本語のみ
 ###	FLG_Search_IncRt = False		#検索にリツイートを含める
@@ -111,6 +114,58 @@ class CLS_TwitterMain():
 
 
 #####################################################
+# 初期化
+#####################################################
+	def Init(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterMain"
+		wRes['Func']  = "Init"
+		
+		#############################
+		# 検索モード読み込み
+		wOBJ_Config = CLS_Config()
+		wResSub = wOBJ_Config.GetSearchMode()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "GetSearchMode failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 終了
+#####################################################
+	def End(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterMain"
+		wRes['Func']  = "End"
+		
+		#############################
+		# 検索モード保存
+		wOBJ_Config = CLS_Config()
+		wResSub = wOBJ_Config.SetSearchMode_All()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "SetSearchMode_All failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
 # 監視情報の取得 実行
 #####################################################
 	def Run(self):
@@ -132,6 +187,7 @@ class CLS_TwitterMain():
 		
 		self.STR_Cope['MyFollowNum'] = 0
 		self.STR_Cope['FollowerNum'] = 0
+		self.STR_Cope['PieceFollowNum'] = 0
 		self.STR_Cope['NewFollowerNum']  = 0
 		self.STR_Cope['tMyFollowRemove'] = 0
 		self.STR_Cope['MyFollowRemove']  = 0
@@ -145,24 +201,21 @@ class CLS_TwitterMain():
 		# いいね情報の取得
 		wResSub = self.OBJ_TwitterFavo.Get()
 		if wResSub['Result']!=True :
-			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
-			wRes['Reason'] = "OBJ_TwitterFavo.Get failed: " + wResSub_Reason
+			wRes['Reason'] = "OBJ_TwitterFavo.Get failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
 		# フォロワー情報の取得
 		wResSub = self.OBJ_TwitterFollower.Get()
 		if wResSub['Result']!=True :
-			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
-			wRes['Reason'] = "OBJ_TwitterFollower.Get failed: " + wResSub_Reason
+			wRes['Reason'] = "OBJ_TwitterFollower.Get failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
 		# キーユーザの取得
 		wResSub = self.OBJ_TwitterKeyword.Get()
 		if wResSub['Result']!=True :
-			wResSub_Reason = CLS_OSIF.sCatErr( wResSub )
-			wRes['Reason'] = "OBJ_TwitterKeyword.Get failed: " + wResSub_Reason
+			wRes['Reason'] = "OBJ_TwitterKeyword.Get failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
@@ -186,6 +239,7 @@ class CLS_TwitterMain():
 		wStr = wStr + '\n'
 		wStr = wStr + "現フォロー数        = " + str(self.STR_Cope['MyFollowNum']) + '\n'
 		wStr = wStr + "現フォロワー数      = " + str(self.STR_Cope['FollowerNum']) + '\n'
+		wStr = wStr + "片フォロー数        = " + str(self.STR_Cope['PieceFollowNum']) + '\n'
 		wStr = wStr + "新規フォロワー数    = " + str(self.STR_Cope['NewFollowerNum']) + '\n'
 		wStr = wStr + "自動リムーブ 対象数 = " + str(self.STR_Cope['tMyFollowRemove']) + '\n'
 		wStr = wStr + "自動リムーブ 実行数 = " + str(self.STR_Cope['MyFollowRemove']) + '\n'
@@ -245,6 +299,15 @@ class CLS_TwitterMain():
 #####################################################
 	def ViewFollower(self):
 		wRes = self.OBJ_TwitterFollower.View()
+		return wRes
+
+
+
+#####################################################
+# キーユーザ変更
+#####################################################
+	def SetKeyuser(self):
+		wRes = self.OBJ_TwitterKeyword.SetKeyuser()
 		return wRes
 
 

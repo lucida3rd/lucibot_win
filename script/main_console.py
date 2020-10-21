@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/22
 #####################################################
 # Private Function:
 #   (none)
@@ -91,6 +91,12 @@ class CLS_Main_Console() :
 		# ※通常処理継続
 		gVal.FLG_Console_Mode = True				#コンソールモード
 		cls.OBJ_TwitterMain  = CLS_TwitterMain()	#メインの実体化
+		wResIni = cls.OBJ_TwitterMain.Init()		#初期化
+		if wResIni['Result']!=True :
+			wRes['Reason'] = "Init is failed reason=" + wResIni['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return
+		
 		#############################
 		# コンソールを表示
 		while True :
@@ -98,6 +104,11 @@ class CLS_Main_Console() :
 			
 			if wCommand.find("\\q")>=0 or wCommand=="exit" :
 				###終了
+				wResEnd = cls.OBJ_TwitterMain.End()	#終了処理
+				if wResEnd['Result']!=True :
+					wRes['Reason'] = "End is failed reason=" + wResEnd['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+				
 ###				CLS_OSIF.sPrn( "コンソールを停止します。" + '\n' )
 ###				gVal.OBJ_L.Log( "R", "CLS_Main_Console", "sRun", "コンソール停止" )
 				wRes['Reason'] = "コンソール停止"
@@ -205,6 +216,12 @@ class CLS_Main_Console() :
 
 
 	#####################################################
+		#############################
+		# キーユーザ検索の変更
+		elif inCommand=="\\cs" :
+			cls.OBJ_TwitterMain.SetKeyuser()
+			wFlg = True
+		
 		#############################
 		# Twitterリストの変更
 		elif inCommand=="\\cl" :

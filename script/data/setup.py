@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/22
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -734,14 +734,25 @@ class CLS_Setup():
 					"twitterid   TEXT  NOT NULL," + \
 					"regdate     TIMESTAMP," + \
 					"choice      BOOL  DEFAULT false," + \
-					"keyword     TEXT  NOT NULL" + \
+					"id          INTEGER NOT NULL," + \
+					"keyword     TEXT  NOT NULL," + \
+					"incimage    BOOL  DEFAULT false," + \
+					"excimage    BOOL  DEFAULT false," + \
+					"incvideo    BOOL  DEFAULT false," + \
+					"excvideo    BOOL  DEFAULT false," + \
+					"inclink     BOOL  DEFAULT false," + \
+					"exclink     BOOL  DEFAULT false," + \
+					"ofonly      BOOL  DEFAULT false," + \
+					"jponly      BOOL  DEFAULT true," + \
+					"excrt       BOOL  DEFAULT false," + \
+					"excsensi    BOOL  DEFAULT true" + \
 					" ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
 ##					"regdate     DB登録日時
-##					"select      選択中
+##					"choice      選択中
+##					"id          検索キー番号
 ##					"keyword     検索キーワード
-
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return
