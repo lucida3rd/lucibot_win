@@ -153,7 +153,7 @@ class CLS_TwitterKeyword():
 					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.ARR_UnRefollowListMenberID :
 						continue
 					
-					self.__set_KeyUser( wLine['retweeted_status']['user'], wIndex )
+					self.__set_KeyUser( wLine['retweeted_status']['user'], gVal.STR_SearchMode[wIndex]['Keyword'] )
 ###					self.OBJ_Parent.STR_Keywords[wIndex] += 1
 					gVal.STR_SearchMode[wIndex]['Count'] += 1
 		
@@ -900,7 +900,7 @@ class CLS_TwitterKeyword():
 			wLine = ""
 			wLine = wLine + wUserName + ", "
 			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", "
-			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['hit_word'] + ", "
+			wLine = wLine + str(self.OBJ_Parent.STR_KeyUser[wKey]['hit_word']) + ", "
 			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", " + '\n'
 			wSetLine.append(wLine)
 		
