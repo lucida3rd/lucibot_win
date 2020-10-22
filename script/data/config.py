@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/22
+# ::Update= 2020/10/23
 #####################################################
 # Private Function:
 #   (none)
@@ -452,6 +452,7 @@ class CLS_Config() :
 						str( gVal.STR_SearchMode[inIndex]['Choice'] ) + "," + \
 						str( inIndex ) + "," + \
 						"'" + str( gVal.STR_SearchMode[inIndex]['Keyword'] ) + "'," + \
+						str( gVal.STR_SearchMode[inIndex]['Count'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['IncImage'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['ExcImage'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['IncVideo'] ) + "," + \
@@ -471,6 +472,7 @@ class CLS_Config() :
 					"regdate = '" + str(inTimeDate) + "', " + \
 					"choice = " + str( gVal.STR_SearchMode[inIndex]['Choice'] ) + ", " + \
 					"keyword = '" + str( gVal.STR_SearchMode[inIndex]['Keyword'] ) + "', " + \
+					"count = '" + str( gVal.STR_SearchMode[inIndex]['Count'] ) + "', " + \
 					"incimage = " + str( gVal.STR_SearchMode[inIndex]['IncImage'] ) + ", " + \
 					"excimage = " + str( gVal.STR_SearchMode[inIndex]['ExcImage'] ) + ", " + \
 					"incvideo = " + str( gVal.STR_SearchMode[inIndex]['IncVideo'] ) + ", " + \

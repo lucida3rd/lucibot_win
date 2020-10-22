@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/22
+# ::Update= 2020/10/23
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -540,6 +540,107 @@ class CLS_Setup():
 
 
 #####################################################
+# クリア
+#   一部のDBを初期化する
+#####################################################
+	def Clear(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Setup"
+		wRes['Func']  = "Clear"
+		
+		#############################
+		# 実行の確認
+		wStr = "ログと、キーユーザ検索データ用のデータベースをクリアします。" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		wSelect = CLS_OSIF.sInp( "よろしいですか？(y/N)=> " )
+		if wSelect!="y" :
+			##キャンセル
+			return True
+		
+		#############################
+		# DBに接続 (接続情報の作成)
+		wStr = "データベースに接続します。データベースのパスワードを入力してください。" + '\n'
+		wStr = wStr + "  Hostname=" + gVal.DEF_BD_HOST + " Database=" + gVal.DEF_BD_NAME + " Username=" + gVal.DEF_BD_USER
+		CLS_OSIF.sPrn( wStr )
+		
+		###入力受け付け
+		wPassword = CLS_OSIF.sGpp( "Password: " )
+		
+		###接続
+		gVal.OBJ_DB = CLS_PostgreSQL_Use()
+		wResDBconn = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
+		wResDBconn = gVal.OBJ_DB.Connect()
+		wResDB = gVal.OBJ_DB.GetDbStatus()
+		if wResDBconn!=True :
+			wRes['Reason'] = "DBの接続に失敗しました: reason=" + wResDB['Reason']
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
+		
+		###結果の確認
+		if wResDB['Init']!=True :
+			wRes['Reason'] = "DBが初期化できてません"
+			CLS_OSIF.sErr( wRes )
+			gVal.OBJ_DB.Close()
+			return False
+		
+##		#############################
+##		# DB初期化
+##		
+##		#############################
+##		# DB初期化：tbl_log_data
+##		wStr = "tbl_log_data（ログデータ） " + '\n'
+##		wStr = wStr + "をクリアしますか？(y/N)=> "
+##		wSelect = CLS_OSIF.sInp( wStr )
+##		if wSelect!="y" :
+##			self.__create_TBL_LOG_DATA( inDBobj )
+##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
+##		
+##		#############################
+##		# DB初期化：tbl_keyword_data
+##		wStr = "tbl_keyword_data（キーユーザ検索用データ） " + '\n'
+##		wStr = wStr + "をクリアしますか？(y/N)=> "
+##		wSelect = CLS_OSIF.sInp( wStr )
+##		if wSelect!="y" :
+##			self.__create_TBL_KEYWORD_DATA( inDBobj )
+##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
+##		
+##		#############################
+##		# DB初期化：tbl_favo_data
+##		wStr = "tbl_favo_data（いいね保存用データ） " + '\n'
+##		wStr = wStr + "をクリアしますか？(y/N)=> "
+##		wSelect = CLS_OSIF.sInp( wStr )
+##		if wSelect!="y" :
+##			self.__create_TBL_FAVO_DATA( inDBobj )
+##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
+##		
+##		#############################
+##		# DB初期化：tbl_follower_data
+##		wStr = "tbl_follower_data（フォロー・フォロワー管理用データ） " + '\n'
+##		wStr = wStr + "をクリアしますか？(y/N)=> "
+##		wSelect = CLS_OSIF.sInp( wStr )
+##		if wSelect!="y" :
+##			self.__create_TBL_FOLLOWER_DATA( inDBobj )
+##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
+##		
+		#############################
+		# DB初期化
+		self.__create_TBL_LOG_DATA( gVal.OBJ_DB )
+		self.__create_TBL_KEYWORD_DATA( gVal.OBJ_DB )
+		
+		#############################
+		# 終わり
+		gVal.OBJ_DB.Close()
+		CLS_OSIF.sPrn( "クリアが正常終了しました。" )
+		
+		return True
+
+
+
+#####################################################
 # データベースの初期化
 #####################################################
 	def __initDB( self, inDBobj ):
@@ -736,6 +837,7 @@ class CLS_Setup():
 					"choice      BOOL  DEFAULT false," + \
 					"id          INTEGER NOT NULL," + \
 					"keyword     TEXT  NOT NULL," + \
+					"count       INTEGER NOT NULL," + \
 					"incimage    BOOL  DEFAULT false," + \
 					"excimage    BOOL  DEFAULT false," + \
 					"incvideo    BOOL  DEFAULT false," + \

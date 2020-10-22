@@ -249,16 +249,34 @@ class CLS_TwitterMain():
 		wStr = wStr + "DB更新   = " + str(self.STR_Cope['DB_Update']) + '\n'
 		wStr = wStr + "DB削除   = " + str(self.STR_Cope['DB_Delete']) + '\n'
 		
-		wStr = wStr + '\n'
-		wStr = wStr + " キーワードごとのヒット数" + '\n'
-		wStr = wStr + "--------------------" + '\n'
-		wKeylist = self.STR_Keywords.keys()
-		for wWord in wKeylist :
-			wStr = wStr + wWord + " = " + str(self.STR_Keywords[wWord]) + '\n'
+		###コンソールに表示
+		CLS_OSIF.sPrn( wStr )
 		
 		#############################
-		# コンソールに表示
-		CLS_OSIF.sPrn( wStr )
+		# キーワードの表示
+###		wStr = '\n'
+###		wStr = wStr + " キーワードごとのヒット数" + '\n'
+###		wStr = wStr + "--------------------" + '\n'
+###		wKeylist = self.STR_Keywords.keys()
+###		for wWord in wKeylist :
+###			wStr = wStr + wWord + " = " + str(self.STR_Keywords[wWord]) + '\n'
+		wRange = len(gVal.STR_SearchMode)
+		if wRange>1 :
+			wStr = '\n'
+			wStr = wStr + " キーワードごとのヒット数" + '\n'
+			wStr = wStr + "--------------------" + '\n'
+			wRange = len(gVal.STR_SearchMode)
+			for wIndex in range( wRange ) :
+				if gVal.STR_SearchMode[wIndex]['id']==0 :
+					continue	#id=0は手動用
+				
+				###前方に半角スペース埋め
+				wLen = 10 - len( str(gVal.STR_SearchMode[wIndex]['Count']) )
+				wBlank = " " * wLen
+				wStr = wStr + wBlank + str(gVal.STR_SearchMode[wIndex]['Count']) + "  " + gVal.STR_SearchMode[wIndex]['Keyword'] + '\n'
+			
+			###コンソールに表示
+			CLS_OSIF.sPrn( wStr )
 		
 		#############################
 		# 完了

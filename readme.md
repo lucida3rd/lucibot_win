@@ -4,8 +4,8 @@
 ::Admin= Lucida（lucida3hai@twitter.com）
 ::TwitterURL= https://twitter.com/lucida3hai
 
-::Update= 2020/10/22
-::Version= 0.4.1.1
+::Update= 2020/10/23
+::Version= 0.5.0.0
 
 
 <a id="iSystemSummary"></a>
@@ -30,17 +30,9 @@ python3で作成したWindows環境下で動くことを前提にしたTwitter�
 * [Twitter APIの取得方法](#iGetTwitter)
 * [セットアップ手順](#iSetup)
 * [アップデート手順](#iUpdate)
-
-* [ユーザ登録](#iRegist)
 * [起動方法](#iStart)
-
-
-
 * [免責事項](#iDisclaimer)
 * [謝辞](#iAcknowledgment)
-
-
-
 
 
 

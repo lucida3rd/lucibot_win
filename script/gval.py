@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/22
+# ::Update= 2020/10/23
 #####################################################
 
 #####################################################
@@ -58,21 +58,6 @@ class gVal() :
 
 #############################
 # 検索モード
-###	STR_SearchMode = {
-###		"IncImage"	: False,		#検索に画像を含める
-###		"ExcImage"	: False,		#検索は画像を除外
-###		"IncVideo"	: False,		#検索に動画を含める
-###		"ExcVideo"	: False,		#検索は動画を除外
-###		"IncLink"	: False,		#検索にリンクを含める
-###		"ExcLink"	: False,		#検索はリンクを除外
-###		"OFonly"	: False,		#検索は公式マークのみ
-###		"JPonly"	: True,			#検索は日本語のみ
-###		
-###		"ExcRT"		: False,		#検索にリツイートを含めない
-###		"ExcSensi"	: True			#検索にセンシティブな内容を含めない
-###	}
-###	STR_SearchMode_Auto   = {}
-###	STR_SearchMode_Manual = {}
 	STR_SearchMode = {}
 	# [0]..手動用
 	# [1]以降..自動用
@@ -176,6 +161,7 @@ class gVal() :
 		gVal.STR_SearchMode[wIndex].update({ "Choice"  : False })	#選択中
 		gVal.STR_SearchMode[wIndex].update({ "id"      : -1 })		#検索キー番号
 		gVal.STR_SearchMode[wIndex].update({ "Keyword" : "" })		#検索文字
+		gVal.STR_SearchMode[wIndex].update({ "Count"   : 0 })		#ヒットカウンタ
 		
 		gVal.STR_SearchMode[wIndex].update({ "IncImage" : False })	#検索に画像を含める
 		gVal.STR_SearchMode[wIndex].update({ "ExcImage" : False })	#検索は画像を除外

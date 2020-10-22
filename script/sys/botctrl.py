@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : bot制御(共通)
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/23
 #####################################################
 # Private Function:
 #   (none)
@@ -58,9 +58,11 @@ class CLS_BotCtrl():
 			###セットアップモード
 			###全初期化モード
 			###データ追加モード
+			###データクリアモード
 			if wArg[1]!="setup" and \
 			   wArg[1]!="init" and \
-			   wArg[1]!="add" :
+			   wArg[1]!="add" and \
+			   wArg[1]!="clear" :
 				wRes['Reason'] = "存在しないモードです"
 				CLS_OSIF.sErr( wRes )
 				return False

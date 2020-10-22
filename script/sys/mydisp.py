@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2020/10/22
+# ::Update= 2020/10/23
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -125,11 +125,15 @@ class CLS_MyDisp():
 			pRes['Responce'] = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['ExcSensi'] )
 		
 		###インプリ：検索文字
-		elif "[@SEARCH-KEYWORD@]"==inLine :
+###		elif "[@SEARCH-KEYWORD@]"==inLine and inIndex!=0 :
+		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']!=0 :
 			if gVal.STR_SearchMode[inIndex]['Keyword']=="" :
 				pRes['Responce'] = "    検索文字: " + "(未設定)"
 			else:
 				pRes['Responce'] = "    検索文字: " + gVal.STR_SearchMode[inIndex]['Keyword']
+
+		elif "[@SEARCH-KEYWORD@]"==inLine :
+			pRes['Responce'] = None
 		
 		#############################
 		# 正常
@@ -148,7 +152,8 @@ class CLS_MyDisp():
 		if "[@KEYUSER-LIST@]"==inLine :
 			wRange = len( gVal.STR_SearchMode )
 			wList = ""
-			wNum  = 0
+###			wNum  = 0
+			wCell = 1
 			for wIndex in range( wRange ) :
 				if gVal.STR_SearchMode[wIndex]['id']==0 :
 					###手動用は表示しない
@@ -160,11 +165,23 @@ class CLS_MyDisp():
 				else :
 					wList = wList + "□ "
 				
+				###データ組み立て
 				wList = wList + str(gVal.STR_SearchMode[wIndex]['id']) + ": "
-				wList = wList + str(gVal.STR_SearchMode[wIndex]['Keyword']) + '\n'
-				wNum += 1
+###				wList = wList + str(gVal.STR_SearchMode[wIndex]['Keyword']) + '\n'
+				wLen = 10 - len( str(gVal.STR_SearchMode[wIndex]['Count']) )
+				wBlank = " " * wLen
+				wList = wList + wBlank + str(gVal.STR_SearchMode[wIndex]['Count']) + "  " + gVal.STR_SearchMode[wIndex]['Keyword']
+				
+				###最終行でなければ改行する
+				if wCell!=wRange :
+					wList = wList + '\n'
+###				wNum += 1
 			
-			if wNum>0 :
+			###リストの後ろに改行
+			wList = wList + '\n'
+			
+###			if wNum>0 :
+			if wList!="" :
 				pRes['Responce'] = wList
 			else:
 				pRes['Responce'] = "    (キーユーザ設定がありません)" + '\n'
@@ -180,7 +197,6 @@ class CLS_MyDisp():
 # ディスプレイファイル 読み込み→画面表示
 #####################################################
 	@classmethod
-###	def sViewDisp( cls, inDisp ):
 	def sViewDisp( cls, inDisp, inIndex=-1 ):
 		#############################
 		# 応答形式の取得
@@ -224,51 +240,6 @@ class CLS_MyDisp():
 			if wLine.find("#")==0 :
 				continue
 			
-###			###インプリ：ユーザアカウント
-###			if "[@USER-ACCOUNT@]"==wLine :
-###				wLine = "Twitter ID : " + gVal.STR_UserInfo['Account']
-###			
-###			###インプリ：検索 画像を含める
-###			if "[@SEARCH-IMAGE@]"==wLine :
-###				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncImage'], gVal.STR_SearchMode['ExcImage'] )
-###				if wJPstr==None :
-###					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に画像を含める Dual flag is True"
-###					return wRes
-###				wLine = "    検索に画像を含める    [\\i]: " + wJPstr
-###			
-###			###インプリ：検索 動画を含める
-###			if "[@SEARCH-VIDEO@]"==wLine :
-###				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncVideo'], gVal.STR_SearchMode['ExcVideo'] )
-###				if wJPstr==None :
-###					wRes['Reason'] = "フラグ取り扱い矛盾: 検索に動画を含める Dual flag is True"
-###					return wRes
-###				wLine = "    検索に動画を含める    [\\v]: " + wJPstr
-###			
-###			###インプリ：検索 リンクを含める
-###			if "[@SEARCH-LINK@]"==wLine :
-###				wJPstr = cls.__get_JPstr_Dual( gVal.STR_SearchMode['IncLink'], gVal.STR_SearchMode['ExcLink'] )
-###				if wJPstr==None :
-###					wRes['Reason'] = "フラグ取り扱い矛盾: 検索にリンクを含める Dual flag is True"
-###					return wRes
-###				wLine = "    検索にリンクを含める  [\\l]: " + wJPstr
-###			
-###			###インプリ：検索 公式マークのみ
-###			if "[@SEARCH-OFFICIAL@]"==wLine :
-###				wLine = "    検索は公式マークのみ  [\\o]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['OFonly'] )
-###			
-###			###インプリ：検索 日本語のみ
-###			if "[@SEARCH-JPONLY@]"==wLine :
-###				wLine = "    検索は日本語のみ     [\\jp]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['JPonly'] )
-###			
-###			###インプリ：検索 リツイート含む
-###			if "[@SEARCH-RT@]"==wLine :
-###				wLine = "    リツイート含めない   [\\rt]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcRT'] )
-###			
-###			###インプリ：検索 センシティブな内容を含めない
-###			if "[@SEARCH-SENSI@]"==wLine :
-###				wLine = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode['ExcSensi'] )
-###			
-###
 			###インプリメント
 			wResInp = cls.sDispInp( inDisp, wLine, inIndex )
 			if wResInp['Result']!=True :

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/22
+# ::Update= 2020/10/23
 #####################################################
 # Private Function:
 #   (none)
@@ -88,6 +88,14 @@ class CLS_Main_Console() :
 			CLS_OSIF.sInp( '\n' + "リターンキーを押して再度コンソールアプリを起動してください。[RT]" )
 			return
 		
+		#############################
+		# データクリアモードで実行
+		elif gVal.STR_SystemInfo['RunMode']=="clear" :
+			wCLS_Setup = CLS_Setup()
+			wCLS_Setup.Clear()
+			CLS_OSIF.sInp( '\n' + "リターンキーを押して再度コンソールアプリを起動してください。[RT]" )
+			return
+		
 		# ※通常処理継続
 		gVal.FLG_Console_Mode = True				#コンソールモード
 		cls.OBJ_TwitterMain  = CLS_TwitterMain()	#メインの実体化
@@ -102,6 +110,10 @@ class CLS_Main_Console() :
 		while True :
 			wCommand = cls().sViewMainConsole()
 			
+			if wCommand=="" :
+				###未入力は再度入力
+				continue
+			
 			if wCommand.find("\\q")>=0 or wCommand=="exit" :
 				###終了
 				wResEnd = cls.OBJ_TwitterMain.End()	#終了処理
@@ -109,16 +121,15 @@ class CLS_Main_Console() :
 					wRes['Reason'] = "End is failed reason=" + wResEnd['Reason']
 					gVal.OBJ_L.Log( "B", wRes )
 				
-###				CLS_OSIF.sPrn( "コンソールを停止します。" + '\n' )
-###				gVal.OBJ_L.Log( "R", "CLS_Main_Console", "sRun", "コンソール停止" )
 				wRes['Reason'] = "コンソール停止"
 				gVal.OBJ_L.Log( "R", wRes )
 				CLS_BotCtrl.sBotEnd()	#bot停止
 				break
 			
 			wResCmd = cls().sRunCommand( wCommand )
-			if wResCmd==True :
-				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
+###			if wResCmd==True :
+###				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
+			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			
 			#############################
 			# 開始or前回チェックから15分経ったか
