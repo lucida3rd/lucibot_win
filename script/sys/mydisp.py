@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2020/10/23
+# ::Update= 2020/10/25
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -230,8 +230,9 @@ class CLS_MyDisp():
 			return wRes
 		
 		#############################
-		# 画面クリア
-		CLS_OSIF.sDispClr()
+		# 画面クリア(=通常モード時)
+		if gVal.FLG_Test_Mode==False :
+			CLS_OSIF.sDispClr()
 		
 		#############################
 		# 画面に表示する

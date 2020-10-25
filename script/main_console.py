@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/23
+# ::Update= 2020/10/25
 #####################################################
 # Private Function:
 #   (none)
@@ -198,6 +198,12 @@ class CLS_Main_Console() :
 			wFlg = True
 		
 	#####################################################
+		#############################
+		# キーユーザフォロー(手動)
+		if inCommand=="\\f" :
+			cls.OBJ_TwitterMain.KeyUserFollow()
+			wFlg = True
+		
 		#############################
 		# キーユーザCSV出力
 		if inCommand=="\\k" :

@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/23
+# ::Update= 2020/10/25
 #####################################################
 # Private Function:
 #   (none)
@@ -503,6 +503,74 @@ class CLS_Config() :
 		# 完了
 		wRes['Responce'] = True
 		wRes['Result']   = True
+		return wRes
+
+
+
+#####################################################
+# 除外ユーザ名 読み込み
+#####################################################
+	def GetExcUserName(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetExcUserName"
+		
+		#############################
+		# データベースから除外ユーザ名を取得
+		wQuery = "select word from tbl_exc_username " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		### グローバルに取り込み
+		gVal.STR_ExcUserName = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=gVal.STR_ExcUserName )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 除外文字 読み込み
+#####################################################
+	def GetExcWord(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetExcWord"
+		
+		#############################
+		# データベースから除外ユーザ名を取得
+		wQuery = "select word from tbl_exc_word " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		### グローバルに取り込み
+		gVal.STR_ExcWord = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=gVal.STR_ExcWord )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
 		return wRes
 
 

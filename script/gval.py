@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/23
+# ::Update= 2020/10/25
 #####################################################
 
 #####################################################
@@ -88,7 +88,9 @@ class gVal() :
 		"searchRoundNum"	: 7,						#1検索の回数(ページング)
 		"maxKeywordNum"		: 6,						#最大キーワード数
 		"randKeyUserNum"	: 20,						#キーユーザ ランダム選出数
-
+		"randFollowNum"		: 3,						#キーユーザフォロー選出数
+														#  ※TwitterAPI(内部)の仕様で4以上を指定しても制限がかかる
+		
 		"getTwitTLnum"		: 200,						#TwitterのTL取得数(Twitter仕様は最大200)
 
 		"logShortLen"		: 100,						#ログ表示 ショートモード

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/10/25
 #####################################################
 # Private Function:
 #   (none)
@@ -124,12 +124,27 @@ class CLS_TwitterMain():
 		wRes['Class'] = "CLS_TwitterMain"
 		wRes['Func']  = "Init"
 		
+		wOBJ_Config = CLS_Config()
 		#############################
 		# 検索モード読み込み
-		wOBJ_Config = CLS_Config()
+###		wOBJ_Config = CLS_Config()
 		wResSub = wOBJ_Config.GetSearchMode()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "GetSearchMode failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 除外ユーザ名読み込み
+		wResSub = wOBJ_Config.GetExcUserName()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "GetExcUserName failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 除外文字読み込み
+		wResSub = wOBJ_Config.GetExcWord()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "GetExcWord failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
@@ -219,8 +234,9 @@ class CLS_TwitterMain():
 			return wRes
 		
 		#############################
-		# 画面クリア
-		CLS_OSIF.sDispClr()
+		# 画面クリア(=通常モード時)
+		if gVal.FLG_Test_Mode==False :
+			CLS_OSIF.sDispClr()
 		
 		#############################
 		# ヘッダ表示
@@ -281,6 +297,15 @@ class CLS_TwitterMain():
 		#############################
 		# 完了
 		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# キーユーザフォロー(手動)
+#####################################################
+	def KeyUserFollow(self):
+		wRes = self.OBJ_TwitterKeyword.KeyUserFollow()
 		return wRes
 
 

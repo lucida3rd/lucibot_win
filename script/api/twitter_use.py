@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/10/11
+# ::Update= 2020/10/25
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -813,6 +813,56 @@ class CLS_Twitter_Use():
 
 
 #####################################################
+# フォロー処理
+#####################################################
+	def CreateFollow( self, inID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "CreateFollow"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/friendships/create.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "friendships" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = { "id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
 # フォロー解除処理
 #####################################################
 	def RemoveFollow( self, inID ):
@@ -1224,7 +1274,7 @@ class CLS_Twitter_Use():
 		for wKey in wKeylist :
 			if self.ARR_TwitterList[wKey]['name']==inListName :
 				###リスト発見 =idを取得する
-				wListID = wROW['id']
+				wListID = self.ARR_TwitterList[wKey]['id']
 				break
 		
 		if wListID==-1 :
