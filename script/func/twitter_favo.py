@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2020/10/17
+# ::Update= 2020/10/27
 #####################################################
 # Private Function:
 #   (none)
@@ -398,6 +398,8 @@ class CLS_TwitterFavo():
 		wStr = "--------------------" + '\n'
 		wStr = wStr + " いいね監視 実行" + '\n'
 		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "以下のいいね解除対象をいいね解除します......" + '\n'
+		CLS_OSIF.sPrn( wStr )
 		
 		wVAL_ZanNum = len(wARR_RateFavoID)
 		wFavoLimNum = 0
@@ -448,13 +450,18 @@ class CLS_TwitterFavo():
 			wFavoLimNum += 1
 			wVAL_ZanNum -= 1
 			#############################
+			# 処理全て終わり
+			if wVAL_ZanNum==0 :
+				break
+			
+			#############################
 			# 1回の解除数チェック
-			if gVal.DEF_STR_TLNUM['rFavoLimNum']<=wFavoLimNum :
+###			if gVal.DEF_STR_TLNUM['rFavoLimNum']<=wFavoLimNum :
+			elif gVal.DEF_STR_TLNUM['rFavoLimNum']<=wFavoLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
 				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )
 				
-###				wResStop = self.__wait_FavoRemove( gVal.DEF_STR_TLNUM['favoLimWait'] )
 				wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['favoLimWait'] )
 				if wResStop==False :
 					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
@@ -462,8 +469,9 @@ class CLS_TwitterFavo():
 				wFavoLimNum = 0
 			
 			#############################
-			# 残り処理回数がまだあるなら、5秒ウェイトする
-			elif wVAL_ZanNum>0 :
+			# 残り処理回数がまだある =5秒ウェイトする
+###			elif wVAL_ZanNum>0 :
+			else :
 				CLS_OSIF.sSleep( 5 )
 		
 		#############################
@@ -482,26 +490,5 @@ class CLS_TwitterFavo():
 		wRes['Result'] = True
 		return wRes
 
-###	#####################################################
-###	def __wait_FavoRemove( self, inCount ):
-###		wCount = inCount
-###		try:
-###			while True:
-###				if wCount==0 :
-###					break
-###				
-###				#############################
-###				# 1行にカウントを表示
-###				# ctrl+cでウェイト中止
-###				wStr = "残り待機時間 " + str( wCount ) + " 秒"
-###				CLS_OSIF.sPrnER( wStr )
-###				CLS_OSIF.sSleep(1)
-###				wCount -= 1
-###		
-###		except KeyboardInterrupt:
-###			return False 	#ウェイト中止
-###		
-###		return True			#ウェイト完了
-###
-###
+
 

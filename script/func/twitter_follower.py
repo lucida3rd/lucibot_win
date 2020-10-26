@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/10/27
 #####################################################
 # Private Function:
 #   (none)
@@ -219,6 +219,13 @@ class CLS_TwitterFollower():
 							str(wROW['statuses_count']) + "," + \
 							"'" + str(wTD['TimeDate']) + "'" + \
 							") ;"
+							
+					##"r_myfollow  1度フォローした= 状態で判定
+					##"r_remove    1度リムーブした= 新規なのでFalse
+					##"rc_follower 前回フォロワー=  少なくともフォローされている
+					##"foldate     (フォロー日時)
+					##"limited     リムーブ候補= 新規なのでFalse
+					##"removed     リムーブ済み= 新規なのでFalse
 				
 				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 				wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -284,8 +291,8 @@ class CLS_TwitterFollower():
 			wQuery = "insert into tbl_follower_data values (" + \
 						"'" + gVal.STR_UserInfo['Account'] + "'," + \
 						"'" + str(wTD['TimeDate']) + "'," + \
-						str(wFLG_MyFollow) + "," + \
 						"True," + \
+						"False," + \
 						"False," + \
 						"'" + str(wTD['TimeDate']) + "'," + \
 						"False," + \
@@ -296,6 +303,13 @@ class CLS_TwitterFollower():
 						wStatusCount + "," + \
 						"'" + str(wTD['TimeDate']) + "'" + \
 						") ;"
+			
+					##"r_myfollow  1度フォローした= 既にフォローしている
+					##"r_remove    1度リムーブした= 新規なのでFalse
+					##"rc_follower 前回フォロワー=  フォロワーではないのでFalse
+					##"foldate     (フォロー日時)
+					##"limited     リムーブ候補= 新規なのでFalse
+					##"removed     リムーブ済み= 新規なのでFalse
 			
 			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 			wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -395,9 +409,18 @@ class CLS_TwitterFollower():
 			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_NormalListMenberID :
 				wFLG_UnRemove = True
 			
-			###  既にリムーブ済みorリムーブ対象ならばスキップ
-			if wARR_RateFollowers[wIndex]['removed']==True or \
-			   wARR_RateFollowers[wIndex]['limited']==True :
+###			###  既にリムーブ済みorリムーブ対象ならばスキップ
+###			if wARR_RateFollowers[wIndex]['removed']==True or \
+###			   wARR_RateFollowers[wIndex]['limited']==True :
+###				wFLG_UnRemove = True
+			
+			###  既にリムーブ済みならばスキップ
+			if wARR_RateFollowers[wIndex]['removed']==True :
+				wFLG_UnRemove = True
+			
+			###  既にリムーブ対象ならばスキップ
+			if wARR_RateFollowers[wIndex]['limited']==True :
+				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
 				wFLG_UnRemove = True
 			
 			###  ここまで自動リムーブ候補(False)で、フォローしてからの時間が範囲内なら  自動リムーブ対象外
@@ -604,16 +627,6 @@ class CLS_TwitterFollower():
 		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
 		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
 		
-
-#		self.OBJ_Parent.STR_Cope['tFavoRemove'] = 0
-#		self.OBJ_Parent.STR_Cope['FavoRemove']  = 0
-#		"MyFollowNum"		: 0,	#現フォロー数
-#		"FollowerNum"		: 0,	#現フォロワー数
-#		"PieceFollowNum"	: 0,	#片フォロー数
-#		"NewFollowerNum"	: 0,	#新規フォロワー数
-#		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
-#		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
-
 		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
 		
 		#############################
@@ -624,20 +637,20 @@ class CLS_TwitterFollower():
 					"removed = False " + \
 					";"
 		
-		wResDB = self.Obj_Parent.OBJ_DB.RunQuery( wQuery )
-		wResDB = self.Obj_Parent.OBJ_DB.GetQueryStat()
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
 		if wResDB['Result']!=True :
 			##失敗
 			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
-		self.Obj_Parent.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-		self.OBJ_Parent.STR_Cope['tFavoRemove'] = len(wARR_RateFavoID)
-
-
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
+		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = len(wARR_RateFollowers)
+		
 		#############################
 		# 画面クリア
 		CLS_OSIF.sDispClr()
@@ -647,37 +660,54 @@ class CLS_TwitterFollower():
 		wStr = "--------------------" + '\n'
 		wStr = wStr + " フォロワー監視 実行" + '\n'
 		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "以下のリムーブ対象ユーザをリムーブします......" + '\n'
+		CLS_OSIF.sPrn( wStr )
 		
-		wVAL_ZanNum = len(wARR_RateFavoID)
-		wFavoLimNum = 0
+		wVAL_ZanNum = len(wARR_RateFollowers)
+		wRemoveLimNum = 0
 		wResStop = False
 		#############################
-		# いいね解除していく
-		wKeylist = wARR_RateFavoID.keys()
+		# リムーブしていく
+		wKeylist = wARR_RateFollowers.keys()
 		for wIndex in wKeylist :
-			wID = str( wARR_RateFavoID[wIndex]['id'] )
+			wID = str( wARR_RateFollowers[wIndex]['id'] )
 			
-			###  いいねを外す
-			wRemoveRes = gVal.OBJ_Twitter.RemoveFavo( wID )
-			if wRemoveRes['Result']!=True :
-				wRes['Reason'] = "Twitter API Error: " + wRemoveRes['Reason']
-				gVal.OBJ_L.Log( "B", wRes )
-				return wRes
-			
-			###  解除したいいねを表示
-			wStr = str(wARR_RateFavoID[wIndex]['text']) + '\n'
-			wStr = wStr + "ツイ日=" + str(wARR_RateFavoID[wIndex]['created_at'])
-			wStr = wStr + "  ユーザ=" + str(wARR_RateFavoID[wIndex]['user_name']) + "(@" + str(wARR_RateFavoID[wIndex]['screen_name']) + ")" + '\n'
-			wStr = wStr + "登録日=" + str(wARR_RateFavoID[wIndex]['regdate'])
-			wStr = wStr + " [☆いいね解除済み]"
-			wStr = wStr + '\n'
-			wStr = wStr + "--------------------" + '\n'
+			###  リムーブしたユーザを表示
+			wStr = "リムーブ処理中= " + str(wARR_RateFollowers[wIndex]['user_name']) + "(@" + str(wARR_RateFollowers[wIndex]['screen_name']) + ")"
 			CLS_OSIF.sPrn( wStr )
 			
-			self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
+			###  リムーブする
+			wRemoveRes = gVal.OBJ_Twitter.RemoveFollow( wID )
+			if wRemoveRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(RemoveFollow): " + wRemoveRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			CLS_OSIF.sSleep(5)
+			
+			### un_refollowリストへ追加
+			wTwitterRes = gVal.OBJ_Twitter.AddUserList( gVal.STR_UserInfo['UrfList'], wID )
+			if wTwitterRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(AddUserList): " + wTwitterRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			CLS_OSIF.sSleep(5)
+			
+			### normalリストから削除する
+			wTwitterRes = gVal.OBJ_Twitter.RemoveUserList( gVal.STR_UserInfo['NorList'], wID )
+			if wTwitterRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(RemoveUserList): " + wTwitterRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			CLS_OSIF.sSleep(5)
+			
+			###  リムーブしたユーザを表示
+			wStr = "リムーブ成功" + '\n'
+			CLS_OSIF.sPrn( wStr )
+			
+			self.OBJ_Parent.STR_Cope['MyFollowRemove'] += 1
 			
 			###  limited をOFF、removed をONにする
-			wQuery = "update tbl_favo_data set " + \
+			wQuery = "update tbl_follower_data set " + \
 						"limited = False, " + \
 						"removed = True " + \
 						"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
@@ -694,32 +724,39 @@ class CLS_TwitterFollower():
 			###  カウント
 			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 			
-			wFavoLimNum += 1
+			wRemoveLimNum += 1
 			wVAL_ZanNum -= 1
 			#############################
+			# 処理全て終わり
+			if wVAL_ZanNum==0 :
+				break
+			
+			#############################
 			# 1回の解除数チェック
-			if gVal.DEF_STR_TLNUM['rFavoLimNum']<=wFavoLimNum :
+###			if gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
+			elif gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
 				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )
 				
-				wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['favoLimWait'] )
+				wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['removeLimWait'] )
 				if wResStop==False :
 					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
 					break	#ウェイト中止
-				wFavoLimNum = 0
+				wRemoveLimNum = 0
 			
 			#############################
-			# 残り処理回数がまだあるなら、5秒ウェイトする
-			elif wVAL_ZanNum>0 :
+			# 残り処理回数がまだある =5秒ウェイトする
+###			elif wVAL_ZanNum>0 :
+			else :
 				CLS_OSIF.sSleep( 5 )
 		
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-		wStr = wStr + "DB更新数          = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
-		wStr = wStr + "解除対象 いいね数 = " + str(self.OBJ_Parent.STR_Cope['tFavoRemove']) + '\n'
-		wStr = wStr + "解除済み いいね数 = " + str(self.OBJ_Parent.STR_Cope['FavoRemove']) + '\n'
+		wStr = wStr + "DB更新数              = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
+		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
+		wStr = wStr + "リムーブ済み ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['MyFollowRemove']) + '\n'
 		
 		#############################
 		# コンソールに表示

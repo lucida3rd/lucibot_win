@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/10/27
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -1150,6 +1150,14 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# リスト一覧が空ならまず取得しにいく
+		if len(self.ARR_TwitterList)==0 :
+			wResList = self.GetLists()
+			if wResList['Result']!=True :
+				wRes['Reason'] = "GetLists failed: " + str(wResList['Reason'])
+				return wRes
+		
+		#############################
 		# リスト名のIDを取得
 		wListID = -1
 		wKeylist = self.ARR_TwitterList.keys()
@@ -1268,6 +1276,14 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# リスト一覧が空ならまず取得しにいく
+		if len(self.ARR_TwitterList)==0 :
+			wResList = self.GetLists()
+			if wResList['Result']!=True :
+				wRes['Reason'] = "GetLists failed: " + str(wResList['Reason'])
+				return wRes
+		
+		#############################
 		# リスト名のIDを取得
 		wListID = -1
 		wKeylist = self.ARR_TwitterList.keys()
@@ -1328,13 +1344,21 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# リスト一覧が空ならまず取得しにいく
+		if len(self.ARR_TwitterList)==0 :
+			wResList = self.GetLists()
+			if wResList['Result']!=True :
+				wRes['Reason'] = "GetLists failed: " + str(wResList['Reason'])
+				return wRes
+		
+		#############################
 		# リスト名のIDを取得
 		wListID = -1
 		wKeylist = self.ARR_TwitterList.keys()
 		for wKey in wKeylist :
 			if self.ARR_TwitterList[wKey]['name']==inListName :
 				###リスト発見 =idを取得する
-				wListID = wROW['id']
+				wListID = self.ARR_TwitterList[wKey]['id']
 				break
 		
 		if wListID==-1 :

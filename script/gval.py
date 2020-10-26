@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/10/27
 #####################################################
 
 #####################################################
@@ -79,11 +79,11 @@ class gVal() :
 		"favoLimmin"		: 2880,						#いいね解除時間 2日 (60x24)x2=2880(分)
 		"favoDBLimmin"		: 20160,					#DBのいいね削除時間 14日 (60x24)x14=20160(分)
 		"rFavoLimNum"		: 5,						# 1回のいいね解除数
-		"favoLimWait"		: 185,						#いいね解除処理待ち(秒)   900秒
+		"favoLimWait"		: 115,						#いいね解除処理待ち(秒)   900秒/8回(createの場合)
 
 		"removeLimmin"		: 7200,						#自動リムーブ時間 5日 (60x24)x5=7200(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
-		"removeLimWait"		: 185,						#自動リムーブ処理待ち(秒)   900秒
+		"removeLimWait"		: 100,						#自動リムーブ処理待ち(秒) 900秒/3回(createの場合)
 
 		"searchRoundNum"	: 7,						#1検索の回数(ページング)
 		"maxKeywordNum"		: 6,						#最大キーワード数

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/10/27
 #####################################################
 # Private Function:
 #   (none)
@@ -342,6 +342,15 @@ class CLS_TwitterMain():
 #####################################################
 	def ViewFollower(self):
 		wRes = self.OBJ_TwitterFollower.View()
+		return wRes
+
+
+
+#####################################################
+# フォロワー監視の実行
+#####################################################
+	def RunFollower(self):
+		wRes = self.OBJ_TwitterFollower.Run()
 		return wRes
 
 
