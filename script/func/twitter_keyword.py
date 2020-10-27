@@ -1340,7 +1340,8 @@ class CLS_TwitterKeyword():
 		# ファイル名の設定
 		wCHR_File_path = self.__get_CSVpath()
 		
-		if self.__out_CSV( wCHR_File_path, wARR_UserID )!=True :
+###		if self.__out_CSV( wCHR_File_path, wARR_UserID )!=True :
+		if self.__out_TweetSearchCSV( wCHR_File_path )!=True :
 			###失敗
 			wRes['Reason'] = "sWriteFile is failed: " + wCHR_File_path
 			gVal.OBJ_L.Log( "B", wRes )
@@ -1365,12 +1366,37 @@ class CLS_TwitterKeyword():
 		wStr = wStr + "--------------------" + '\n'
 		return wStr
 
-
-
-
-
-
-
+	#####################################################
+	def __out_TweetSearchCSV( self, inPath ):
+		#############################
+		# 書き込みデータを作成
+		wSetLine = []
+		
+		#############################
+		# ヘッダ部
+		wLine = "user_name, screen_name, hit_word, url, " + '\n'
+		wSetLine.append(wLine)
+		
+		#############################
+		# データ部
+		
+		wKeylist = self.OBJ_Parent.STR_KeyUser.keys()
+		for wKey in wKeylist :
+			wUserName = self.OBJ_Parent.STR_KeyUser[wKey]['user_name'].replace( ",", "" )
+			
+			wLine = ""
+			wLine = wLine + wUserName + ", "
+			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", "
+			wLine = wLine + str(self.OBJ_Parent.STR_KeyUser[wKey]['hit_word']) + ", "
+			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", " + '\n'
+			wSetLine.append(wLine)
+		
+		#############################
+		# ファイル上書き書き込み
+		if CLS_File.sWriteFile( inPath, wSetLine, inExist=False )!=True :
+			return False	#失敗
+		
+		return True
 
 
 
