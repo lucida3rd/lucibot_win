@@ -32,6 +32,10 @@
 # ◇タイムライン制御系
 #   Tweet( self, inTweet ):
 #   GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
+#   GetSearch( self, inKeyword=None, inRoundNum=1 ):
+#   GetMyUserinfo(self):
+#   GetUserinfo( self, inID ):
+#   GetFollowInfo( self, inSrcID, inDstID ):
 #   GetMyFollowList(self):
 #   GetFollowerList(self):
 #   RemoveFollow( self, inID ):
@@ -164,11 +168,13 @@ class CLS_Twitter_Use():
 		self.__set_API( "lists_status",  720, self.TwStatus['APIrect'] )# GET: 15m/900
 		self.__set_API( "search_tweets", 144, self.TwStatus['APIrect'] )# GET: 15m/180
 		self.__set_API( "friends_list",   12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "friends_show",   12, self.TwStatus['APIrect'] )# GET: 15m/15
 		self.__set_API( "followers_list", 12, self.TwStatus['APIrect'] )# GET: 15m/15
 		self.__set_API( "favorites_list", 60, self.TwStatus['APIrect'] )# GET: 15m/75
 		self.__set_API( "lists_list",     12, self.TwStatus['APIrect'] )# GET: 15m/15
 		self.__set_API( "lists_members", 720, self.TwStatus['APIrect'] )# GET: 15m/900
 		self.__set_API( "trends_place",   60, self.TwStatus['APIrect'] )# GET: 15m/75
+		self.__set_API( "users_show",    900, self.TwStatus['APIrect'] )# GET: 15m/900
 		return
 
 	#####################################################
@@ -601,6 +607,171 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 自ユーザ情報取得処理
+#####################################################
+	def GetMyUserinfo(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetMyUserinfo"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/users/show.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "users_show" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = { "screen_name" : self.STR_TWITTERdata['TwitterID'] }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# ユーザ情報取得処理
+#####################################################
+	def GetUserinfo( self, inID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetUserinfo"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/users/show.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "users_show" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = { "user_id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# フォロー関係取得処理
+#####################################################
+	def GetFollowInfo( self, inSrcID, inDstID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetFollowInfo"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/friendships/show.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "friends_show" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"source_id"		: inSrcID,
+			"target_id"		: inDstID
+		}
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
 		wRes['Result'] = True
 		return wRes
 

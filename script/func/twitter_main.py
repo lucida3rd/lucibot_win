@@ -29,6 +29,7 @@
 from twitter_favo import CLS_TwitterFavo
 from twitter_follower import CLS_TwitterFollower
 from twitter_keyword import CLS_TwitterKeyword
+from twitter_admin import CLS_TwitterAdmin
 ###import threading
 ###import sys, time
 
@@ -109,6 +110,7 @@ class CLS_TwitterMain():
 		self.OBJ_TwitterFavo     = CLS_TwitterFavo( parentObj=self )
 		self.OBJ_TwitterFollower = CLS_TwitterFollower( parentObj=self )
 		self.OBJ_TwitterKeyword  = CLS_TwitterKeyword( parentObj=self )
+		self.OBJ_TwitterAdmin    = CLS_TwitterAdmin( parentObj=self )
 		return
 
 
@@ -123,6 +125,14 @@ class CLS_TwitterMain():
 		wRes = CLS_OSIF.sGet_Resp()
 		wRes['Class'] = "CLS_TwitterMain"
 		wRes['Func']  = "Init"
+		
+		#############################
+		# Twitterから自ユーザ情報を取得する
+		wUserinfoRes = gVal.OBJ_Twitter.GetMyUserinfo()
+		if wUserinfoRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetUserinfo): " + wUserinfoRes['Reason']
+			return wRes
+		gVal.STR_UserInfo['id'] = wUserinfoRes['Responce']['id']
 		
 		wOBJ_Config = CLS_Config()
 		#############################
@@ -360,6 +370,15 @@ class CLS_TwitterMain():
 #####################################################
 	def SetKeyuser(self):
 		wRes = self.OBJ_TwitterKeyword.SetKeyuser()
+		return wRes
+
+
+
+#####################################################
+# ユーザ復活
+#####################################################
+	def UserRevival(self):
+		wRes = self.OBJ_TwitterAdmin.UserRevival()
 		return wRes
 
 

@@ -52,6 +52,7 @@ class gVal() :
 		"Account"	: "",			#Twitterアカウント名
 		"NorList"	: "",			#一般ユーザリスト名
 		"UrfList"	: "",			#フォロー解除リスト名
+		"id"		: "",			#Twitter ID(番号)
 		
 		"UserFolder_path"	: ""	#ユーザフォルダパス
 	}

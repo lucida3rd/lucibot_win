@@ -265,6 +265,12 @@ class CLS_Main_Console() :
 			
 			wFlg = True
 		
+		#############################
+		# ユーザ復活
+		elif inCommand=="\\cr" :
+			cls.OBJ_TwitterMain.UserRevival()
+			wFlg = True
+		
 	#####################################################
 		#############################
 		# ツイート検索
