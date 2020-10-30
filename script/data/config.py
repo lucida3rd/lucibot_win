@@ -610,9 +610,10 @@ class CLS_Config() :
 		gVal.STR_RateExcTwitterID = []
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
+			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
 			if gVal.STR_ExcTwitterID_Info[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
 				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
-				gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+###				gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
 		
 		#############################
 		# 完了
