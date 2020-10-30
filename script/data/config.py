@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/10/30
 #####################################################
 # Private Function:
 #   (none)
@@ -368,6 +368,7 @@ class CLS_Config() :
 			gVal.STR_SearchMode[wIndex]['JPonly'] = wARR_RateSearchMode[wIndex]['jponly']
 			gVal.STR_SearchMode[wIndex]['ExcRT']    = wARR_RateSearchMode[wIndex]['excrt']
 			gVal.STR_SearchMode[wIndex]['ExcSensi'] = wARR_RateSearchMode[wIndex]['excsensi']
+			gVal.STR_SearchMode[wIndex]['Arashi'] = wARR_RateSearchMode[wIndex]['arashi']
 			wIndex += 1
 		
 		#############################
@@ -462,7 +463,8 @@ class CLS_Config() :
 						str( gVal.STR_SearchMode[inIndex]['OFonly'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['JPonly'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['ExcRT'] ) + "," + \
-						str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + \
+						str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['Arashi'] ) + \
 						") ;"
 		
 		#############################
@@ -482,7 +484,8 @@ class CLS_Config() :
 					"ofonly = " + str( gVal.STR_SearchMode[inIndex]['OFonly'] ) + ", " + \
 					"jponly = " + str( gVal.STR_SearchMode[inIndex]['JPonly'] ) + ", " + \
 					"excrt = " + str( gVal.STR_SearchMode[inIndex]['ExcRT'] ) + ", " + \
-					"excsensi = " + str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + " " + \
+					"excsensi = " + str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + ", " + \
+					"arashi = " + str( gVal.STR_SearchMode[inIndex]['Arashi'] ) + " " + \
 					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					" and id = " + str(inIndex) + " ;"
 		
@@ -573,5 +576,146 @@ class CLS_Config() :
 		wRes['Result'] = True
 		return wRes
 
+
+
+#####################################################
+# 除外Twitter ID 読み込み
+#####################################################
+	def GetExcTwitterID(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetExcTwitterID"
+		
+		#############################
+		# データベースから除外Twitter IDを取得
+		wQuery = "select * from tbl_exc_twitterid " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		### グローバルに取り込み
+		gVal.STR_ExcTwitterID_Info = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=gVal.STR_ExcTwitterID_Info )
+		
+		### 除外リストを作成する
+		gVal.STR_ExcTwitterID = []
+		gVal.STR_RateExcTwitterID = []
+		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
+		for wIndex in wKeylist :
+			if gVal.STR_ExcTwitterID_Info[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
+				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+				gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 除外Twitter ID 設定
+#####################################################
+	def SetExcTwitterID( self, inNewList ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetExcTwitterID"
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			return wRes
+		### wTD['TimeDate']
+		
+		wElaseID = []
+		wKeylist = list ( inNewList.keys() )
+		for wIndex in wKeylist :
+			if inNewList[wIndex]['count']==0 :
+				wElaseID.append( inNewList[wIndex]['screen_name'] )
+				continue
+			
+			#############################
+			# DBになければinsertする
+			if inNewList[wIndex]['screen_name'] in gVal.STR_RateExcTwitterID :
+				wQuery = "insert into tbl_exc_twitterid values (" + \
+							"'" + str(wTD['TimeDate']) + "'," + \
+							"'" + str( inNewList[wIndex]['id'] ) + "'," + \
+							"'" + str( inNewList[wIndex]['screen_name'] ) + "'," + \
+							"'" + str(wTD['TimeDate']) + "'," + \
+							str( inNewList[wIndex]['count'] ) + " " + \
+							") ;"
+			#############################
+			# DBにあれば更新する
+			else:
+				wQuery = "update tbl_exc_twitterid set " + \
+							"lastdate = '" + str(wTD['TimeDate']) + "', " + \
+							"count = " + str( inNewList[wIndex]['count'] ) + " " + \
+							"where screen_name = '" + inNewList[wIndex]['screen_name'] + "' ;"
+			
+			#############################
+			# Query実行
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				return wRes
+		
+		#############################
+		# カウンタ0はDBから削除
+		wElaseID = []
+		for wID in wElaseID :
+			wQuery = "delete from tbl_exc_twitterid " + \
+						"where screen_name = '" + wID + "' ;"
+			
+			#############################
+			# Query実行
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				return wRes
+		
+		#############################
+		# 保持日数外の情報を削除する
+		wLag = gVal.DEF_STR_TLNUM['excTwitterIDdays'] * 24 * 60 * 60
+		wLagTime = CLS_OSIF.sTimeLag( inThreshold=wLag, inTimezone=-1 )
+		if wLagTime['Result']!=True :
+			##失敗
+			wRes['Reason'] = "sTimeLag is failed"
+			return wRes
+		
+		wQuery = "delete from tbl_exc_twitterid " + \
+					"where lastdate >= timestamp '" + str(wLagTime['RateTime']) + "' " + \
+					";"
+		
+		#############################
+		# Query実行
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
 
 

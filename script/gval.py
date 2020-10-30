@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/27
+# ::Update= 2020/10/30
 #####################################################
 
 #####################################################
@@ -66,9 +66,12 @@ class gVal() :
 
 
 #############################
-# 除外ユーザ名・除外文字
+# 除外ユーザ名・除外文字・除外Twitter ID
 	STR_ExcUserName = []
 	STR_ExcWord     = []
+	STR_ExcTwitterID = []
+	STR_RateExcTwitterID = []
+	STR_ExcTwitterID_Info = {}
 
 #############################
 # Timeline調整数
@@ -93,6 +96,9 @@ class gVal() :
 														#  ※TwitterAPI(内部)の仕様で4以上を指定しても制限がかかる
 		
 		"getTwitTLnum"		: 200,						#TwitterのTL取得数(Twitter仕様は最大200)
+
+		"excTwitterID"		: 3,						#荒らし判定回数
+		"excTwitterIDdays"	: 7,						#荒らしID保持日数
 
 		"logShortLen"		: 100,						#ログ表示 ショートモード
 		"(dummy)"			: ""
@@ -178,6 +184,7 @@ class gVal() :
 		
 		gVal.STR_SearchMode[wIndex].update({ "ExcRT"    : False })	#検索にリツイートを含めない
 		gVal.STR_SearchMode[wIndex].update({ "ExcSensi" : True })	#検索にセンシティブな内容を含めない
+		gVal.STR_SearchMode[wIndex].update({ "Arashi"   : False })	#荒らし除去をおこなうか
 		
 		return
 

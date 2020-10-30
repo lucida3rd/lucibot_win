@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/23
+# ::Update= 2020/10/30
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -630,6 +630,7 @@ class CLS_Setup():
 		# DB初期化
 		self.__create_TBL_LOG_DATA( gVal.OBJ_DB )
 		self.__create_TBL_KEYWORD_DATA( gVal.OBJ_DB )
+		self.__create_TBL_EXC_TWITTERID( gVal.OBJ_DB )
 		
 		#############################
 		# 終わり
@@ -651,6 +652,7 @@ class CLS_Setup():
 		self.__create_TBL_KEYWORD_DATA( inDBobj )
 		self.__create_TBL_EXC_USERNAME( inDBobj )
 		self.__create_TBL_EXC_WORD( inDBobj )
+		self.__create_TBL_EXC_TWITTERID( inDBobj )
 		return True
 
 	#####################################################
@@ -668,6 +670,8 @@ class CLS_Setup():
 		wQuery = "drop table if exists tbl_exc_username ;"
 		inOBJ_DB.RunQuery( wQuery )
 		wQuery = "drop table if exists tbl_exc_word ;"
+		inOBJ_DB.RunQuery( wQuery )
+		wQuery = "drop table if exists tbl_exc_twitterid ;"
 		inOBJ_DB.RunQuery( wQuery )
 		return True
 
@@ -847,7 +851,8 @@ class CLS_Setup():
 					"ofonly      BOOL  DEFAULT false," + \
 					"jponly      BOOL  DEFAULT true," + \
 					"excrt       BOOL  DEFAULT false," + \
-					"excsensi    BOOL  DEFAULT true" + \
+					"excsensi    BOOL  DEFAULT true," + \
+					"arashi      BOOL  DEFAULT false" + \
 					" ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
@@ -902,6 +907,33 @@ class CLS_Setup():
 					"choice      BOOL  DEFAULT true," + \
 					"word        TEXT  NOT NULL, " + \
 					" PRIMARY KEY ( word ) ) ;"
+		
+##					"regdate     DB登録日時
+##					"keyword     検索キーワード
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_EXC_TWITTERID
+#####################################################
+	def __create_TBL_EXC_TWITTERID( self, inOBJ_DB, inTBLname="tbl_exc_twitterid" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"regdate     TIMESTAMP," + \
+					"id          TEXT  NOT NULL, " + \
+					"screen_name TEXT  NOT NULL, " + \
+					"lastdate    TIMESTAMP," + \
+					"count       INTEGER NOT NULL," + \
+					" PRIMARY KEY ( screen_name ) ) ;"
 		
 ##					"regdate     DB登録日時
 ##					"keyword     検索キーワード

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : OS I/F (OS向け共通処理)
 # 
-# ::Update= 2020/10/12
+# ::Update= 2020/10/30
 #####################################################
 # Private Function:
 #   (none)
@@ -539,6 +539,28 @@ class CLS_OSIF() :
 		wPatt = re.compile(r"<[^>]*?>")
 		wD_Cont = wPatt.sub( "", inCont )
 		return wD_Cont
+
+
+
+#####################################################
+# row['content']からハッシュタグを除去
+#####################################################
+	@classmethod
+	def sDel_HashTag( cls, inCont ):
+		wPatt = re.compile(r"(#[^\s]+)")
+		wD_Cont = wPatt.sub( "", inCont )
+		return wD_Cont
+
+
+
+#####################################################
+# row['content']からハッシュタグの個数を返す
+#####################################################
+	@classmethod
+	def sGetCount_HashTag( cls, inCont ):
+		wPatt = re.findall(r'(#[^\s]+)', inCont )
+		wCount = len(wPatt)
+		return wCount
 
 
 

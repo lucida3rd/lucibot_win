@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/27
+# ::Update= 2020/10/30
 #####################################################
 # Private Function:
 #   (none)
@@ -56,6 +56,9 @@ class CLS_TwitterMain():
 		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
 		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
 		
+		"ArashiNum"			: 0,	#荒らし登録者数
+		"ArashiOnNum"		: 0,	#荒らし者数
+		
 		"DB_Num"			: 0,	#DB登録数
 		"DB_Insert"			: 0,	#DB挿入
 		"DB_Update"			: 0,	#DB更新
@@ -77,6 +80,8 @@ class CLS_TwitterMain():
 	ARR_NormalListMenberID = []
 	ARR_UnRefollowListMenberID = []
 	ARR_OldUserID = []
+	
+	ARR_newExcUser = {}
 	
 	STR_newFollower = {}
 	VAL_newFollower = 0
@@ -158,6 +163,24 @@ class CLS_TwitterMain():
 			return wRes
 		
 		#############################
+		# 除外Twitter ID読み込み
+		wResSub = wOBJ_Config.GetExcTwitterID()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "GetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		self.ARR_newExcUser = {}
+		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
+		for wIndex in wKeylist :
+			wCell = {
+				"id"          : str(gVal.STR_ExcTwitterID_Info[wIndex]['id']),
+				"screen_name" : gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'],
+				"count"       : gVal.STR_ExcTwitterID_Info[wIndex]['count'],
+				"lastdate"    : gVal.STR_ExcTwitterID_Info[wIndex]['lastdate']
+				}
+			self.ARR_newExcUser.update({ str(gVal.STR_ExcTwitterID_Info[wIndex]['id']) : wCell })
+		
+		#############################
 		# 完了
 		wRes['Result'] = True
 		return wRes
@@ -181,6 +204,13 @@ class CLS_TwitterMain():
 		wResSub = wOBJ_Config.SetSearchMode_All()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetSearchMode_All failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 除外Twitter ID 書き込み
+		wResSub = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "SetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
@@ -216,6 +246,9 @@ class CLS_TwitterMain():
 		self.STR_Cope['NewFollowerNum']  = 0
 		self.STR_Cope['tMyFollowRemove'] = 0
 		self.STR_Cope['MyFollowRemove']  = 0
+		
+		self.STR_Cope['ArashiNum']  = 0
+		self.STR_Cope['ArashiOnNum']  = 0
 		
 		self.STR_Cope['DB_Num']    = 0
 		self.STR_Cope['DB_Insert'] = 0
@@ -269,6 +302,9 @@ class CLS_TwitterMain():
 		wStr = wStr + "新規フォロワー数    = " + str(self.STR_Cope['NewFollowerNum']) + '\n'
 		wStr = wStr + "自動リムーブ 対象数 = " + str(self.STR_Cope['tMyFollowRemove']) + '\n'
 		wStr = wStr + "自動リムーブ 実行数 = " + str(self.STR_Cope['MyFollowRemove']) + '\n'
+		wStr = wStr + '\n'
+		wStr = wStr + "荒らし登録者数 = " + str(self.STR_Cope['ArashiNum']) + '\n'
+		wStr = wStr + "荒らし者数     = " + str(self.STR_Cope['ArashiOnNum']) + '\n'
 		wStr = wStr + '\n'
 		wStr = wStr + "DB登録数 = " + str(self.STR_Cope['DB_Num']) + '\n'
 		wStr = wStr + "DB挿入   = " + str(self.STR_Cope['DB_Insert']) + '\n'
@@ -325,6 +361,15 @@ class CLS_TwitterMain():
 #####################################################
 	def KeyUserCSV(self):
 		wRes = self.OBJ_TwitterKeyword.OutCSV()
+		return wRes
+
+
+
+#####################################################
+# 荒らしユーザCSV出力
+#####################################################
+	def ArashiCSV(self):
+		wRes = self.OBJ_TwitterKeyword.OutArashiCSV()
 		return wRes
 
 
@@ -411,6 +456,121 @@ class CLS_TwitterMain():
 			if inWord.find( wLine )>=0 :
 				return False
 		return True
+
+
+
+#####################################################
+# 荒らしチェック
+#####################################################
+	def CheckTrolls( self, inLine ):
+		#############################
+		# 除外Twitter IDチェック
+		#   既に除外判定されてるID
+		for wID in gVal.STR_ExcTwitterID :
+			if inLine['user']['screen_name']==wID :
+				return False	#除外
+		
+		#############################
+		# 今の周回検索
+		wKeylist = list( self.ARR_newExcUser.keys() )
+		wFLG_Ditect = False
+		for wIndex in wKeylist :
+			if self.ARR_newExcUser[wIndex]['screen_name']==inLine['user']['screen_name'] :
+				wFLG_Ditect = True
+				break
+		
+		###まだ未発見ならとりま枠を作る
+		if wFLG_Ditect==False :
+			wCell = {
+				"id"          : str(inLine['user']['id']),
+				"screen_name" : inLine['user']['screen_name'],
+				"count"       : 0,
+				"lastdate"    : "1901-01-01 00:00:00"
+				}
+			wIndex = str(inLine['user']['id'])
+			self.ARR_newExcUser.update({ str(inLine['user']['id']) : wCell })
+		
+		#############################
+		# 同じツイートか(日時で判定)
+		if self.ARR_newExcUser[wIndex]['lastdate']==inLine['created_at'] :
+			return True	#記録済みとして判定しない,正常扱い
+		
+		###新しい更新日として記録
+		self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
+		
+		wFLG_Trolls = False
+		wFLG_Force  = False	#一発レッド
+		#############################
+		# 荒らし判定
+		
+		###ハッシュタグを3つ以上使ってる
+		if CLS_OSIF.sGetCount_HashTag( inLine['text'] )>=3 :
+			wFLG_Trolls = True
+		
+		###タグ・URLのみ
+		wCHR_Text = CLS_OSIF.sDel_HTML( str(inLine['text']) )
+		wCHR_Text = CLS_OSIF.sDel_HashTag( wCHR_Text )
+		wCHR_Text = CLS_OSIF.sDel_URL( wCHR_Text )
+		sDel_URL = wCHR_Text.replace( " ", "" )
+		if len(sDel_URL)==0 :
+			wFLG_Trolls = True
+		
+		###ユーザ名にチャイ文を含んでる
+		if self.__check_ChinaWord( inLine['user']['name'] )==True :
+			wFLG_Force  = True	#一発レッド
+			wFLG_Trolls = True
+		
+		###ツイートにチャイ文を含んでる
+		if self.__check_ChinaWord( inLine['text'] )==True :
+			wFLG_Force  = True	#一発レッド
+			wFLG_Trolls = True
+		
+		#############################
+		# 一発レッドか
+		if wFLG_Force==True :
+			###一発レッド
+			self.ARR_newExcUser[wIndex]['count'] += gVal.DEF_STR_TLNUM['excTwitterID']
+			gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
+			return False
+		
+		#############################
+		# 今回は荒らし判定
+		elif wFLG_Trolls==True :
+			self.ARR_newExcUser[wIndex]['count'] += 1
+			if gVal.DEF_STR_TLNUM['excTwitterID']>=self.ARR_newExcUser[wIndex]['count'] :
+				###荒らし確定
+				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
+			return False
+		
+		#############################
+		# 潔白
+		self.ARR_newExcUser[wIndex]['count'] = 0
+		return True
+
+	# チャイ文判定
+	def __check_ChinaWord( self, inText ):
+	### SJISに変換して文字数が減れば簡体字があるので中国語
+	###   参考ロジック：
+	###     https://showyou.hatenablog.com/entry/20110131/1296490644
+	###     https://qiita.com/ry_2718/items/47c21792d7bbd3fe33b9
+		wOrgLen = len( inText )
+		wHenLen = len( inText.encode('sjis','ignore').decode('sjis') )
+		if wOrgLen==wHenLen :
+			return False #日本語
+		
+		questions_before = [s for s in inText]
+		questions_gb2312 = [s for s in \
+			inText.encode('gb2312','ignore').decode('gb2312')]
+		questions_cp932 = [s for s in \
+			inText.encode('cp932','ignore').decode('cp932')]
+		if questions_gb2312==questions_before :
+			return True	#チャイ文
+		
+		wLen = len(questions_before) - len(questions_cp932)
+		if wLen!=0 :
+			return True	#チャイ文
+		
+		return False	#日本語
 
 
 

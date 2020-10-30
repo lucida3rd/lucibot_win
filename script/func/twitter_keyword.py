@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/10/30
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -121,6 +121,24 @@ class CLS_TwitterKeyword():
 				###ツイートに除外文字が含まれている
 				if self.OBJ_Parent.CheckExcWord( wLine['text'] )==False :
 					continue
+				###端末名に除外文字が含まれている
+				wCHR_Term = CLS_OSIF.sDel_HTML( str(wLine['source']) )
+				if self.OBJ_Parent.CheckExcWord( wCHR_Term )==False :
+					continue
+				
+				###日時の変換
+				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+				if wTime['Result']!=True :
+					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				wLine['created_at'] = wTime['TimeDate']
+				
+				###荒らしチェック
+				if gVal.STR_SearchMode[wIndex]['Arashi']==True :
+					if self.OBJ_Parent.CheckTrolls( wLine )==False :
+						continue
+				
 				###既にフォローしているユーザ
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
 					continue
@@ -167,7 +185,15 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# キーユーザ数
-		self.OBJ_Parent.STR_Cope['KeyUserNum'] += len(self.OBJ_Parent.STR_KeyUser)
+		self.OBJ_Parent.STR_Cope['KeyUserNum'] += len( self.OBJ_Parent.STR_KeyUser )
+		
+		self.OBJ_Parent.STR_Cope['ArashiNum'] = len( self.OBJ_Parent.ARR_newExcUser )
+		wArashiOnNum = 0
+		wKeylist = list( self.OBJ_Parent.ARR_newExcUser )
+		for wIndex in wKeylist :
+			if self.OBJ_Parent.ARR_newExcUser[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
+				wArashiOnNum += 1
+		self.OBJ_Parent.STR_Cope['ArashiOnNum'] = wArashiOnNum
 		
 		#############################
 		# 正常終了
@@ -177,7 +203,8 @@ class CLS_TwitterKeyword():
 	#####################################################
 	def __set_KeyUser( self, inLine, inWord ):
 		###既に同じユーザを抽出した
-		if str(inLine['id']) in self.OBJ_Parent.STR_KeyUser :
+###		if str(inLine['id']) in self.OBJ_Parent.STR_KeyUser :
+		if str(inLine['user']['id']) in self.OBJ_Parent.STR_KeyUser :
 			return False
 		
 		###セット
@@ -192,7 +219,8 @@ class CLS_TwitterKeyword():
 		wSTR_Cell.update({ "text"        : inLine['text'] })
 		wSTR_Cell.update({ "statuses_count" : str(inLine['user']['statuses_count']) })
 		wSTR_Cell.update({ "protected"   : inLine['user']['protected'] })
-		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['id']) : wSTR_Cell })
+###		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['id']) : wSTR_Cell })
+		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['user']['id']) : wSTR_Cell })
 		return True
 
 
@@ -745,6 +773,19 @@ class CLS_TwitterKeyword():
 				wMsg = "はい"
 			wMsg = "センシティブを除外する=" + wMsg
 		
+		#############################
+		# [\tr] 荒らしを除外する：[いいえ]→はい
+		elif inWord=="\\tr" :
+			if gVal.STR_SearchMode[inIndex]['Arashi']==True :
+				###はい→いいえ
+				gVal.STR_SearchMode[inIndex]['Arashi'] = False
+				wMsg = "いいえ"
+			else:
+				###いいえ→はい
+				gVal.STR_SearchMode[inIndex]['Arashi'] = True
+				wMsg = "はい"
+			wMsg = "荒らしを除外する=" + wMsg
+		
 		else:
 			###ないコマンド
 			CLS_OSIF.sPrn( "そのコマンドはありません: " + inWord + '\n' )
@@ -1110,6 +1151,11 @@ class CLS_TwitterKeyword():
 		return wPath
 
 	#####################################################
+	def __get_ArashiCSVpath(self):
+		wPath = gVal.DEF_USERDATA_PATH + "arashi_" + str(gVal.STR_UserInfo['Account']) + ".csv"
+		return wPath
+
+	#####################################################
 	def __out_CSV( self, inPath, inARR_List ):
 		#############################
 		# 書き込みデータを作成
@@ -1273,6 +1319,10 @@ class CLS_TwitterKeyword():
 			###ツイートに除外文字が含まれている
 			if self.OBJ_Parent.CheckExcWord( wLine['text'] )==False :
 				continue
+			###端末名に除外文字が含まれている
+			wCHR_Term = CLS_OSIF.sDel_HTML( str(wLine['source']) )
+			if self.OBJ_Parent.CheckExcWord( wCHR_Term )==False :
+				continue
 			
 			###日時の変換
 			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
@@ -1282,11 +1332,15 @@ class CLS_TwitterKeyword():
 				continue
 			wLine['created_at'] = wTime['TimeDate']
 			
+			###荒らしチェック
+			if gVal.STR_SearchMode[0]['Arashi']==True :
+				if self.OBJ_Parent.CheckTrolls( wLine )==False :
+					continue
+			
 			wStrLine = self.__getStr_TweetSearch( wLine )
 			CLS_OSIF.sPrn( wStrLine )
 			if str(wLine['user']['id']) not in wARR_UserID :
 				wARR_UserID.append( str(wLine['user']['id']) )
-###			self.__set_KeyUser( wLine['user'], wCommand )
 			self.__set_KeyUser( wLine, wCommand )
 			wVAL_Count += 1
 			
@@ -1340,7 +1394,6 @@ class CLS_TwitterKeyword():
 		# ファイル名の設定
 		wCHR_File_path = self.__get_CSVpath()
 		
-###		if self.__out_CSV( wCHR_File_path, wARR_UserID )!=True :
 		if self.__out_TweetSearchCSV( wCHR_File_path )!=True :
 			###失敗
 			wRes['Reason'] = "sWriteFile is failed: " + wCHR_File_path
@@ -1350,6 +1403,14 @@ class CLS_TwitterKeyword():
 		#############################
 		# 取得開始の表示
 		CLS_OSIF.sPrn( "ユーザ一覧をCSVに出力しました: " + wCHR_File_path + '\n' )
+		
+		#############################
+		# 荒らしCSV書き込み
+		wResArashi = self.OutArashiCSV( inHeader=False )
+		if wResArashi['Result']!=True :
+			wRes['Reason'] = "OutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
 		
 		#############################
 		# 正常終了
@@ -1389,6 +1450,97 @@ class CLS_TwitterKeyword():
 			wLine = wLine + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", "
 			wLine = wLine + str(self.OBJ_Parent.STR_KeyUser[wKey]['hit_word']) + ", "
 			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.STR_KeyUser[wKey]['screen_name'] + ", " + '\n'
+			wSetLine.append(wLine)
+		
+		#############################
+		# ファイル上書き書き込み
+		if CLS_File.sWriteFile( inPath, wSetLine, inExist=False )!=True :
+			return False	#失敗
+		
+		return True
+
+
+
+#####################################################
+# 荒らしユーザCSV出力
+#####################################################
+	def OutArashiCSV( self, inHeader=True ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "OutArashiCSV"
+		
+		if inHeader==True :
+			#############################
+			# 画面クリア
+			CLS_OSIF.sDispClr()
+			
+			#############################
+			# ヘッダ表示
+			wStr = "--------------------" + '\n'
+			wStr = wStr + " キーユーザCSV出力" + '\n'
+			wStr = wStr + "--------------------" + '\n'
+			wStr = wStr + '\n'
+			wStr = wStr + "出力するキーユーザを選出しています。しばらくお待ちください......" + '\n'
+			CLS_OSIF.sPrn( wStr )
+		
+		if len(self.OBJ_Parent.ARR_newExcUser)==0 :
+			###登録者なし
+			CLS_OSIF.sPrn( "荒らし登録者がないため、CSVは出力していません。" )
+			wRes['Result'] = True
+			return wRes
+		
+		# ファイル名の設定
+		wCHR_ArashiFile_path = self.__get_ArashiCSVpath()
+		
+		#############################
+		# 書き込み
+		if self.__out_ArashiCSV( wCHR_ArashiFile_path )!=True :
+			###失敗
+			wRes['Reason'] = "sWriteFile is failed: " + wCHR_ArashiFile_path
+			return wRes
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "荒らし一覧をCSVに出力しました: " + wCHR_ArashiFile_path + '\n' )
+		
+		#############################
+		# 正常終了
+		wRes['Result'] = True
+		return wRes
+
+	#####################################################
+	def __out_ArashiCSV( self, inPath ):
+		#############################
+		# 書き込みデータを作成
+		wSetLine = []
+		
+		#############################
+		# ヘッダ部
+		wLine = "screen_name, count, url, lastdate, arashi, " + '\n'
+		wSetLine.append(wLine)
+		
+		#############################
+		# データ部
+		
+		wKeylist = list( self.OBJ_Parent.ARR_newExcUser.keys() )
+		for wIndex in wKeylist :
+			if self.OBJ_Parent.ARR_newExcUser[wIndex]['count']==0 :
+				### 0は荒らし判定なしなのでスキップ
+				continue
+			elif self.OBJ_Parent.ARR_newExcUser[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
+				wMark = "■"
+			else:
+				wMark = ""
+			
+			wLine = ""
+			wLine = wLine + self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
+			wLine = wLine + str( self.OBJ_Parent.ARR_newExcUser[wIndex]['count']) + ", "
+			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
+			wLine = wLine + str( self.OBJ_Parent.ARR_newExcUser[wIndex]['lastdate']) + ", "
+			wLine = wLine + wMark + ", " + '\n'
 			wSetLine.append(wLine)
 		
 		#############################

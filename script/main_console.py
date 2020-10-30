@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/27
+# ::Update= 2020/10/30
 #####################################################
 # Private Function:
 #   (none)
@@ -208,6 +208,12 @@ class CLS_Main_Console() :
 		# キーユーザCSV出力
 		if inCommand=="\\k" :
 			cls.OBJ_TwitterMain.KeyUserCSV()
+			wFlg = True
+		
+		#############################
+		# 荒らしユーザCSV出力
+		if inCommand=="\\tr" :
+			cls.OBJ_TwitterMain.ArashiCSV()
 			wFlg = True
 		
 	#####################################################

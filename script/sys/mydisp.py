@@ -124,6 +124,10 @@ class CLS_MyDisp():
 		elif "[@SEARCH-SENSI@]"==inLine :
 			pRes['Responce'] = "    センシティブを除外   [\\sn]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['ExcSensi'] )
 		
+		###インプリ：検索 荒らし除去をおこなう
+		elif "[@SEARCH-ARASHI@]"==inLine :
+			pRes['Responce'] = "    荒らし除去           [\\tr]: " + cls.__get_JPstr_Single( gVal.STR_SearchMode[inIndex]['Arashi'] )
+		
 		###インプリ：検索文字
 ###		elif "[@SEARCH-KEYWORD@]"==inLine and inIndex!=0 :
 		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']!=0 :
@@ -132,7 +136,8 @@ class CLS_MyDisp():
 			else:
 				pRes['Responce'] = "    検索文字: " + gVal.STR_SearchMode[inIndex]['Keyword']
 
-		elif "[@SEARCH-KEYWORD@]"==inLine :
+###		elif "[@SEARCH-KEYWORD@]"==inLine :
+		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']==0 :
 			pRes['Responce'] = None
 		
 		#############################
@@ -177,11 +182,13 @@ class CLS_MyDisp():
 					wList = wList + '\n'
 ###				wNum += 1
 			
-			###リストの後ろに改行
-			wList = wList + '\n'
-			
+###			###リストの後ろに改行
+###			wList = wList + '\n'
+###			
 ###			if wNum>0 :
 			if wList!="" :
+				###リストの後ろに改行
+				wList = wList + '\n'
 				pRes['Responce'] = wList
 			else:
 				pRes['Responce'] = "    (キーユーザ設定がありません)" + '\n'
