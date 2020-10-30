@@ -650,19 +650,19 @@ class CLS_Config() :
 			
 			#############################
 			# DBになければinsertする
-			if inNewList[wIndex]['screen_name'] in gVal.STR_RateExcTwitterID :
+			if inNewList[wIndex]['screen_name'] not in gVal.STR_RateExcTwitterID :
 				wQuery = "insert into tbl_exc_twitterid values (" + \
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"'" + str( inNewList[wIndex]['id'] ) + "'," + \
 							"'" + str( inNewList[wIndex]['screen_name'] ) + "'," + \
-							"'" + str(wTD['TimeDate']) + "'," + \
+							"'" + str( inNewList[wIndex]['lastdate'] ) + "'," + \
 							str( inNewList[wIndex]['count'] ) + " " + \
 							") ;"
 			#############################
 			# DBにあれば更新する
 			else:
 				wQuery = "update tbl_exc_twitterid set " + \
-							"lastdate = '" + str(wTD['TimeDate']) + "', " + \
+							"lastdate = '" + str( inNewList[wIndex]['lastdate'] ) + "', " + \
 							"count = " + str( inNewList[wIndex]['count'] ) + " " + \
 							"where screen_name = '" + inNewList[wIndex]['screen_name'] + "' ;"
 			
@@ -701,7 +701,7 @@ class CLS_Config() :
 			return wRes
 		
 		wQuery = "delete from tbl_exc_twitterid " + \
-					"where lastdate >= timestamp '" + str(wLagTime['RateTime']) + "' " + \
+					"where lastdate < timestamp '" + str(wLagTime['RateTime']) + "' " + \
 					";"
 		
 		#############################
@@ -717,5 +717,6 @@ class CLS_Config() :
 		# 完了
 		wRes['Result'] = True
 		return wRes
+
 
 
