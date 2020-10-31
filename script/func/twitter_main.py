@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/10/31
 #####################################################
 # Private Function:
 #   (none)
@@ -89,6 +89,14 @@ class CLS_TwitterMain():
 	OBJ_TwitterFavo = ""
 	OBJ_TwitterFollower = ""
 	OBJ_TwitterKeyword = ""
+
+	DEF_STR_ARASHI_REASON_ID = {
+		0	: "Not Arashi",
+		10	: "Hash Tag",
+		11	: "Hash and URL",
+		20	: "China User Name",
+		21	: "China Word"
+	}
 
 
 
@@ -172,13 +180,21 @@ class CLS_TwitterMain():
 		self.ARR_newExcUser = {}
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
-			wCell = {
-				"id"          : str(gVal.STR_ExcTwitterID_Info[wIndex]['id']),
-				"screen_name" : gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'],
-				"count"       : gVal.STR_ExcTwitterID_Info[wIndex]['count'],
-				"lastdate"    : gVal.STR_ExcTwitterID_Info[wIndex]['lastdate']
-				}
-			self.ARR_newExcUser.update({ str(gVal.STR_ExcTwitterID_Info[wIndex]['id']) : wCell })
+###			wCell = {
+###				"id"          : str(gVal.STR_ExcTwitterID_Info[wIndex]['id']),
+###				"screen_name" : gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'],
+###				"count"       : gVal.STR_ExcTwitterID_Info[wIndex]['count'],
+###				"lastdate"    : gVal.STR_ExcTwitterID_Info[wIndex]['lastdate']
+###				}
+###			self.ARR_newExcUser.update({ str(gVal.STR_ExcTwitterID_Info[wIndex]['id']) : wCell })
+			self.SetnewExcUser(
+				gVal.STR_ExcTwitterID_Info[wIndex]['id'],
+				gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'],
+				gVal.STR_ExcTwitterID_Info[wIndex]['count'],
+				gVal.STR_ExcTwitterID_Info[wIndex]['lastdate'],
+				gVal.STR_ExcTwitterID_Info[wIndex]['arashi'],
+				gVal.STR_ExcTwitterID_Info[wIndex]['reason_id']
+			)
 		
 		#############################
 		# 完了
@@ -217,6 +233,23 @@ class CLS_TwitterMain():
 		# 完了
 		wRes['Result'] = True
 		return wRes
+
+
+
+#####################################################
+# 新規除外ユーザ 設定
+#####################################################
+	def SetnewExcUser( self, inID, inScreenName, inCount=0, inLastDate="1901-01-01 00:00:00", inArashi=False, inReasonID=0 ):
+		wCell = {
+			"id"          : str(inID),
+			"screen_name" : inScreenName,
+			"count"       : inCount,
+			"lastdate"    : inLastDate,
+			"arashi"      : inArashi,
+			"reason_id"   : inReasonID
+		}
+		self.ARR_newExcUser.update({ str(inScreenName) : wCell })
+		return
 
 
 
@@ -463,32 +496,35 @@ class CLS_TwitterMain():
 # 荒らしチェック
 #####################################################
 	def CheckTrolls( self, inLine ):
-		#############################
-		# 除外Twitter IDチェック
-		#   既に除外判定されてるID
-		for wID in gVal.STR_ExcTwitterID :
-			if inLine['user']['screen_name']==wID :
-				return False	#除外
+##		#############################
+##		# Indexの検索
+##		wKeylist = list( self.ARR_newExcUser.keys() )
+##		wFLG_Ditect = False
+##		for wKey in wKeylist :
+##			if self.ARR_newExcUser[wKey]['screen_name']==inLine['user']['screen_name'] :
+##				wIndex = self.ARR_newExcUser[wKey]['screen_name']
+##				wFLG_Ditect = True
+##				break
+##		
+##		###まだ未発見ならとりま枠を作る
+##		if wFLG_Ditect==False :
+###			wCell = {
+###				"id"          : str(inLine['user']['id']),
+###				"screen_name" : inLine['user']['screen_name'],
+###				"count"       : 0,
+###				"lastdate"    : "1901-01-01 00:00:00"
+###				}
+###			wIndex = str(inLine['user']['id'])
+###			self.ARR_newExcUser.update({ str(inLine['user']['id']) : wCell })
 		
 		#############################
-		# 今の周回検索
-		wKeylist = list( self.ARR_newExcUser.keys() )
-		wFLG_Ditect = False
-		for wIndex in wKeylist :
-			if self.ARR_newExcUser[wIndex]['screen_name']==inLine['user']['screen_name'] :
-				wFLG_Ditect = True
-				break
-		
-		###まだ未発見ならとりま枠を作る
-		if wFLG_Ditect==False :
-			wCell = {
-				"id"          : str(inLine['user']['id']),
-				"screen_name" : inLine['user']['screen_name'],
-				"count"       : 0,
-				"lastdate"    : "1901-01-01 00:00:00"
-				}
-			wIndex = str(inLine['user']['id'])
-			self.ARR_newExcUser.update({ str(inLine['user']['id']) : wCell })
+		# まだ未発見ならとりま枠を作る
+		wIndex = str(inLine['user']['screen_name'])
+		if wIndex not in self.ARR_newExcUser :
+			self.SetnewExcUser(
+				inLine['user']['id'],
+				inLine['user']['screen_name']
+			)
 		
 		#############################
 		# 同じツイートか(日時で判定)
@@ -498,55 +534,75 @@ class CLS_TwitterMain():
 		###新しい更新日として記録
 		self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
 		
+		#############################
+		# 除外Twitter IDチェック
+		#   既に除外判定されてるID
+###		for wID in gVal.STR_ExcTwitterID :
+###			if inLine['user']['screen_name']==wID :
+###				###どうせまた荒らしてるんでしょ？のカウンタ
+###				self.ARR_newExcUser[wIndex]['count'] += 1
+###				return False	#除外、さよなら
+###		
+		if wIndex in gVal.STR_ExcTwitterID :
+			###どうせまた荒らしてるんでしょ？のカウンタ
+			self.ARR_newExcUser[wIndex]['count'] += 1
+			return False	#除外、さよなら
+		
+		#############################
+		# ツイートからタグ・URLを除去する
+		wCHR_Text = CLS_OSIF.sDel_HTML( str(inLine['text']) )
+		wCHR_Text = CLS_OSIF.sDel_HashTag( wCHR_Text )
+		wCHR_Text = CLS_OSIF.sDel_URL( wCHR_Text )
+		wCHR_Text = wCHR_Text.replace( " ", "" )
+		
 		wFLG_Trolls = False
-		wFLG_Force  = False	#一発レッド
+		wReasonID = 0
 		#############################
 		# 荒らし判定
 		
 		###ハッシュタグを3つ以上使ってる
 		if CLS_OSIF.sGetCount_HashTag( inLine['text'] )>=3 :
+			wReasonID = 10
 			wFLG_Trolls = True
 		
-		###タグ・URLのみ
-		wCHR_Text = CLS_OSIF.sDel_HTML( str(inLine['text']) )
-		wCHR_Text = CLS_OSIF.sDel_HashTag( wCHR_Text )
-		wCHR_Text = CLS_OSIF.sDel_URL( wCHR_Text )
-		sDel_URL = wCHR_Text.replace( " ", "" )
-		if len(sDel_URL)==0 :
+		###タグ・URLのみのツイート
+		elif len(wCHR_Text)==0 :
+			wReasonID = 11
 			wFLG_Trolls = True
 		
 		###ユーザ名にチャイ文を含んでる
-		if self.__check_ChinaWord( inLine['user']['name'] )==True :
-			wFLG_Force  = True	#一発レッド
+		elif self.__check_ChinaWord( inLine['user']['name'] )==True :
+			wReasonID = 20
 			wFLG_Trolls = True
 		
 		###ツイートにチャイ文を含んでる
-		if self.__check_ChinaWord( inLine['text'] )==True :
-			wFLG_Force  = True	#一発レッド
+		elif self.__check_ChinaWord( inLine['text'] )==True :
+			wReasonID = 21
 			wFLG_Trolls = True
 		
 		#############################
-		# 一発レッドか
-		if wFLG_Force==True :
-			###一発レッド
-			self.ARR_newExcUser[wIndex]['count'] += gVal.DEF_STR_TLNUM['excTwitterID']
-			gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
-			return False
-		
-		#############################
-		# 今回は荒らし判定
-		elif wFLG_Trolls==True :
+		# 荒らしカウント
+		if wFLG_Trolls==True :
 			self.ARR_newExcUser[wIndex]['count'] += 1
-			if gVal.DEF_STR_TLNUM['excTwitterID']>=self.ARR_newExcUser[wIndex]['count'] :
-				###荒らし確定
+			
+			#############################
+			# 荒らし確定
+			if gVal.DEF_STR_TLNUM['excTwitterID']<=self.ARR_newExcUser[wIndex]['count'] :
+				self.ARR_newExcUser[wIndex]['arashi'] = True
+				self.ARR_newExcUser[wIndex]['reason_id'] = wReasonID
+				
+				###除外リスト入り
 				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
-			return False
+			
+			return False	#さよなら
 		
 		#############################
-		# 潔白
+		# 連続じゃないのでカウントリセット
 		self.ARR_newExcUser[wIndex]['count'] = 0
+		
 		return True
 
+	#####################################################
 	# チャイ文判定
 	def __check_ChinaWord( self, inText ):
 	### SJISに変換して文字数が減れば簡体字があるので中国語

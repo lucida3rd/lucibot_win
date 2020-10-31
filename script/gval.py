@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/10/31
 #####################################################
 
 #####################################################
@@ -67,11 +67,11 @@ class gVal() :
 
 #############################
 # 除外ユーザ名・除外文字・除外Twitter ID
-	STR_ExcUserName = []
-	STR_ExcWord     = []
-	STR_ExcTwitterID = []
-	STR_RateExcTwitterID = []
-	STR_ExcTwitterID_Info = {}
+	STR_ExcUserName = []			#除外ユーザ名
+	STR_ExcWord     = []			#除外ワード
+	STR_ExcTwitterID = []			#除外Twitter ID
+	STR_RateExcTwitterID = []		#除外Twitter ID(処理前DB)
+	STR_ExcTwitterID_Info = {}		#除外Twitter ID(DB詳細)
 
 #############################
 # Timeline調整数

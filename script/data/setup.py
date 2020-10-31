@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/10/31
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -931,12 +931,19 @@ class CLS_Setup():
 					"regdate     TIMESTAMP," + \
 					"id          TEXT  NOT NULL, " + \
 					"screen_name TEXT  NOT NULL, " + \
-					"lastdate    TIMESTAMP," + \
 					"count       INTEGER NOT NULL," + \
-					" PRIMARY KEY ( screen_name ) ) ;"
+					"lastdate    TIMESTAMP," + \
+					"arashi      BOOL  DEFAULT true," + \
+					"reason_id   INTEGER NOT NULL," + \
+					" PRIMARY KEY ( id ) ) ;"
 		
 ##					"regdate     DB登録日時
-##					"keyword     検索キーワード
+##					"id          Twitter ID
+##					"screen_name Twitter ID(英語)
+##					"count       荒らした回数カウンタ
+##					"lastdate    最後の判定ツイート日時
+##					"arashi      荒らしか
+##					"reason_id   荒らし理由番号(荒らし判定時)
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return

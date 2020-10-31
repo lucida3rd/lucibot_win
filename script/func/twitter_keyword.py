@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/10/31
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -1519,7 +1519,7 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# ヘッダ部
-		wLine = "screen_name, count, url, lastdate, arashi, " + '\n'
+		wLine = "screen_name, count, url, lastdate, reason, " + '\n'
 		wSetLine.append(wLine)
 		
 		#############################
@@ -1530,17 +1530,29 @@ class CLS_TwitterKeyword():
 			if self.OBJ_Parent.ARR_newExcUser[wIndex]['count']==0 :
 				### 0は荒らし判定なしなのでスキップ
 				continue
-			elif self.OBJ_Parent.ARR_newExcUser[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
-				wMark = "■"
-			else:
-				wMark = ""
+			elif self.OBJ_Parent.ARR_newExcUser[wIndex]['arashi']==False :
+				### 荒らし判定なしのためスキップ
+				continue
+###			elif self.OBJ_Parent.ARR_newExcUser[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
+###				wMark = "■"
+###			else:
+###				wMark = ""
 			
-			wLine = ""
-			wLine = wLine + self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
+			###理由の日本語変換
+			wReasonID = self.OBJ_Parent.ARR_newExcUser[wIndex]['reason_id']
+			if wReasonID in self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID :
+				wCHR_Reason = self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID[wReasonID]
+			else :
+				wCHR_Reason = "Undefined(" + str(wReasonID) + ")"
+			
+###			wLine = ""
+			wLine = self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
 			wLine = wLine + str( self.OBJ_Parent.ARR_newExcUser[wIndex]['count']) + ", "
 			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
 			wLine = wLine + str( self.OBJ_Parent.ARR_newExcUser[wIndex]['lastdate']) + ", "
-			wLine = wLine + wMark + ", " + '\n'
+			wLine = wLine + wCHR_Reason + ", "
+###			wLine = wLine + wMark + ", " + '\n'
+			wLine = wLine + '\n'
 			wSetLine.append(wLine)
 		
 		#############################

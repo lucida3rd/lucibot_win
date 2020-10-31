@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/10/31
 #####################################################
 # Private Function:
 #   (none)
@@ -606,14 +606,15 @@ class CLS_Config() :
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=gVal.STR_ExcTwitterID_Info )
 		
 		### 除外リストを作成する
-		gVal.STR_ExcTwitterID = []
-		gVal.STR_RateExcTwitterID = []
+		gVal.STR_ExcTwitterID = []		#除外Twitter ID
+		gVal.STR_RateExcTwitterID = []	#除外Twitter ID(処理前DB)
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
 			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
-			if gVal.STR_ExcTwitterID_Info[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
+			
+###			if gVal.STR_ExcTwitterID_Info[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
+			if gVal.STR_ExcTwitterID_Info[wIndex]['arashi']==True :
 				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
-###				gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
 		
 		#############################
 		# 完了
@@ -642,13 +643,13 @@ class CLS_Config() :
 			return wRes
 		### wTD['TimeDate']
 		
-		wElaseID = []
+###		wElaseID = []
 		wKeylist = list ( inNewList.keys() )
 		for wIndex in wKeylist :
-			if inNewList[wIndex]['count']==0 :
-				wElaseID.append( inNewList[wIndex]['screen_name'] )
-				continue
-			
+###			if inNewList[wIndex]['count']==0 :
+###				wElaseID.append( inNewList[wIndex]['screen_name'] )
+###				continue
+###			
 			#############################
 			# DBになければinsertする
 			if inNewList[wIndex]['screen_name'] not in gVal.STR_RateExcTwitterID :
@@ -656,15 +657,20 @@ class CLS_Config() :
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"'" + str( inNewList[wIndex]['id'] ) + "'," + \
 							"'" + str( inNewList[wIndex]['screen_name'] ) + "'," + \
+							str( inNewList[wIndex]['count'] ) + "," + \
 							"'" + str( inNewList[wIndex]['lastdate'] ) + "'," + \
-							str( inNewList[wIndex]['count'] ) + " " + \
+							str( inNewList[wIndex]['arashi'] ) + "," + \
+							str( inNewList[wIndex]['reason_id'] ) + " " + \
 							") ;"
+			
 			#############################
 			# DBにあれば更新する
 			else:
 				wQuery = "update tbl_exc_twitterid set " + \
+							"count = " + str( inNewList[wIndex]['count'] ) + ", " + \
 							"lastdate = '" + str( inNewList[wIndex]['lastdate'] ) + "', " + \
-							"count = " + str( inNewList[wIndex]['count'] ) + " " + \
+							"arashi = " + str( inNewList[wIndex]['arashi'] ) + ", " + \
+							"reason_id = " + str( inNewList[wIndex]['reason_id'] ) + " " + \
 							"where screen_name = '" + inNewList[wIndex]['screen_name'] + "' ;"
 			
 			#############################
@@ -676,21 +682,21 @@ class CLS_Config() :
 				wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 				return wRes
 		
-		#############################
-		# カウンタ0はDBから削除
-		wElaseID = []
-		for wID in wElaseID :
-			wQuery = "delete from tbl_exc_twitterid " + \
-						"where screen_name = '" + wID + "' ;"
-			
-			#############################
-			# Query実行
-			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-			wResDB = gVal.OBJ_DB.GetQueryStat()
-			if wResDB['Result']!=True :
-				##失敗
-				wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-				return wRes
+###		#############################
+###		# カウンタ0はDBから削除
+###		wElaseID = []
+###		for wID in wElaseID :
+###			wQuery = "delete from tbl_exc_twitterid " + \
+###						"where screen_name = '" + wID + "' ;"
+###			
+###			#############################
+###			# Query実行
+###			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+###			wResDB = gVal.OBJ_DB.GetQueryStat()
+###			if wResDB['Result']!=True :
+###				##失敗
+###				wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+###				return wRes
 		
 		#############################
 		# 保持日数外の情報を削除する
