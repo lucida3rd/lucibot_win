@@ -244,7 +244,7 @@ class CLS_TwitterMain():
 			"id"          : str(inID),
 			"screen_name" : inScreenName,
 			"count"       : inCount,
-			"lastdate"    : inLastDate,
+			"lastdate"    : str(inLastDate),
 			"arashi"      : inArashi,
 			"reason_id"   : inReasonID
 		}
@@ -528,7 +528,7 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 同じツイートか(日時で判定)
-		if self.ARR_newExcUser[wIndex]['lastdate']==inLine['created_at'] :
+		if self.ARR_newExcUser[wIndex]['lastdate']==str(inLine['created_at']) :
 			return True	#記録済みとして判定しない,正常扱い
 		
 		###新しい更新日として記録
