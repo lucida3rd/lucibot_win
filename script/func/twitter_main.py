@@ -560,8 +560,8 @@ class CLS_TwitterMain():
 		#############################
 		# 荒らし判定
 		
-		###ハッシュタグを3つ以上使ってる
-		if CLS_OSIF.sGetCount_HashTag( inLine['text'] )>=3 :
+		###ハッシュタグを4つ以上使ってる
+		if CLS_OSIF.sGetCount_HashTag( inLine['text'] )>=4 :
 			wReasonID = 10
 			wFLG_Trolls = True
 		
