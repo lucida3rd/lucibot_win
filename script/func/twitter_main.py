@@ -619,11 +619,13 @@ class CLS_TwitterMain():
 			inText.encode('gb2312','ignore').decode('gb2312')]
 		questions_cp932 = [s for s in \
 			inText.encode('cp932','ignore').decode('cp932')]
-		if questions_gb2312==questions_before :
-			return True	#チャイ文
-		
-		wLen = len(questions_before) - len(questions_cp932)
-		if wLen!=0 :
+###		if questions_gb2312==questions_before :
+###			return True	#チャイ文
+###		
+###		wLen = len(questions_before) - len(questions_cp932)
+###		if wLen!=0 :
+		if (questions_gb2312==questions_before ) and ( 
+		   (set(questions_before) - set(questions_cp932))!=set([])) :
 			return True	#チャイ文
 		
 		return False	#日本語
