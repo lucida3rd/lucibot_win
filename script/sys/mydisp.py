@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2020/10/25
+# ::Update= 2020/11/1
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -130,15 +130,16 @@ class CLS_MyDisp():
 		
 		###インプリ：検索文字
 ###		elif "[@SEARCH-KEYWORD@]"==inLine and inIndex!=0 :
-		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']!=0 :
+###		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']!=0 :
+		elif "[@SEARCH-KEYWORD@]"==inLine :
 			if gVal.STR_SearchMode[inIndex]['Keyword']=="" :
 				pRes['Responce'] = "    検索文字: " + "(未設定)"
 			else:
 				pRes['Responce'] = "    検索文字: " + gVal.STR_SearchMode[inIndex]['Keyword']
 
 ###		elif "[@SEARCH-KEYWORD@]"==inLine :
-		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']==0 :
-			pRes['Responce'] = None
+###		elif "[@SEARCH-KEYWORD@]"==inLine and gVal.STR_SearchMode[inIndex]['id']==0 :
+###			pRes['Responce'] = None
 		
 		#############################
 		# 正常

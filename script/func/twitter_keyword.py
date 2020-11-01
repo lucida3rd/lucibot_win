@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2020/10/31
+# ::Update= 2020/11/1
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -786,6 +786,13 @@ class CLS_TwitterKeyword():
 				wMsg = "はい"
 			wMsg = "荒らしを除外する=" + wMsg
 		
+		#############################
+		# [\rs] 再検索(手動検索時のみ)
+		elif inWord=="\\rs" and inIndex==0 :
+			wRes['Responce'] = False	#コマンドではなくする
+			wRes['Result'] = True
+			return wRes
+		
 		else:
 			###ないコマンド
 			CLS_OSIF.sPrn( "そのコマンドはありません: " + inWord + '\n' )
@@ -1222,10 +1229,10 @@ class CLS_TwitterKeyword():
 			# 更新する
 			gVal.STR_SearchMode[0]['Update']  = True
 			
-			#############################
-			# 検索文字入力だったら検索文字を保存する
-			if wResSearch['Responce']==False :
-				gVal.STR_SearchMode[0]['Keyword'] = wWord
+###			#############################
+###			# 検索文字入力だったら検索文字を保存する
+###			if wResSearch['Responce']==False :
+###				gVal.STR_SearchMode[0]['Keyword'] = wWord
 		
 		wRes['Result'] = True
 		return wRes
@@ -1239,7 +1246,8 @@ class CLS_TwitterKeyword():
 			gVal.OBJ_L.Log( "D", wResDisp )
 			return "\\q"	#失敗=強制終了
 		
-		wWord = CLS_OSIF.sInp( "検索文字？=> " )
+###		wWord = CLS_OSIF.sInp( "検索文字？=> " )
+		wWord = CLS_OSIF.sInp( "検索文字？(\\rs=検索再実行)=> " )
 		return wWord
 
 	#####################################################
@@ -1272,9 +1280,20 @@ class CLS_TwitterKeyword():
 		
 		###※以下コマンド以外の場合
 		
+		wWord = "" + inWord
+		#############################
+		# 再実行の場合
+		if wWord=="\\rs" :
+			wWord = gVal.STR_SearchMode[0]['Keyword']
+			if wWord=="" or wWord==None :
+				CLS_OSIF.sPrn( "再実行を指示されましたが、キーワードが未設定です。" )
+				wRes['Result'] = False
+				return wRes
+		
 		#############################
 		# コマンド付加
-		wResCmd = self.IncSearchMode( 0, inWord )
+###		wResCmd = self.IncSearchMode( 0, inWord )
+		wResCmd = self.IncSearchMode( 0, wWord )
 		if wResCmd['Result']!=True :
 			###やらかし
 			wRes['Reason'] = "IncSearchModeのやらかし: reason=" + wResCmd['Reason']
@@ -1411,6 +1430,10 @@ class CLS_TwitterKeyword():
 			wRes['Reason'] = "OutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		
+		#############################
+		# 検索ワードを保存する
+		gVal.STR_SearchMode[0]['Keyword'] = wWord
 		
 		#############################
 		# 正常終了
