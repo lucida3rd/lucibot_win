@@ -389,9 +389,24 @@ class CLS_TwitterAdmin():
 		#   事前に荒らし設定しておくか
 		if wFLG_UserFind==False :
 			wStr = "データベースに登録されていないユーザです。事前に荒らし設定しておくこともできます。" + '\n'
+			wStr = wStr + '\n'
+			wStr = wStr + "理由の指定＞" + '\n'
+			wKeylist = list( self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID.keys() )
+			for wReasonID in self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID :
+				if wReasonID==0 :
+					continue
+				wStr = wStr + str(wReasonID) + " : " + self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID[wReasonID] + '\n'
+			
 			CLS_OSIF.sPrn( wStr )
-			wSelect = CLS_OSIF.sInp( "荒らし設定しますか？(y/N)=> " )
-			if wSelect!="y" :
+			wSelect = CLS_OSIF.sInp( "有効な荒らし理由を指定？(一覧にない理由=キャンセル)=> " )
+			wResInt = CLS_OSIF.sChgInt( wSelect )
+			if wResInt['Result']!=True :
+				CLS_OSIF.sPrn( "設定を中止します。" )
+				wRes['Result'] = True
+				return True
+			wSelect = wResInt['Value']
+			if ( wSelect not in self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID ) or \
+			   ( wSelect==0 ) :
 				CLS_OSIF.sPrn( "設定を中止します。" )
 				wRes['Result'] = True
 				return True
@@ -403,52 +418,88 @@ class CLS_TwitterAdmin():
 					inCount      = gVal.DEF_STR_TLNUM['excTwitterID'],
 					inLastDate   = wTD['TimeDate'],
 					inArashi     = True,
-					inReasonID   = 99
+					inReasonID   = wSelect
 				)
 		
 		#############################
 		# IDがDBに存在する場合
+		# 荒らし設定の変更
 		else:
 			#############################
-			# 荒らし設定の場合
-			#   荒らし解除するか
+			# 選択肢の表示と入力
 			if self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi']==True :
+				###荒らし設定の場合
 				wCHR_Reason = self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID[self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id']]
-				
 				wStr = "指定のIDは荒らし設定されているユーザです。" + '\n'
 				wStr = wStr + "  Screen Name = " + self.OBJ_Parent.ARR_newExcUser[wTwitterID]['screen_name'] + '\n'
 				wStr = wStr + "  Last date   = " + str(self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate']) + '\n'
 				wStr = wStr + "  荒らし回数  = " + str(self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']) + '\n'
 				wStr = wStr + "  理由        = " + wCHR_Reason + '\n'
-				CLS_OSIF.sPrn( wStr )
-				wSelect = CLS_OSIF.sInp( "荒らし設定を解除しますか？(y/N)=> " )
-				if wSelect!="y" :
-					CLS_OSIF.sPrn( "設定を中止します。" )
-					wRes['Result'] = True
-					return True
-				
-				###解除設定
-				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
-				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = 0
-				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = 0
-				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = False
+				wStr = wStr + '\n'
+				wStr = wStr + "理由の指定＞" + '\n'
+				wKeylist = list( self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID.keys() )
+				for wReasonID in self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID :
+					if wReasonID==0 :
+						continue
+					wStr = wStr + str(wReasonID) + " : " + self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID[wReasonID] + '\n'
+				wStr = wStr + "0  : 荒らし解除" + '\n'
+			
+			else:
+				###荒らしでない場合
+				wStr = "指定のIDは荒らし設定されていません。" + '\n'
+				wStr = wStr + '\n'
+				wStr = wStr + "理由の指定＞" + '\n'
+				wKeylist = list( self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID.keys() )
+				for wReasonID in self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID :
+					if wReasonID==0 :
+						continue
+					wStr = wStr + str(wReasonID) + " : " + self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID[wReasonID] + '\n'
+			
+			CLS_OSIF.sPrn( wStr )
+			wSelect = CLS_OSIF.sInp( "有効な荒らし理由を指定？(一覧にない理由=キャンセル)=> " )
+			wResInt = CLS_OSIF.sChgInt( wSelect )
+			if wResInt['Result']!=True :
+				CLS_OSIF.sPrn( "設定を中止します。" )
+				wRes['Result'] = True
+				return True
+			wSelect = wResInt['Value']
+			if wSelect not in self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID :
+				CLS_OSIF.sPrn( "設定を中止します。" )
+				wRes['Result'] = True
+				return True
 			
 			#############################
-			# 荒らし設定されていない場合
-			#   荒らし設定するか
+			# 荒らしの場合
+			if self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi']==True :
+				#############################
+				# 0 = 解除の場合
+				if wSelect==0 :
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = 0
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = 0
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = False
+				#############################
+				# 設定変更の場合
+				else :
+					if self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id']==wSelect :
+						CLS_OSIF.sPrn( "同じ理由を設定できません。" )
+						wRes['Result'] = True
+						return True
+					
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = wSelect
+			
+			#############################
+			# 荒らしではない→荒らし設定
 			else:
-				wStr = "指定のIDは荒らし設定されていません。" + '\n'
-				CLS_OSIF.sPrn( wStr )
-				wSelect = CLS_OSIF.sInp( "荒らし設定しますか？(y/N)=> " )
-				if wSelect!="y" :
+				if wSelect==0 :
 					CLS_OSIF.sPrn( "設定を中止します。" )
 					wRes['Result'] = True
 					return True
 				
-				###荒らし設定
 				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
 				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = gVal.DEF_STR_TLNUM['excTwitterID']	#最低値を設定
-				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = 99
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = wSelect
 				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = True
 		
 		#############################

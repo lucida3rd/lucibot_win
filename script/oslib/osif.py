@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : OS I/F (OS向け共通処理)
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   (none)
@@ -632,6 +632,27 @@ class CLS_OSIF() :
 		except:
 			return wRes
 		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 文字列型から数値型に変換する
+#####################################################
+	@classmethod
+	def sChgInt( cls, inCont ):
+		wRes = {
+			"Result"	: False,
+			"Value"		: 0
+		}
+		
+		try:
+			wValue = int( inCont )
+		except:
+			return wRes
+		
+		wRes['Value']  = wValue
 		wRes['Result'] = True
 		return wRes
 
