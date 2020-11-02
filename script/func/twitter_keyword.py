@@ -104,6 +104,12 @@ class CLS_TwitterKeyword():
 			#############################
 			# 必要な情報だけ抜き出す
 			for wLine in wTwitterRes['Responce'] :
+				###検索にリツイートを含めない場合、
+				###  リツイートはスキップする
+				if gVal.STR_SearchMode[wIndex]['ExcRT']==True :
+					if "retweeted_status" in wLine :
+						continue
+				
 				###日時の変換
 				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
 				if wTime['Result']!=True :
@@ -117,11 +123,11 @@ class CLS_TwitterKeyword():
 					if self.OBJ_Parent.CheckTrolls( wLine )==False :
 						continue
 				
-				###検索にリツイートを含めない場合、
-				###  リツイートはスキップする
-				if gVal.STR_SearchMode[wIndex]['ExcRT']==True :
-					if "retweeted_status" in wLine :
-						continue
+###				###検索にリツイートを含めない場合、
+###				###  リツイートはスキップする
+###				if gVal.STR_SearchMode[wIndex]['ExcRT']==True :
+###					if "retweeted_status" in wLine :
+###						continue
 				###検索からセンシティブを除外する場合、
 				###  センシティブツイートはスキップする
 				if gVal.STR_SearchMode[wIndex]['ExcSensi']==True :
@@ -1356,6 +1362,12 @@ class CLS_TwitterKeyword():
 		#############################
 		# 結果の表示
 		for wLine in wTwitterRes['Responce'] :
+			###検索にリツイートを含めない場合、
+			###  リツイートはスキップする
+			if gVal.STR_SearchMode[inIndex]['ExcRT']==True :
+				if "retweeted_status" in wLine :
+					continue
+			
 			###日時の変換
 			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
 			if wTime['Result']!=True :
@@ -1369,11 +1381,11 @@ class CLS_TwitterKeyword():
 				if self.OBJ_Parent.CheckTrolls( wLine )==False :
 					continue
 			
-			###検索にリツイートを含めない場合、
-			###  リツイートはスキップする
-			if gVal.STR_SearchMode[inIndex]['ExcRT']==True :
-				if "retweeted_status" in wLine :
-					continue
+###			###検索にリツイートを含めない場合、
+###			###  リツイートはスキップする
+###			if gVal.STR_SearchMode[inIndex]['ExcRT']==True :
+###				if "retweeted_status" in wLine :
+###					continue
 			###検索からセンシティブを除外する場合、
 			###  センシティブツイートはスキップする
 			if gVal.STR_SearchMode[inIndex]['ExcSensi']==True :
@@ -1473,9 +1485,11 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# 荒らしCSV書き込み
-		wResArashi = self.OutArashiCSV( inHeader=False )
+###		wResArashi = self.OutArashiCSV( inHeader=False )
+		wResArashi = self.__out_tsOutArashiCSV()
 		if wResArashi['Result']!=True :
-			wRes['Reason'] = "OutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
+###			wRes['Reason'] = "OutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
+			wRes['Reason'] = "__out_tsOutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
@@ -1535,7 +1549,8 @@ class CLS_TwitterKeyword():
 #####################################################
 # 荒らしユーザCSV出力
 #####################################################
-	def OutArashiCSV( self, inHeader=True ):
+###	def OutArashiCSV( self, inHeader=True ):
+	def OutArashiCSV(self):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -1543,19 +1558,146 @@ class CLS_TwitterKeyword():
 		wRes['Class'] = "CLS_TwitterKeyword"
 		wRes['Func']  = "OutArashiCSV"
 		
-		if inHeader==True :
-			#############################
-			# 画面クリア
-			CLS_OSIF.sDispClr()
+		#############################
+		# 検索モードの ID=0 のインデックスを設定する
+		wRange = len( gVal.STR_SearchMode )
+		wFLG_Detect = False
+		for wIndex in range( wRange ) :
+			if gVal.STR_SearchMode[wIndex]['id']==0 :
+				wFLG_Detect = True
+				break
+		if wFLG_Detect!=True :
+			wRes['Reason'] = "Index of id is not found"
+			gVal.OBJ_L.Log( "A", wRes )
+			return wRes
+		
+		#############################
+		# 画面クリア
+		CLS_OSIF.sDispClr()
+		
+		#############################
+		# 画面表示
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 荒らしユーザCSVの出力" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + '\n'
+		wStr = wStr + "荒らし判定をおこなう検索ワードを指定してください。" + '\n'
+		if gVal.STR_SearchMode[wIndex]['Keyword']=="" or gVal.STR_SearchMode[wIndex]['Keyword']==None :
+			wStr = wStr + "  現在の設定ワード： (未設定)" + '\n'
+		else:
+			wStr = wStr + "  現在の設定ワード： " + gVal.STR_SearchMode[wIndex]['Keyword'] + '\n'
+		
+		CLS_OSIF.sPrn( wStr )
+		wWord = CLS_OSIF.sInp( "検索文字？(\\rs=検索再実行/\\q=キャンセル)=> " )
+		
+		if wWord.find("\\")==0 :
+			###先頭が \\ はコマンド
+			if wWord=="\\rs" :
+				###再実行
+				wWord = gVal.STR_SearchMode[wIndex]['Keyword']
 			
-			#############################
-			# ヘッダ表示
-			wStr = "--------------------" + '\n'
-			wStr = wStr + " キーユーザCSV出力" + '\n'
-			wStr = wStr + "--------------------" + '\n'
-			wStr = wStr + '\n'
-			wStr = wStr + "出力するキーユーザを選出しています。しばらくお待ちください......" + '\n'
-			CLS_OSIF.sPrn( wStr )
+			elif wWord=="\\q" :
+				###終了
+				wRes['Result'] = True
+				return wRes
+			else:
+				###ないコマンド
+				CLS_OSIF.sPrn( "そのコマンドはありません。" )
+				wRes['Result'] = True
+				return wRes
+		
+		if wWord=="" :
+			CLS_OSIF.sPrn( "キーワードが設定されていません。" )
+			wRes['Result'] = True
+			return wRes
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "タイムラインサーチ中。しばらくお待ちください......" )
+		CLS_OSIF.sPrn( "取得中... 検索語=" + wWord )
+		
+		#############################
+		# Twitterで検索 取得
+		wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=wWord, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
+		if wTwitterRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		wARR_UserID = []
+		wVAL_AllCount = len(wTwitterRes['Responce'])
+		wVAL_Count    = 0
+		#############################
+		# 結果の表示
+		for wLine in wTwitterRes['Responce'] :
+			###リツイートはスキップする
+			if "retweeted_status" in wLine :
+				continue
+			
+			###日時の変換
+			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+			if wTime['Result']!=True :
+				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+				gVal.OBJ_L.Log( "B", wRes )
+				continue
+			wLine['created_at'] = wTime['TimeDate']
+			
+			###荒らしチェック
+			self.OBJ_Parent.CheckTrolls( wLine )
+			wVAL_Count += 1
+		
+		#############################
+		# 統計
+		wStr = "--------------------" + '\n'
+		wStr = wStr + "検索ワード     = " + wWord + '\n'
+		wStr = wStr + "結果ツイート数 = " + str( wVAL_AllCount ) + '\n'
+		wStr = wStr + "ツイート合計数 = " + str( wVAL_Count ) + '\n'
+		wStr = wStr + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# 検索ワードを保存する
+		gVal.STR_SearchMode[wIndex]['Keyword'] = wWord
+		gVal.STR_SearchMode[wIndex]['Update']  = True
+		
+		#############################
+		# ヘッダ表示
+		wStr = "出力するキーユーザを選出しています。しばらくお待ちください......" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		if len(self.OBJ_Parent.ARR_newExcUser)==0 :
+			###登録者なし
+			CLS_OSIF.sPrn( "荒らし登録者がないため、CSVは出力していません。" )
+			wRes['Result'] = True
+			return wRes
+		
+		# ファイル名の設定
+		wCHR_ArashiFile_path = self.__get_ArashiCSVpath()
+		
+		#############################
+		# 書き込み
+		if self.__out_ArashiCSV( wCHR_ArashiFile_path )!=True :
+			###失敗
+			wRes['Reason'] = "sWriteFile is failed: " + wCHR_ArashiFile_path
+			return wRes
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "荒らし一覧をCSVに出力しました: " + wCHR_ArashiFile_path + '\n' )
+		
+		#############################
+		# 正常終了
+		wRes['Result'] = True
+		return wRes
+
+	#####################################################
+	def __out_tsOutArashiCSV(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "__out_tsOutArashiCSV"
 		
 		if len(self.OBJ_Parent.ARR_newExcUser)==0 :
 			###登録者なし
