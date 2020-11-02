@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/10/31
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -631,6 +631,7 @@ class CLS_Setup():
 		self.__create_TBL_LOG_DATA( gVal.OBJ_DB )
 		self.__create_TBL_KEYWORD_DATA( gVal.OBJ_DB )
 		self.__create_TBL_EXC_TWITTERID( gVal.OBJ_DB )
+		self.__create_TBL_EXC_TWEETID( gVal.OBJ_DB )
 		
 		#############################
 		# 終わり
@@ -653,6 +654,7 @@ class CLS_Setup():
 		self.__create_TBL_EXC_USERNAME( inDBobj )
 		self.__create_TBL_EXC_WORD( inDBobj )
 		self.__create_TBL_EXC_TWITTERID( inDBobj )
+		self.__create_TBL_EXC_TWEETID( inDBobj )
 		return True
 
 	#####################################################
@@ -672,6 +674,8 @@ class CLS_Setup():
 		wQuery = "drop table if exists tbl_exc_word ;"
 		inOBJ_DB.RunQuery( wQuery )
 		wQuery = "drop table if exists tbl_exc_twitterid ;"
+		inOBJ_DB.RunQuery( wQuery )
+		wQuery = "drop table if exists tbl_exc_tweetid ;"
 		inOBJ_DB.RunQuery( wQuery )
 		return True
 
@@ -944,6 +948,30 @@ class CLS_Setup():
 ##					"lastdate    最後の判定ツイート日時
 ##					"arashi      荒らしか
 ##					"reason_id   荒らし理由番号(荒らし判定時)
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_EXC_TWEETID
+#####################################################
+	def __create_TBL_EXC_TWEETID( self, inOBJ_DB, inTBLname="tbl_exc_tweetid" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"regdate     TIMESTAMP," + \
+					"id          TEXT  NOT NULL, " + \
+					" PRIMARY KEY ( id ) ) ;"
+		
+##					"regdate     DB登録日時
+##					"id          Tweet ID
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return

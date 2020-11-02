@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/10/31
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   (none)
@@ -718,6 +718,112 @@ class CLS_Config() :
 		if wResDB['Result']!=True :
 			##失敗
 			wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# Tweet ID 読み込み
+#####################################################
+	def GetExcTweetID(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetExcTweetID"
+		
+		#############################
+		# データベースから除外Twitter IDを取得
+		wQuery = "select id from tbl_exc_tweetid " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		### グローバルに取り込み
+		gVal.STR_ExcTweetID = []
+		gVal.STR_RateExcTweetID = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=gVal.STR_RateExcTweetID )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# Tweet ID 設定
+#####################################################
+	def SetExcTweetID(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetExcTweetID"
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			return wRes
+		### wTD['TimeDate']
+		
+		for wNewID in gVal.STR_ExcTweetID :
+			#############################
+			# DBにあればスキップ
+			if wNewID in gVal.STR_RateExcTweetID :
+				continue
+			
+			#############################
+			# DBに登録する
+			wQuery = "insert into tbl_exc_tweetid values (" + \
+						"'" + str(wTD['TimeDate']) + "'," + \
+						"'" + str( wNewID ) + "' " + \
+						") ;"
+			
+			#############################
+			# Query実行
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				return wRes
+		
+		#############################
+		# 保持日数外の情報を削除する
+		wLag = gVal.DEF_STR_TLNUM['excTweetDays'] * 24 * 60 * 60
+		wLagTime = CLS_OSIF.sTimeLag( inThreshold=wLag, inTimezone=-1 )
+		if wLagTime['Result']!=True :
+			##失敗
+			wRes['Reason'] = "sTimeLag is failed"
+			return wRes
+		
+		wQuery = "delete from tbl_exc_tweetid " + \
+					"where regdate < timestamp '" + str(wLagTime['RateTime']) + "' " + \
+					";"
+		
+		#############################
+		# Query実行
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
 		#############################

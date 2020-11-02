@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/10/31
+# ::Update= 2020/11/2
 #####################################################
 
 #####################################################
@@ -73,6 +73,9 @@ class gVal() :
 	STR_RateExcTwitterID = []		#除外Twitter ID(処理前DB)
 	STR_ExcTwitterID_Info = {}		#除外Twitter ID(DB詳細)
 
+	STR_RateExcTweetID = []			#Tweet ID
+	STR_ExcTweetID = []				#新規Tweet ID
+
 #############################
 # Timeline調整数
 	DEF_STR_TLNUM = {
@@ -99,6 +102,7 @@ class gVal() :
 
 		"excTwitterID"		: 3,						#荒らし判定回数
 		"excTwitterIDdays"	: 7,						#荒らしID保持日数
+		"excTweetDays"		: 14,						#Tweet保持日数
 
 		"logShortLen"		: 100,						#ログ表示 ショートモード
 		"(dummy)"			: ""
