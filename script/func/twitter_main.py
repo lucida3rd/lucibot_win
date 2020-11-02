@@ -82,6 +82,7 @@ class CLS_TwitterMain():
 	ARR_OldUserID = []
 	
 	ARR_newExcUser = {}
+	ARR_ExcTwiitID = []
 	
 	STR_newFollower = {}
 	VAL_newFollower = 0
@@ -178,6 +179,7 @@ class CLS_TwitterMain():
 			wRes['Reason'] = "GetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
+		self.ARR_ExcTwiitID = []
 		self.ARR_newExcUser = {}
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
@@ -563,13 +565,19 @@ class CLS_TwitterMain():
 				inLine['user']['screen_name']
 			)
 		
-		#############################
-		# 同じツイートか(日時で判定)
-		if self.ARR_newExcUser[wIndex]['lastdate']==str(inLine['created_at']) :
-			return True	#記録済みとして判定しない,正常扱い
+###		#############################
+###		# 同じツイートか(日時で判定)
+###		if self.ARR_newExcUser[wIndex]['lastdate']==str(inLine['created_at']) :
+###			return True	#記録済みとして判定しない,正常扱い
 		
+		#############################
+		# 同じツイートか
+		wTweetID = str( inLine['id'] )
+		if wTweetID in self.ARR_ExcTwiitID :
+			return True	#記録済みとして判定しない,正常扱い
 		###新しい更新日として記録
 		self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
+		self.ARR_ExcTwiitID.append( wTweetID )
 		
 		#############################
 		# 除外Twitter IDチェック
