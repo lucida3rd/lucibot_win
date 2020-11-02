@@ -577,8 +577,11 @@ class CLS_TwitterMain():
 		if wTweetID in gVal.STR_ExcTweetID :
 			return True	#記録済みとして判定しない,正常扱い
 		###新しい更新日として記録
-		self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
+###		self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
 ###		self.ARR_ExcTwiitID.append( wTweetID )
+		if self.ARR_newExcUser[wIndex]['lastdate']<inLine['created_at'] :
+			self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
+		
 		gVal.STR_ExcTweetID.append( wTweetID )
 		
 		#############################

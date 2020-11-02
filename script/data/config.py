@@ -357,6 +357,10 @@ class CLS_Config() :
 			gVal.STR_SearchMode[wIndex]['Choice']  = wARR_RateSearchMode[wIndex]['choice']
 			gVal.STR_SearchMode[wIndex]['Keyword'] = wARR_RateSearchMode[wIndex]['keyword']
 			
+
+			print(str( gVal.STR_SearchMode[wIndex]['id'] ))
+			print(str( gVal.STR_SearchMode[wIndex]['Keyword'] ))
+
 			gVal.STR_SearchMode[wIndex]['IncImage'] = wARR_RateSearchMode[wIndex]['incimage']
 			gVal.STR_SearchMode[wIndex]['ExcImage'] = wARR_RateSearchMode[wIndex]['excimage']
 			gVal.STR_SearchMode[wIndex]['IncVideo'] = wARR_RateSearchMode[wIndex]['incvideo']
@@ -434,9 +438,10 @@ class CLS_Config() :
 		# DBの検索モード取得
 		wQuery = "select id from tbl_keyword_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-					" and id = " + str(inIndex) + " " + \
+					" and id = " + str( gVal.STR_SearchMode[inIndex]['id'] ) + " " + \
 					";"
-		
+###					" and id = " + str(inIndex) + " " + \
+
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 		wResDB = gVal.OBJ_DB.GetQueryStat()
 		if wResDB['Result']!=True :
@@ -451,7 +456,7 @@ class CLS_Config() :
 						"'" + gVal.STR_UserInfo['Account'] + "'," + \
 						"'" + str(inTimeDate) + "'," + \
 						str( gVal.STR_SearchMode[inIndex]['Choice'] ) + "," + \
-						str( inIndex ) + "," + \
+						str( gVal.STR_SearchMode[inIndex]['id'] ) + "," + \
 						"'" + str( gVal.STR_SearchMode[inIndex]['Keyword'] ) + "'," + \
 						str( gVal.STR_SearchMode[inIndex]['Count'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['IncImage'] ) + "," + \
@@ -466,6 +471,8 @@ class CLS_Config() :
 						str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['Arashi'] ) + \
 						") ;"
+###		
+###						str( inIndex ) + "," + \
 		
 		#############################
 		# DBにあれば更新する
@@ -487,7 +494,9 @@ class CLS_Config() :
 					"excsensi = " + str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + ", " + \
 					"arashi = " + str( gVal.STR_SearchMode[inIndex]['Arashi'] ) + " " + \
 					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
-					" and id = " + str(inIndex) + " ;"
+					" and id = " + str( gVal.STR_SearchMode[inIndex]['id'] ) + " ;"
+###		
+###					" and id = " + str(inIndex) + " ;"
 		
 		#############################
 		# Query実行

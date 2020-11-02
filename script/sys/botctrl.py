@@ -50,7 +50,7 @@ class CLS_BotCtrl():
 		#############################
 		# 引数取得
 		wArg = CLS_OSIF.sGetArg()
-		if len(wArg)==4 :	#テストモードか
+		if len(wArg)==4 :	#テストモード : bottest か
 			if wArg[3]==gVal.DEF_TEST_MODE :
 				gVal.FLG_Test_Mode = True
 		

@@ -104,6 +104,19 @@ class CLS_TwitterKeyword():
 			#############################
 			# 必要な情報だけ抜き出す
 			for wLine in wTwitterRes['Responce'] :
+				###日時の変換
+				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+				if wTime['Result']!=True :
+					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				wLine['created_at'] = wTime['TimeDate']
+				
+				###荒らしチェック
+				if gVal.STR_SearchMode[wIndex]['Arashi']==True :
+					if self.OBJ_Parent.CheckTrolls( wLine )==False :
+						continue
+				
 				###検索にリツイートを含めない場合、
 				###  リツイートはスキップする
 				if gVal.STR_SearchMode[wIndex]['ExcRT']==True :
@@ -126,18 +139,18 @@ class CLS_TwitterKeyword():
 				if self.OBJ_Parent.CheckExcWord( wCHR_Term )==False :
 					continue
 				
-				###日時の変換
-				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
-				if wTime['Result']!=True :
-					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
-					gVal.OBJ_L.Log( "B", wRes )
-					continue
-				wLine['created_at'] = wTime['TimeDate']
-				
-				###荒らしチェック
-				if gVal.STR_SearchMode[wIndex]['Arashi']==True :
-					if self.OBJ_Parent.CheckTrolls( wLine )==False :
-						continue
+###				###日時の変換
+###				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+###				if wTime['Result']!=True :
+###					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+###					gVal.OBJ_L.Log( "B", wRes )
+###					continue
+###				wLine['created_at'] = wTime['TimeDate']
+###				
+###				###荒らしチェック
+###				if gVal.STR_SearchMode[wIndex]['Arashi']==True :
+###					if self.OBJ_Parent.CheckTrolls( wLine )==False :
+###						continue
 				
 				###既にフォローしているユーザ
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
@@ -1206,9 +1219,33 @@ class CLS_TwitterKeyword():
 		wRes['Func']  = "TweetSearch"
 		
 		#############################
+		# 検索モードの ID=0 のインデックスを設定する
+
+		print( str( gVal.STR_SearchMode ))
+
+
+		wRange = len( gVal.STR_SearchMode )
+		wFLG_Detect = False
+		for wIndex in range( wRange ) :
+			if gVal.STR_SearchMode[wIndex]['id']==0 :
+				wFLG_Detect = True
+
+				print(str( wIndex ))
+
+				break
+		if wFLG_Detect!=True :
+			wRes['Reason'] = "Index of id is not found"
+			gVal.OBJ_L.Log( "A", wRes )
+			return wRes
+		
+
+		print(str( wIndex ))
+
+		#############################
 		# コンソールを表示
 		while True :
-			wWord = self.__view_TweetSearch()
+###			wWord = self.__view_TweetSearch()
+			wWord = self.__view_TweetSearch( wIndex )
 			
 			if wWord=="\\q" :
 				###終了
@@ -1217,7 +1254,8 @@ class CLS_TwitterKeyword():
 				###未入力は再度入力
 				continue
 			
-			wResSearch = self.__run_TweetSearch( wWord )
+###			wResSearch = self.__run_TweetSearch( wWord )
+			wResSearch = self.__run_TweetSearch( wIndex, wWord )
 ###			if wResSearch['Result']==True :
 ###				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
@@ -1227,7 +1265,8 @@ class CLS_TwitterKeyword():
 			
 			#############################
 			# 更新する
-			gVal.STR_SearchMode[0]['Update']  = True
+###			gVal.STR_SearchMode[0]['Update']  = True
+			gVal.STR_SearchMode[wIndex]['Update']  = True
 			
 ###			#############################
 ###			# 検索文字入力だったら検索文字を保存する
@@ -1240,8 +1279,10 @@ class CLS_TwitterKeyword():
 	#####################################################
 	# ツイート検索 画面表示
 	#####################################################
-	def __view_TweetSearch(self):
-		wResDisp = CLS_MyDisp.sViewDisp( "SearchConsole", 0 )
+###	def __view_TweetSearch(self):
+	def __view_TweetSearch( self, inIndex ):
+###		wResDisp = CLS_MyDisp.sViewDisp( "SearchConsole", 0 )
+		wResDisp = CLS_MyDisp.sViewDisp( "SearchConsole", inIndex )
 		if wResDisp['Result']==False :
 			gVal.OBJ_L.Log( "D", wResDisp )
 			return "\\q"	#失敗=強制終了
@@ -1253,7 +1294,8 @@ class CLS_TwitterKeyword():
 	#####################################################
 	# ツイート検索 実行
 	#####################################################
-	def __run_TweetSearch( self, inWord ):
+###	def __run_TweetSearch( self, inWord ):
+	def __run_TweetSearch( self, inIndex, inWord ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -1263,7 +1305,8 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# コマンド入力か
-		wResCmd = self.ChangeSearchMode( 0, inWord )
+###		wResCmd = self.ChangeSearchMode( 0, inWord )
+		wResCmd = self.ChangeSearchMode( inIndex, inWord )
 ###		if wResCmd['Result']==True :
 ###			### 先頭が\\ =コマンド処理をした
 ###			wRes['Result'] = True
@@ -1284,7 +1327,8 @@ class CLS_TwitterKeyword():
 		#############################
 		# 再実行の場合
 		if wWord=="\\rs" :
-			wWord = gVal.STR_SearchMode[0]['Keyword']
+###			wWord = gVal.STR_SearchMode[0]['Keyword']
+			wWord = gVal.STR_SearchMode[inIndex]['Keyword']
 			if wWord=="" or wWord==None :
 				CLS_OSIF.sPrn( "再実行を指示されましたが、キーワードが未設定です。" )
 				wRes['Result'] = False
@@ -1293,7 +1337,8 @@ class CLS_TwitterKeyword():
 		#############################
 		# コマンド付加
 ###		wResCmd = self.IncSearchMode( 0, inWord )
-		wResCmd = self.IncSearchMode( 0, wWord )
+###		wResCmd = self.IncSearchMode( 0, wWord )
+		wResCmd = self.IncSearchMode( inIndex, wWord )
 		if wResCmd['Result']!=True :
 			###やらかし
 			wRes['Reason'] = "IncSearchModeのやらかし: reason=" + wResCmd['Reason']
@@ -1321,14 +1366,27 @@ class CLS_TwitterKeyword():
 		#############################
 		# 結果の表示
 		for wLine in wTwitterRes['Responce'] :
+			###日時の変換
+			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+			if wTime['Result']!=True :
+				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+				gVal.OBJ_L.Log( "B", wRes )
+				continue
+			wLine['created_at'] = wTime['TimeDate']
+			
+			###荒らしチェック
+			if gVal.STR_SearchMode[inIndex]['Arashi']==True :
+				if self.OBJ_Parent.CheckTrolls( wLine )==False :
+					continue
+			
 			###検索にリツイートを含めない場合、
 			###  リツイートはスキップする
-			if gVal.STR_SearchMode[0]['ExcRT']==True :
+			if gVal.STR_SearchMode[inIndex]['ExcRT']==True :
 				if "retweeted_status" in wLine :
 					continue
 			###検索からセンシティブを除外する場合、
 			###  センシティブツイートはスキップする
-			if gVal.STR_SearchMode[0]['ExcSensi']==True :
+			if gVal.STR_SearchMode[inIndex]['ExcSensi']==True :
 				if "possibly_sensitive" in wLine :
 					if wLine['possibly_sensitive']==True :
 						continue
@@ -1343,18 +1401,18 @@ class CLS_TwitterKeyword():
 			if self.OBJ_Parent.CheckExcWord( wCHR_Term )==False :
 				continue
 			
-			###日時の変換
-			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
-			if wTime['Result']!=True :
-				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
-				gVal.OBJ_L.Log( "B", wRes )
-				continue
-			wLine['created_at'] = wTime['TimeDate']
-			
-			###荒らしチェック
-			if gVal.STR_SearchMode[0]['Arashi']==True :
-				if self.OBJ_Parent.CheckTrolls( wLine )==False :
-					continue
+###			###日時の変換
+###			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+###			if wTime['Result']!=True :
+###				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+###				gVal.OBJ_L.Log( "B", wRes )
+###				continue
+###			wLine['created_at'] = wTime['TimeDate']
+###			
+###			###荒らしチェック
+###			if gVal.STR_SearchMode[inIndex]['Arashi']==True :
+###				if self.OBJ_Parent.CheckTrolls( wLine )==False :
+###					continue
 			
 			wStrLine = self.__getStr_TweetSearch( wLine )
 			CLS_OSIF.sPrn( wStrLine )
@@ -1367,7 +1425,7 @@ class CLS_TwitterKeyword():
 			if "retweeted_status" in wLine :
 				###検索からセンシティブを除外する場合、
 				###  センシティブツイートはスキップする
-				if gVal.STR_SearchMode[0]['ExcSensi']==True :
+				if gVal.STR_SearchMode[inIndex]['ExcSensi']==True :
 					if "possibly_sensitive" in wLine['retweeted_status'] :
 						if wLine['retweeted_status']['possibly_sensitive']==True :
 							continue
@@ -1433,7 +1491,7 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# 検索ワードを保存する
-		gVal.STR_SearchMode[0]['Keyword'] = wWord
+		gVal.STR_SearchMode[inIndex]['Keyword'] = wWord
 		
 		#############################
 		# 正常終了
