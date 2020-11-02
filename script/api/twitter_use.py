@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/10/27
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -669,12 +669,19 @@ class CLS_Twitter_Use():
 #####################################################
 # ユーザ情報取得処理
 #####################################################
-	def GetUserinfo( self, inID ):
+###	def GetUserinfo( self, inID ):
+	def GetUserinfo( self, inID=-1, inScreenName=None ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
 		wRes = self.__Get_Resp()
 		wRes['Func'] = "GetUserinfo"
+		
+		#############################
+		# 入力チェック
+		if inID==-1 and inScreenName==None :
+			wRes['Reason'] = "Input is Undefined"
+			return wRes
 		
 		#############################
 		# Twitter状態のチェック
@@ -695,7 +702,11 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# パラメータの生成
-		wParams = { "user_id" : inID }
+###		wParams = { "user_id" : inID }
+		if inID>=0 :
+			wParams = { "user_id" : inID }
+		else :
+			wParams = { "screen_name" : inScreenName }
 		
 		#############################
 		# 実行

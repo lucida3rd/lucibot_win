@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/10/31
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   (none)
@@ -95,7 +95,8 @@ class CLS_TwitterMain():
 		10	: "Hash Tag",
 		11	: "Hash and URL",
 		20	: "China User Name",
-		21	: "China Word"
+		21	: "China Word",
+		99	: "Manual Designation"
 	}
 
 
@@ -216,15 +217,17 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 検索モード保存
-		wOBJ_Config = CLS_Config()
-		wResSub = wOBJ_Config.SetSearchMode_All()
+###		wOBJ_Config = CLS_Config()
+###		wResSub = wOBJ_Config.SetSearchMode_All()
+		wResSub = self.SaveSearchMode()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetSearchMode_All failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
 		# 除外Twitter ID 書き込み
-		wResSub = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
+###		wResSub = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
+		wResSub = self.SaveExcTwitterID()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
@@ -232,6 +235,31 @@ class CLS_TwitterMain():
 		#############################
 		# 完了
 		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 検索モード保存
+#####################################################
+	def SaveSearchMode(self):
+		wOBJ_Config = CLS_Config()
+		wRes = wOBJ_Config.SetSearchMode_All()
+		return wRes
+
+
+
+#####################################################
+# 除外Twitter ID保存
+#####################################################
+	def SaveExcTwitterID(self):
+		wOBJ_Config = CLS_Config()
+		wRes = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
+		if wRes['Result']!=True :
+			return wRes
+		
+		###再ロード(念のため)
+		wRes = wOBJ_Config.GetExcTwitterID()
 		return wRes
 
 
@@ -457,6 +485,15 @@ class CLS_TwitterMain():
 #####################################################
 	def UserRevival(self):
 		wRes = self.OBJ_TwitterAdmin.UserRevival()
+		return wRes
+
+
+
+#####################################################
+# 荒らしユーザ設定
+#####################################################
+	def ArashiUser(self):
+		wRes = self.OBJ_TwitterAdmin.ArashiUser()
 		return wRes
 
 

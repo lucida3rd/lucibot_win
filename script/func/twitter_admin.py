@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 管理系
 # 
-# ::Update= 2020/10/27
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   (none)
@@ -307,6 +307,160 @@ class CLS_TwitterAdmin():
 		#############################
 		# 正常終了
 		CLS_OSIF.sPrn( '\n' + "正常にフォロー関係を復活しました。念のためTwitterの状態を確認してください。" )
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 荒らしユーザ管理
+#####################################################
+	def ArashiUser(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterAdmin"
+		wRes['Func']  = "ArashiUser"
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		### wTD['TimeDate']
+		
+		#############################
+		# 除外Twitter ID確認
+		if len( self.OBJ_Parent.ARR_newExcUser )==0 :
+			##キャンセル
+			CLS_OSIF.sPrn( "学習不足のため実行できません。監視情報取得、ツイート検索などを実行してください。" )
+			wRes['Result'] = True
+			return wRes
+		
+		#############################
+		# 画面クリア
+		CLS_OSIF.sDispClr()
+		
+		#############################
+		# ヘッダ表示
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 荒らしユーザ設定" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		
+		wStr = wStr + "荒らしユーザの設定変更をします。" + '\n'
+		wStr = wStr + "変更をおこなうTwitter ID(@なし)を入力してください。" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# 実行の確認
+		wTwitterID = CLS_OSIF.sInp( "Twitter ID(@なし)？(\\q=中止)=> " )
+		if wTwitterID=="\\q" :
+			##キャンセル
+			CLS_OSIF.sPrn( "処理を中止しました。" )
+			wRes['Result'] = True
+			return wRes
+		
+		#############################
+		# 処理中表示
+		CLS_OSIF.sPrn( "確認しています。しばらくお待ちください......" )
+		
+		#############################
+		# IDがDBに存在するか
+		wFLG_UserFind = False
+		if wTwitterID in self.OBJ_Parent.ARR_newExcUser :
+			wFLG_UserFind = True
+		else:
+			#############################
+			# DBに存在しない場合、Twitter IDが実在するか
+			wUserinfoRes = gVal.OBJ_Twitter.GetUserinfo( inScreenName=wTwitterID )
+			if wUserinfoRes['Result']!=True :
+				CLS_OSIF.sPrn( "指定のIDはTwitter上で確認できないか、凍結されています。" )
+				wRes['Result'] = True
+				return wRes
+				## IDが存在しない場合 :404
+				## IDが凍結されている場合:403
+		
+		#############################
+		# IDがDBに存在しない場合
+		#   事前に荒らし設定しておくか
+		if wFLG_UserFind==False :
+			wStr = "データベースに登録されていないユーザです。事前に荒らし設定しておくこともできます。" + '\n'
+			CLS_OSIF.sPrn( wStr )
+			wSelect = CLS_OSIF.sInp( "荒らし設定しますか？(y/N)=> " )
+			if wSelect!="y" :
+				CLS_OSIF.sPrn( "設定を中止します。" )
+				wRes['Result'] = True
+				return True
+			
+			###リストに追加する(DBの保存は)
+			self.OBJ_Parent.SetnewExcUser(
+					inID         = wUserinfoRes['Responce']['id'],
+					inScreenName = wTwitterID,
+					inCount      = gVal.DEF_STR_TLNUM['excTwitterID'],
+					inLastDate   = wTD['TimeDate'],
+					inArashi     = True,
+					inReasonID   = 99
+				)
+		
+		#############################
+		# IDがDBに存在する場合
+		else:
+			#############################
+			# 荒らし設定の場合
+			#   荒らし解除するか
+			if self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi']==True :
+				wCHR_Reason = self.OBJ_Parent.DEF_STR_ARASHI_REASON_ID[self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id']]
+				
+				wStr = "指定のIDは荒らし設定されているユーザです。" + '\n'
+				wStr = wStr + "  Screen Name = " + self.OBJ_Parent.ARR_newExcUser[wTwitterID]['screen_name'] + '\n'
+				wStr = wStr + "  Last date   = " + str(self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate']) + '\n'
+				wStr = wStr + "  荒らし回数  = " + str(self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']) + '\n'
+				wStr = wStr + "  理由        = " + wCHR_Reason + '\n'
+				CLS_OSIF.sPrn( wStr )
+				wSelect = CLS_OSIF.sInp( "荒らし設定を解除しますか？(y/N)=> " )
+				if wSelect!="y" :
+					CLS_OSIF.sPrn( "設定を中止します。" )
+					wRes['Result'] = True
+					return True
+				
+				###解除設定
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = 0
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = 0
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = False
+			
+			#############################
+			# 荒らし設定されていない場合
+			#   荒らし設定するか
+			else:
+				wStr = "指定のIDは荒らし設定されていません。" + '\n'
+				CLS_OSIF.sPrn( wStr )
+				wSelect = CLS_OSIF.sInp( "荒らし設定しますか？(y/N)=> " )
+				if wSelect!="y" :
+					CLS_OSIF.sPrn( "設定を中止します。" )
+					wRes['Result'] = True
+					return True
+				
+				###荒らし設定
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = gVal.DEF_STR_TLNUM['excTwitterID']	#最低値を設定
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = 99
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = True
+		
+		#############################
+		# DBに保存する
+		wResSub = self.OBJ_Parent.SaveExcTwitterID()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "SetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 正常終了
+		CLS_OSIF.sPrn( '\n' + "設定変更しました。" )
 		wRes['Result'] = True
 		return wRes
 

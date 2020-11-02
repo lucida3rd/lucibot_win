@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2020/10/30
+# ::Update= 2020/11/2
 #####################################################
 # Private Function:
 #   (none)
@@ -275,6 +275,12 @@ class CLS_Main_Console() :
 		# ユーザ復活
 		elif inCommand=="\\cr" :
 			cls.OBJ_TwitterMain.UserRevival()
+			wFlg = True
+		
+		#############################
+		# 荒らしユーザ設定
+		elif inCommand=="\\cu" :
+			cls.OBJ_TwitterMain.ArashiUser()
 			wFlg = True
 		
 	#####################################################
