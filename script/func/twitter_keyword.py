@@ -1220,27 +1220,17 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# 検索モードの ID=0 のインデックスを設定する
-
-		print( str( gVal.STR_SearchMode ))
-
-
 		wRange = len( gVal.STR_SearchMode )
 		wFLG_Detect = False
 		for wIndex in range( wRange ) :
 			if gVal.STR_SearchMode[wIndex]['id']==0 :
 				wFLG_Detect = True
-
-				print(str( wIndex ))
-
 				break
 		if wFLG_Detect!=True :
 			wRes['Reason'] = "Index of id is not found"
 			gVal.OBJ_L.Log( "A", wRes )
 			return wRes
 		
-
-		print(str( wIndex ))
-
 		#############################
 		# コンソールを表示
 		while True :

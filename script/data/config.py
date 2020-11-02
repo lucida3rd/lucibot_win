@@ -357,10 +357,6 @@ class CLS_Config() :
 			gVal.STR_SearchMode[wIndex]['Choice']  = wARR_RateSearchMode[wIndex]['choice']
 			gVal.STR_SearchMode[wIndex]['Keyword'] = wARR_RateSearchMode[wIndex]['keyword']
 			
-
-			print(str( gVal.STR_SearchMode[wIndex]['id'] ))
-			print(str( gVal.STR_SearchMode[wIndex]['Keyword'] ))
-
 			gVal.STR_SearchMode[wIndex]['IncImage'] = wARR_RateSearchMode[wIndex]['incimage']
 			gVal.STR_SearchMode[wIndex]['ExcImage'] = wARR_RateSearchMode[wIndex]['excimage']
 			gVal.STR_SearchMode[wIndex]['IncVideo'] = wARR_RateSearchMode[wIndex]['incvideo']
