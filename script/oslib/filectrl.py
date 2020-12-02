@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ファイル制御
 # 
-# ::Update= 2020/10/14
+# ::Update= 2020/11/5
 #####################################################
 # Private Function:
 #   (none)
@@ -45,6 +45,34 @@ import zipfile
 class CLS_File() :
 
 	DEF_MOJI_ENCODE = 'utf-8'								#文字エンコード
+
+#####################################################
+# 現在カレント
+#####################################################
+	@classmethod
+	def sGetCurrentPath(cls):
+		try:
+			wPath = os.getcwd()
+		except ValueError as err :
+			return ""
+		
+		return wPath
+
+
+
+#####################################################
+# チェンジフォルダ
+#####################################################
+	@classmethod
+	def sChgFolder( cls, inPath ):
+		try:
+			os.chdir( inPath )
+		except ValueError as err :
+			return False
+		
+		return True
+
+
 
 #####################################################
 # 存在チェック
@@ -148,7 +176,8 @@ class CLS_File() :
 # ファイル一覧取得
 #####################################################
 	@classmethod
-	def sFs( cls, inPath ):
+###	def sFs( cls, inPath ):
+	def sFs( cls, inPath, inCard="*" ):
 		#############################
 		# 存在チェック
 		if cls().sExist( inPath )!=True :
@@ -157,9 +186,19 @@ class CLS_File() :
 		#############################
 		# ファイルリストの取得
 		try:
-			wARR_Filelist = glob.glob( inPath + "*" )
+###			wARR_Filelist = glob.glob( inPath + "*" )
+			wARR_Filelist = glob.glob( inPath + inCard )
 		except ValueError as err :
 			return []
+		
+		#############################
+		# パスを除去する
+		wIndex = 0
+		for wFile in wARR_Filelist :
+			wFile = wFile.replace( "\\", "/" )	#Windows対応
+			wFile = wFile.replace( inPath, "" )
+			wARR_Filelist[wIndex] = wFile
+			wIndex += 1
 		
 		return wARR_Filelist
 
@@ -486,7 +525,7 @@ class CLS_File() :
 		#############################
 		# 周期トゥートパターンファイルの日時取得
 		wTD = datetime.fromtimestamp( os.stat( inPath ).st_mtime )
-		wTD = wdt.strftime("%Y-%m-%d %H:%M:%S")
+		wTD = wTD.strftime("%Y-%m-%d %H:%M:%S")
 		
 		return wTD
 

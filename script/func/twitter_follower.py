@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/10/27
+# ::Update= 2020/12/2
 #####################################################
 # Private Function:
 #   (none)
@@ -217,7 +217,8 @@ class CLS_TwitterFollower():
 							"'" + wName + "'," + \
 							"'" + str(wROW['screen_name']) + "'," + \
 							str(wROW['statuses_count']) + "," + \
-							"'" + str(wTD['TimeDate']) + "'" + \
+							"'" + str(wTD['TimeDate']) + "'," + \
+							"''" + \
 							") ;"
 							
 					##"r_myfollow  1度フォローした= 状態で判定
@@ -301,7 +302,8 @@ class CLS_TwitterFollower():
 						"'" + wName + "'," + \
 						"'" + wScreenName + "'," + \
 						wStatusCount + "," + \
-						"'" + str(wTD['TimeDate']) + "'" + \
+						"'" + str(wTD['TimeDate']) + "'," + \
+						"''" + \
 						") ;"
 			
 					##"r_myfollow  1度フォローした= 既にフォローしている

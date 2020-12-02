@@ -51,6 +51,64 @@ class CLS_TwitterAdmin():
 
 
 #####################################################
+# ユーザ管理
+#####################################################
+	def UserAdmin(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterAdmin"
+		wRes['Func']  = "UserAdmin"
+		
+		#############################
+		# 画面クリア
+		CLS_OSIF.sDispClr()
+		
+		#############################
+		# ヘッダ表示
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " ユーザ管理" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "管理をおこないたいユーザのTwitter ID(@なし)を入力してください。" + '\n'
+		wStr = wStr + "中止する場合は \q を入力してください" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# 実行の確認
+		wTwitterID = CLS_OSIF.sInp( "Twitter ID(@なし)？(\\q=中止)=> " )
+		if wTwitterID=="\\q" :
+			##キャンセル
+			CLS_OSIF.sPrn( "処理を中止しました。" )
+			wRes['Result'] = True
+			return wRes
+		
+		#############################
+		# 処理中表示
+		CLS_OSIF.sPrn( "確認しています。しばらくお待ちください......" )
+		
+		#############################
+		# Twitterからユーザ情報を取得する
+		wUserinfoRes = gVal.OBJ_Twitter.GetUserinfo( inScreenName=wTwitterID )
+		if wUserinfoRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetUserinfo): " + wUserinfoRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################################
 # ユーザ復活
 #####################################################
 	def UserRevival(self):
@@ -126,7 +184,7 @@ class CLS_TwitterAdmin():
 		wKeylist = wARR_RateFollowers.keys()
 		wFLG_Detect = False
 		for wIndex in wKeylist :
-			if wARR_RateFollowers[wIndex]['user_name']==wTwitterID :
+			if wARR_RateFollowers[wIndex]['screen_name']==wTwitterID :
 				wID = wARR_RateFollowers[wIndex]['id']
 				wFLG_Detect = True
 				break

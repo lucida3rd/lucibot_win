@@ -72,6 +72,7 @@ class gVal() :
 	STR_ExcTwitterID = []			#除外Twitter ID
 	STR_RateExcTwitterID = []		#除外Twitter ID(処理前DB)
 	STR_ExcTwitterID_Info = {}		#除外Twitter ID(DB詳細)
+	STR_ExcFollowID = []			#除外Follow候補
 
 	STR_RateExcTweetID = []			#Tweet ID
 	STR_ExcTweetID = []				#新規Tweet ID
@@ -88,7 +89,7 @@ class gVal() :
 		"rFavoLimNum"		: 5,						# 1回のいいね解除数
 		"favoLimWait"		: 115,						#いいね解除処理待ち(秒)   900秒/8回(createの場合)
 
-		"removeLimmin"		: 7200,						#自動リムーブ時間 5日 (60x24)x5=7200(分)
+		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=7200(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 100,						#自動リムーブ処理待ち(秒) 900秒/3回(createの場合)
 
@@ -97,11 +98,12 @@ class gVal() :
 		"randKeyUserNum"	: 20,						#キーユーザ ランダム選出数
 		"randFollowNum"		: 3,						#キーユーザフォロー選出数
 														#  ※TwitterAPI(内部)の仕様で4以上を指定しても制限がかかる
+		"excFollowIDdays"	: 14,						#除外候補保持日数
 		
 		"getTwitTLnum"		: 200,						#TwitterのTL取得数(Twitter仕様は最大200)
 
 		"excTwitterID"		: 3,						#荒らし判定回数
-		"excTwitterIDdays"	: 7,						#荒らしID保持日数
+		"excTwitterIDdays"	: 14,						#荒らしID保持日数
 		"excTweetDays"		: 14,						#Tweet保持日数
 
 		"logShortLen"		: 100,						#ログ表示 ショートモード

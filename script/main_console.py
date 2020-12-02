@@ -127,8 +127,6 @@ class CLS_Main_Console() :
 				break
 			
 			wResCmd = cls().sRunCommand( wCommand )
-###			if wResCmd==True :
-###				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			
 			#############################
@@ -161,13 +159,9 @@ class CLS_Main_Console() :
 		
 		#############################
 		# メインコンソール画面
-###		wRes = cls().sViewDisp( "MainConsole" )
-###		if wRes==False :
-###			return "q"	#失敗=強制終了
 		wResDisp = CLS_MyDisp.sViewDisp( "MainConsole" )
 		if wResDisp['Result']==False :
 			gVal.OBJ_L.Log( "D", wResDisp )
-###			return "q"	#失敗=強制終了
 			return "\\q"	#失敗=強制終了
 		
 		wCommand = CLS_OSIF.sInp( "コマンド？=> " )
@@ -212,8 +206,14 @@ class CLS_Main_Console() :
 		
 		#############################
 		# 荒らしユーザCSV出力
-		if inCommand=="\\tr" :
+		if inCommand=="\\t" :
 			cls.OBJ_TwitterMain.ArashiCSV()
+			wFlg = True
+		
+		#############################
+		# 荒らしユーザCSV出力(再実行)
+		if inCommand=="\\tr" :
+			cls.OBJ_TwitterMain.ArashiCSV( inReSearch=True )
 			wFlg = True
 		
 	#####################################################
@@ -239,6 +239,13 @@ class CLS_Main_Console() :
 		# フォロワー監視の実行
 		if inCommand=="\\rf" :
 			cls.OBJ_TwitterMain.RunFollower()
+			wFlg = True
+		
+	#####################################################
+		#############################
+		# ユーザ管理
+		elif inCommand=="\\u" :
+			cls.OBJ_TwitterMain.UserAdmin()
 			wFlg = True
 		
 	#####################################################
@@ -271,12 +278,12 @@ class CLS_Main_Console() :
 			
 			wFlg = True
 		
-		#############################
-		# ユーザ復活
-		elif inCommand=="\\cr" :
-			cls.OBJ_TwitterMain.UserRevival()
-			wFlg = True
-		
+###		#############################
+###		# ユーザ復活
+###		elif inCommand=="\\cr" :
+###			cls.OBJ_TwitterMain.UserRevival()
+###			wFlg = True
+###		
 		#############################
 		# 荒らしユーザ設定
 		elif inCommand=="\\cu" :
@@ -332,70 +339,12 @@ class CLS_Main_Console() :
 		#############################
 		# ないコマンド
 		if wFlg!=True :
-###			gVal.OBJ_L.Log( "D", "CLS_Main_Console", "sRunCommand", "存在しないコマンド :" + str(inCommand) )
 			wRes['Reason'] = "存在しないコマンド :" + str(inCommand)
 			gVal.OBJ_L.Log( "D", wRes )
 		
 		return wFlg
 
 
-
-#####################################################
-# ディスプレイ表示
-#####################################################
-#	@classmethod
-#	def sViewDisp( cls, inDisp ):
-#		#############################
-#		# 応答形式の取得
-#		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
-#		wRes = CLS_OSIF.sGet_Resp()
-#		wRes['Class'] = "CLS_Main_Console"
-#		wRes['Func']  = "sViewDisp"
-#		
-#		#############################
-#		# ディスプレイファイルの確認
-#		wKeylist = gVal.DEF_STR_DISPFILE.keys()
-#		if inDisp not in wKeylist :
-#			###キーがない(指定ミス)
-#			wRes['Reason'] = "Display key is not found: inDisp= " + inDisp
-#			gVal.OBJ_L.Log( "C", wRes )
-#			return False
-#		
-#		if CLS_File.sExist( gVal.DEF_STR_DISPFILE[inDisp] )!=True :
-#			###ファイルがない...(消した？)
-#			wRes['Reason'] = "Displayファイルがない: file=" + gVal.DEF_STR_DISPFILE[inDisp]
-#			gVal.OBJ_L.Log( "D", wRes )
-#			return False
-#		
-#		#############################
-#		# 画面クリア
-#		CLS_OSIF.sDispClr()
-#		
-#		#############################
-#		# 中身表示
-#		wDispFile = []
-#		if CLS_File.sReadFile( gVal.DEF_STR_DISPFILE[inDisp], outLine=wDispFile )!=True :
-#			wRes['Reason'] = "Displayファイルがない(sReadFile): file=" + gVal.DEF_STR_DISPFILE[inDisp]
-#			gVal.OBJ_L.Log( "D", wRes )
-#			return False
-#		
-#		if len(wDispFile)<=1 :
-#			wRes['Reason'] = "Displayファイルが空: file=" + gVal.DEF_STR_DISPFILE[inDisp]
-#			gVal.OBJ_L.Log( "D", wRes )
-#			return False
-#		
-#		wStr = "--------------------" + '\n'
-#		wStr = wStr + "るしぼっとCONSOLE" + '\n'
-#		wStr = wStr + "--------------------" + '\n'
-#		wStr = wStr + "Twitter ID : " + gVal.STR_UserInfo['Account'] + '\n'
-#		wStr = wStr + '\n'
-#		for wLine in wDispFile :
-#			wStr = wStr + "    " + wLine + '\n'
-#		
-#		CLS_OSIF.sPrn( wStr )
-#		return True
-#
-#
 
 #####################################################
 # システム情報の表示

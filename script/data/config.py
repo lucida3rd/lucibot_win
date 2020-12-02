@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/11/2
+# ::Update= 2020/12/2
 #####################################################
 # Private Function:
 #   (none)
@@ -615,11 +615,12 @@ class CLS_Config() :
 		gVal.STR_RateExcTwitterID = []	#除外Twitter ID(処理前DB)
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
-			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+###			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['id'] )
 			
-###			if gVal.STR_ExcTwitterID_Info[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
 			if gVal.STR_ExcTwitterID_Info[wIndex]['arashi']==True :
-				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+###				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
+				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['id'] )
 		
 		#############################
 		# 完了
@@ -648,16 +649,12 @@ class CLS_Config() :
 			return wRes
 		### wTD['TimeDate']
 		
-###		wElaseID = []
 		wKeylist = list ( inNewList.keys() )
 		for wIndex in wKeylist :
-###			if inNewList[wIndex]['count']==0 :
-###				wElaseID.append( inNewList[wIndex]['screen_name'] )
-###				continue
-###			
 			#############################
 			# DBになければinsertする
-			if inNewList[wIndex]['screen_name'] not in gVal.STR_RateExcTwitterID :
+###			if inNewList[wIndex]['screen_name'] not in gVal.STR_RateExcTwitterID :
+			if inNewList[wIndex]['id'] not in gVal.STR_RateExcTwitterID :
 				wQuery = "insert into tbl_exc_twitterid values (" + \
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"'" + str( inNewList[wIndex]['id'] ) + "'," + \
@@ -672,6 +669,8 @@ class CLS_Config() :
 			# DBにあれば更新する
 			else:
 				wQuery = "update tbl_exc_twitterid set " + \
+							"id = '" + str( inNewList[wIndex]['id'] ) + "', " + \
+							"screen_name = '" + str( inNewList[wIndex]['screen_name'] ) + "', " + \
 							"count = " + str( inNewList[wIndex]['count'] ) + ", " + \
 							"lastdate = '" + str( inNewList[wIndex]['lastdate'] ) + "', " + \
 							"arashi = " + str( inNewList[wIndex]['arashi'] ) + ", " + \
@@ -686,22 +685,6 @@ class CLS_Config() :
 				##失敗
 				wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 				return wRes
-		
-###		#############################
-###		# カウンタ0はDBから削除
-###		wElaseID = []
-###		for wID in wElaseID :
-###			wQuery = "delete from tbl_exc_twitterid " + \
-###						"where screen_name = '" + wID + "' ;"
-###			
-###			#############################
-###			# Query実行
-###			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-###			wResDB = gVal.OBJ_DB.GetQueryStat()
-###			if wResDB['Result']!=True :
-###				##失敗
-###				wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-###				return wRes
 		
 		#############################
 		# 保持日数外の情報を削除する
@@ -829,6 +812,80 @@ class CLS_Config() :
 		if wResDB['Result']!=True :
 			##失敗
 			wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 除外Follow候補 読み込み
+#####################################################
+	def GetExcFollowID(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetExcFollowID"
+		
+		#############################
+		# データベースから除外Twitter IDを取得
+		wQuery = "select id from tbl_exc_followid " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		### グローバルに取り込み
+		gVal.STR_ExcFollowID = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=gVal.STR_ExcFollowID )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 古い除外Follow候補 削除
+#####################################################
+	def OldExcFollowID_Erase(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "OldExcFollowID_Erase"
+		
+		#############################
+		# 除外日数外の情報を削除する
+		wLag = gVal.DEF_STR_TLNUM['excFollowIDdays'] * 24 * 60 * 60
+		wLagTime = CLS_OSIF.sTimeLag( inThreshold=wLag, inTimezone=-1 )
+		if wLagTime['Result']!=True :
+			##失敗
+			wRes['Reason'] = "sTimeLag is failed"
+			return wRes
+		
+		wQuery = "delete from tbl_exc_followid " + \
+					"where regdate < timestamp '" + str(wLagTime['RateTime']) + "' " + \
+					";"
+		
+		#############################
+		# Query実行
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
 		#############################

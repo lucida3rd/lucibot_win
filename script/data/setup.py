@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2020/11/2
+# ::Update= 2020/12/2
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -630,6 +630,7 @@ class CLS_Setup():
 		# DB初期化
 		self.__create_TBL_LOG_DATA( gVal.OBJ_DB )
 		self.__create_TBL_KEYWORD_DATA( gVal.OBJ_DB )
+		self.__create_TBL_EXC_FOLLOWID( gVal.OBJ_DB )
 		self.__create_TBL_EXC_TWITTERID( gVal.OBJ_DB )
 		self.__create_TBL_EXC_TWEETID( gVal.OBJ_DB )
 		
@@ -651,6 +652,7 @@ class CLS_Setup():
 		self.__create_TBL_FAVO_DATA( inDBobj )
 		self.__create_TBL_FOLLOWER_DATA( inDBobj )
 		self.__create_TBL_KEYWORD_DATA( inDBobj )
+		self.__create_TBL_EXC_FOLLOWID( inDBobj )
 		self.__create_TBL_EXC_USERNAME( inDBobj )
 		self.__create_TBL_EXC_WORD( inDBobj )
 		self.__create_TBL_EXC_TWITTERID( inDBobj )
@@ -668,6 +670,8 @@ class CLS_Setup():
 		wQuery = "drop table if exists tbl_follower_data ;"
 		inOBJ_DB.RunQuery( wQuery )
 		wQuery = "drop table if exists tbl_keyword_data ;"
+		inOBJ_DB.RunQuery( wQuery )
+		wQuery = "drop table if exists tbl_exc_followid ;"
 		inOBJ_DB.RunQuery( wQuery )
 		wQuery = "drop table if exists tbl_exc_username ;"
 		inOBJ_DB.RunQuery( wQuery )
@@ -808,7 +812,8 @@ class CLS_Setup():
 					"user_name   TEXT  NOT NULL," + \
 					"screen_name TEXT  NOT NULL," + \
 					"lastcount   INTEGER," + \
-					"lastdate    TIMESTAMP" + \
+					"lastdate    TIMESTAMP," + \
+					"reason      TEXT" + \
 					" ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
@@ -864,6 +869,30 @@ class CLS_Setup():
 ##					"choice      選択中
 ##					"id          検索キー番号
 ##					"keyword     検索キーワード
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_EXC_FOLLOWID
+#####################################################
+	def __create_TBL_EXC_FOLLOWID( self, inOBJ_DB, inTBLname="tbl_exc_followid" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"regdate     TIMESTAMP," + \
+					"id          TEXT  NOT NULL, " + \
+					" PRIMARY KEY ( id ) ) ;"
+		
+##					"regdate     DB登録日時
+##					"id          Tweet ID
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return

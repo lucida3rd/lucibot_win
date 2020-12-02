@@ -71,6 +71,7 @@ class CLS_TwitterMain():
 
 	STR_KeyUser     = ""
 ###	STR_Keywords    = ""
+	VAL_KeyUser_Index = -1
 	
 ###	FLG_Search_JP    = True			#検索は日本語のみ
 ###	FLG_Search_IncRt = False		#検索にリツイートを含める
@@ -219,8 +220,6 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 検索モード保存
-###		wOBJ_Config = CLS_Config()
-###		wResSub = wOBJ_Config.SetSearchMode_All()
 		wResSub = self.SaveSearchMode()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetSearchMode_All failed: reason" + CLS_OSIF.sCatErr( wResSub )
@@ -228,10 +227,17 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 除外Twitter ID 書き込み
-###		wResSub = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
 		wResSub = self.SaveExcTwitterID()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 古い除外Follow候補 削除
+		wOBJ_Config = CLS_Config()
+		wResSub = wOBJ_Config.OldExcFollowID_Erase()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "OldExcFollowID_Erase failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		#############################
@@ -431,8 +437,8 @@ class CLS_TwitterMain():
 #####################################################
 # 荒らしユーザCSV出力
 #####################################################
-	def ArashiCSV(self):
-		wRes = self.OBJ_TwitterKeyword.OutArashiCSV()
+	def ArashiCSV( self, inReSearch=False ):
+		wRes = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
 		return wRes
 
 
@@ -474,6 +480,15 @@ class CLS_TwitterMain():
 
 
 #####################################################
+# ユーザ管理
+#####################################################
+	def UserAdmin(self):
+		wRes = self.OBJ_TwitterAdmin.UserAdmin()
+		return wRes
+
+
+
+#####################################################
 # キーユーザ変更
 #####################################################
 	def SetKeyuser(self):
@@ -485,11 +500,11 @@ class CLS_TwitterMain():
 #####################################################
 # ユーザ復活
 #####################################################
-	def UserRevival(self):
-		wRes = self.OBJ_TwitterAdmin.UserRevival()
-		return wRes
-
-
+###	def UserRevival(self):
+###		wRes = self.OBJ_TwitterAdmin.UserRevival()
+###		return wRes
+###
+###
 
 #####################################################
 # 荒らしユーザ設定
@@ -535,27 +550,6 @@ class CLS_TwitterMain():
 # 荒らしチェック
 #####################################################
 	def CheckTrolls( self, inLine ):
-##		#############################
-##		# Indexの検索
-##		wKeylist = list( self.ARR_newExcUser.keys() )
-##		wFLG_Ditect = False
-##		for wKey in wKeylist :
-##			if self.ARR_newExcUser[wKey]['screen_name']==inLine['user']['screen_name'] :
-##				wIndex = self.ARR_newExcUser[wKey]['screen_name']
-##				wFLG_Ditect = True
-##				break
-##		
-##		###まだ未発見ならとりま枠を作る
-##		if wFLG_Ditect==False :
-###			wCell = {
-###				"id"          : str(inLine['user']['id']),
-###				"screen_name" : inLine['user']['screen_name'],
-###				"count"       : 0,
-###				"lastdate"    : "1901-01-01 00:00:00"
-###				}
-###			wIndex = str(inLine['user']['id'])
-###			self.ARR_newExcUser.update({ str(inLine['user']['id']) : wCell })
-		
 		#############################
 		# まだ未発見ならとりま枠を作る
 		wIndex = str(inLine['user']['screen_name'])
@@ -564,21 +558,16 @@ class CLS_TwitterMain():
 				inLine['user']['id'],
 				inLine['user']['screen_name']
 			)
-		
-###		#############################
-###		# 同じツイートか(日時で判定)
-###		if self.ARR_newExcUser[wIndex]['lastdate']==str(inLine['created_at']) :
-###			return True	#記録済みとして判定しない,正常扱い
+		else:
+			### screen_nameが変わってる場合への対策
+			self.ARR_newExcUser[wIndex]['screen_name'] = inLine['user']['screen_name']
 		
 		#############################
 		# 同じツイートか
 		wTweetID = str( inLine['id'] )
-###		if wTweetID in self.ARR_ExcTwiitID :
 		if wTweetID in gVal.STR_ExcTweetID :
 			return True	#記録済みとして判定しない,正常扱い
 		###新しい更新日として記録
-###		self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
-###		self.ARR_ExcTwiitID.append( wTweetID )
 		if self.ARR_newExcUser[wIndex]['lastdate']<inLine['created_at'] :
 			self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
 		
@@ -587,12 +576,6 @@ class CLS_TwitterMain():
 		#############################
 		# 除外Twitter IDチェック
 		#   既に除外判定されてるID
-###		for wID in gVal.STR_ExcTwitterID :
-###			if inLine['user']['screen_name']==wID :
-###				###どうせまた荒らしてるんでしょ？のカウンタ
-###				self.ARR_newExcUser[wIndex]['count'] += 1
-###				return False	#除外、さよなら
-###		
 		if wIndex in gVal.STR_ExcTwitterID :
 			###どうせまた荒らしてるんでしょ？のカウンタ
 			self.ARR_newExcUser[wIndex]['count'] += 1
@@ -642,7 +625,8 @@ class CLS_TwitterMain():
 				self.ARR_newExcUser[wIndex]['reason_id'] = wReasonID
 				
 				###除外リスト入り
-				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
+###				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
+				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['id'] )
 			
 			return False	#さよなら
 		
@@ -669,11 +653,6 @@ class CLS_TwitterMain():
 			inText.encode('gb2312','ignore').decode('gb2312')]
 		questions_cp932 = [s for s in \
 			inText.encode('cp932','ignore').decode('cp932')]
-###		if questions_gb2312==questions_before :
-###			return True	#チャイ文
-###		
-###		wLen = len(questions_before) - len(questions_cp932)
-###		if wLen!=0 :
 		if (questions_gb2312==questions_before ) and ( 
 		   (set(questions_before) - set(questions_cp932))!=set([])) :
 			return True	#チャイ文

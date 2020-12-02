@@ -23,6 +23,7 @@
 #####################################################
 
 from osif import CLS_OSIF
+from htmlif import CLS_HTMLIF
 from filectrl import CLS_File
 from mydisp import CLS_MyDisp
 from gval import gVal
@@ -72,7 +73,6 @@ class CLS_TwitterKeyword():
 		self.OBJ_Parent.STR_KeyUser = {}
 		#############################
 		# 取得
-###		self.OBJ_Parent.STR_Keywords = {}
 		wRange = len( gVal.STR_SearchMode )
 		for wIndex in range( wRange ) :
 			#############################
@@ -123,11 +123,6 @@ class CLS_TwitterKeyword():
 					if self.OBJ_Parent.CheckTrolls( wLine )==False :
 						continue
 				
-###				###検索にリツイートを含めない場合、
-###				###  リツイートはスキップする
-###				if gVal.STR_SearchMode[wIndex]['ExcRT']==True :
-###					if "retweeted_status" in wLine :
-###						continue
 				###検索からセンシティブを除外する場合、
 				###  センシティブツイートはスキップする
 				if gVal.STR_SearchMode[wIndex]['ExcSensi']==True :
@@ -145,19 +140,6 @@ class CLS_TwitterKeyword():
 				if self.OBJ_Parent.CheckExcWord( wCHR_Term )==False :
 					continue
 				
-###				###日時の変換
-###				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
-###				if wTime['Result']!=True :
-###					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
-###					gVal.OBJ_L.Log( "B", wRes )
-###					continue
-###				wLine['created_at'] = wTime['TimeDate']
-###				
-###				###荒らしチェック
-###				if gVal.STR_SearchMode[wIndex]['Arashi']==True :
-###					if self.OBJ_Parent.CheckTrolls( wLine )==False :
-###						continue
-				
 				###既にフォローしているユーザ
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_MyFollowID :
 					continue
@@ -168,8 +150,6 @@ class CLS_TwitterKeyword():
 				if str(wLine['user']['id']) in self.OBJ_Parent.ARR_UnRefollowListMenberID :
 					continue
 				
-###				self.__set_KeyUser( wLine['user'], wIndex )
-###				self.OBJ_Parent.STR_Keywords[wIndex] += 1
 				self.__set_KeyUser( wLine, gVal.STR_SearchMode[wIndex]['Keyword'] )
 				gVal.STR_SearchMode[wIndex]['Count'] += 1
 				
@@ -197,9 +177,7 @@ class CLS_TwitterKeyword():
 					if str(wLine['retweeted_status']['user']['id']) in self.OBJ_Parent.ARR_UnRefollowListMenberID :
 						continue
 					
-###					self.__set_KeyUser( wLine['retweeted_status']['user'], gVal.STR_SearchMode[wIndex]['Keyword'] )
 					self.__set_KeyUser( wLine['retweeted_status'], gVal.STR_SearchMode[wIndex]['Keyword'] )
-###					self.OBJ_Parent.STR_Keywords[wIndex] += 1
 					gVal.STR_SearchMode[wIndex]['Count'] += 1
 		
 		#############################
@@ -222,23 +200,21 @@ class CLS_TwitterKeyword():
 	#####################################################
 	def __set_KeyUser( self, inLine, inWord ):
 		###既に同じユーザを抽出した
-###		if str(inLine['id']) in self.OBJ_Parent.STR_KeyUser :
 		if str(inLine['user']['id']) in self.OBJ_Parent.STR_KeyUser :
 			return False
 		
-		###セット
 		wSTR_Cell = {}
-###		wSTR_Cell.update({ "id"          : str(inLine['id']) })
-###		wSTR_Cell.update({ "user_name"   : str(inLine['name']) })
-###		wSTR_Cell.update({ "screen_name" : str(inLine['screen_name']) })
-		wSTR_Cell.update({ "id"          : str(inLine['user']['id']) })
+		###セット
+###		wSTR_Cell.update({ "id"          : str(inLine['user']['id']) })
+		wSTR_Cell.update({ "id"          : inLine['user']['id'] })
 		wSTR_Cell.update({ "user_name"   : str(inLine['user']['name']) })
 		wSTR_Cell.update({ "screen_name" : str(inLine['user']['screen_name']) })
 		wSTR_Cell.update({ "hit_word"    : inWord })
+		wSTR_Cell.update({ "text_id"     : inLine['id'] })
 		wSTR_Cell.update({ "text"        : inLine['text'] })
 		wSTR_Cell.update({ "statuses_count" : str(inLine['user']['statuses_count']) })
 		wSTR_Cell.update({ "protected"   : inLine['user']['protected'] })
-###		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['id']) : wSTR_Cell })
+		
 		self.OBJ_Parent.STR_KeyUser.update({ str(inLine['user']['id']) : wSTR_Cell })
 		return True
 
@@ -984,32 +960,46 @@ class CLS_TwitterKeyword():
 			if gVal.DEF_STR_TLNUM['randFollowNum']<=wCount :
 				break	#選出数上限
 			
-			wRand = CLS_OSIF.sGetRand( wKeyNum )
-			wKey  = wKeylist[wRand]
-			wID   = self.OBJ_Parent.STR_KeyUser[wKey]['id']
+			if self.OBJ_Parent.VAL_KeyUser_Index==-1 :
+				wRand = CLS_OSIF.sGetRand( wKeyNum )
+				wKey  = wKeylist[wRand]
+				wID   = self.OBJ_Parent.STR_KeyUser[wKey]['id']
+				
+				###候補から除外されていたらスキップ
+				if wID in gVal.STR_ExcFollowID :
+					continue
+				
+				###一度でもフォローしたことがある or un_followerリスト登録者
+				if wID in wARR_Followers :
+					wARR_RandID.append( wID )
+					continue
+				###この機能では鍵垢は除外する仕様とする
+				if self.OBJ_Parent.STR_KeyUser[wKey]['protected']==True :
+					wARR_RandID.append( wID )
+					continue
+				
+				###既に選出されたIDならスキップする
+				if wID in wARR_RandID :
+					continue
+				
+				#※候補あり
+				#############################
+				# 候補の表示
+				wStr = '\n' + "--------------------" + '\n'
+				wStr = wStr + "フォロー候補= " + str(self.OBJ_Parent.STR_KeyUser[wKey]['user_name']) + "(@" + str(self.OBJ_Parent.STR_KeyUser[wKey]['screen_name']) + ")" + '\n'
+				wStr = wStr + '\n' + str(self.OBJ_Parent.STR_KeyUser[wKey]['text']) + '\n'
+				wStr = wStr + '\n' + "対処コマンド：" + '\n'
+				wStr = wStr + "    y=フォロー / q=選定中止 / v=ブラウザで表示" + '\n'
+				wStr = wStr + "    n=次から候補除外 / Other=拒否"
+				CLS_OSIF.sPrn( wStr )
 			
-			###一度でもフォローしたことがある or un_followerリスト登録者
-			if wID in wARR_Followers :
-				wARR_RandID.append( wID )
-				continue
-			###この機能では鍵垢は除外する仕様とする
-			if self.OBJ_Parent.STR_KeyUser[wKey]['protected']==True :
-				wARR_RandID.append( wID )
-				continue
+			else:
+				###キーが保存されている場合
+				wKey  = self.OBJ_Parent.VAL_KeyUser_Index
+				wID   = self.OBJ_Parent.STR_KeyUser[wKey]['id']
+				self.OBJ_Parent.VAL_KeyUser_Index = -1
 			
-			###既に選出されたIDならスキップする
-			if wID in wARR_RandID :
-				continue
-			
-			#※候補あり
-			#############################
-			# 候補の表示
-			wStr = '\n' + "--------------------" + '\n'
-			wStr = wStr + "フォロー候補= " + str(self.OBJ_Parent.STR_KeyUser[wKey]['user_name']) + "(@" + str(self.OBJ_Parent.STR_KeyUser[wKey]['screen_name']) + ")" + '\n'
-			wStr = wStr + '\n' + str(self.OBJ_Parent.STR_KeyUser[wKey]['text']) + '\n'
-			CLS_OSIF.sPrn( wStr )
-			
-			wStr = "この候補ユーザをフォローしますか？(y=フォロー / q=選出中止 / Other=拒否)=> "
+			wStr = "対処コマンドを指定してください=> "
 			wSelect = CLS_OSIF.sInp( wStr )
 			if wSelect!="y" :
 				if wSelect=="q" :
@@ -1017,6 +1007,31 @@ class CLS_TwitterKeyword():
 					CLS_OSIF.sPrn( "選出を終了しました。" + '\n' )
 					wRes['Result'] = True
 					return wRes
+				
+				elif wSelect=="v" :
+					###ブラウザで表示
+					wURL = "https://twitter.com/" + gVal.STR_UserInfo['Account'] + "/status/" + str(self.OBJ_Parent.STR_KeyUser[wKey]['text_id'])
+					CLS_HTMLIF.sOpenURL( wURL )
+					self.OBJ_Parent.VAL_KeyUser_Index = wKey
+					continue
+				
+				elif wSelect=="n" :
+					###次から候補から外す
+					wQuery = "insert into tbl_exc_followid values (" + \
+								"'" + str(wTD['TimeDate']) + "'," + \
+								"" + str( wID ) + " " + \
+								") ;"
+					
+					wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+					wResDB = gVal.OBJ_DB.GetQueryStat()
+					if wResDB['Result']!=True :
+						##失敗
+						wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+						gVal.OBJ_L.Log( "B", wRes )
+						return wRes
+					
+					gVal.STR_ExcFollowID.append( wID )
+					continue
 				
 				###拒否はスキップ
 				wARR_RandID.append( wID )
@@ -1074,14 +1089,15 @@ class CLS_TwitterKeyword():
 							"'" + wName + "'," + \
 							"'" + str(self.OBJ_Parent.STR_KeyUser[wKey]['screen_name']) + "'," + \
 							str(self.OBJ_Parent.STR_KeyUser[wKey]['statuses_count']) + "," + \
-							"'" + str(wTD['TimeDate']) + "'" + \
+							"'" + str(wTD['TimeDate']) + "'," + \
+							"''" + \
 							") ;"
 			
 			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 			wResDB = gVal.OBJ_DB.GetQueryStat()
 			if wResDB['Result']!=True :
 				##失敗
-				wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
 			
@@ -1550,7 +1566,7 @@ class CLS_TwitterKeyword():
 # 荒らしユーザCSV出力
 #####################################################
 ###	def OutArashiCSV( self, inHeader=True ):
-	def OutArashiCSV(self):
+	def OutArashiCSV( self, inReSearch=False ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -1576,35 +1592,48 @@ class CLS_TwitterKeyword():
 		CLS_OSIF.sDispClr()
 		
 		#############################
-		# 画面表示
-		wStr = "--------------------" + '\n'
-		wStr = wStr + " 荒らしユーザCSVの出力" + '\n'
-		wStr = wStr + "--------------------" + '\n'
-		wStr = wStr + '\n'
-		wStr = wStr + "荒らし判定をおこなう検索ワードを指定してください。" + '\n'
-		if gVal.STR_SearchMode[wIndex]['Keyword']=="" or gVal.STR_SearchMode[wIndex]['Keyword']==None :
-			wStr = wStr + "  現在の設定ワード： (未設定)" + '\n'
-		else:
-			wStr = wStr + "  現在の設定ワード： " + gVal.STR_SearchMode[wIndex]['Keyword'] + '\n'
-		
-		CLS_OSIF.sPrn( wStr )
-		wWord = CLS_OSIF.sInp( "検索文字？(\\rs=検索再実行/\\q=キャンセル)=> " )
-		
-		if wWord.find("\\")==0 :
-			###先頭が \\ はコマンド
-			if wWord=="\\rs" :
-				###再実行
-				wWord = gVal.STR_SearchMode[wIndex]['Keyword']
+		# 再実行モード
+		if inReSearch==True :
+			### 画面表示
+			wStr = "--------------------" + '\n'
+			wStr = wStr + " 荒らしユーザCSVの出力 (再実行モード)" + '\n'
+			wStr = wStr + "--------------------" + '\n'
+			CLS_OSIF.sPrn( wStr )
 			
-			elif wWord=="\\q" :
-				###終了
-				wRes['Result'] = True
-				return wRes
+			wWord = gVal.STR_SearchMode[wIndex]['Keyword']
+		
+		#############################
+		# 通常モード
+		else :
+			### 画面表示
+			wStr = "--------------------" + '\n'
+			wStr = wStr + " 荒らしユーザCSVの出力" + '\n'
+			wStr = wStr + "--------------------" + '\n'
+			wStr = wStr + '\n'
+			wStr = wStr + "荒らし判定をおこなう検索ワードを指定してください。" + '\n'
+			if gVal.STR_SearchMode[wIndex]['Keyword']=="" or gVal.STR_SearchMode[wIndex]['Keyword']==None :
+				wStr = wStr + "  現在の設定ワード： (未設定)" + '\n'
 			else:
-				###ないコマンド
-				CLS_OSIF.sPrn( "そのコマンドはありません。" )
-				wRes['Result'] = True
-				return wRes
+				wStr = wStr + "  現在の設定ワード： " + gVal.STR_SearchMode[wIndex]['Keyword'] + '\n'
+			
+			CLS_OSIF.sPrn( wStr )
+			wWord = CLS_OSIF.sInp( "検索文字？(\\rs=検索再実行/\\q=キャンセル)=> " )
+			
+			if wWord.find("\\")==0 :
+				###先頭が \\ はコマンド
+				if wWord=="\\rs" :
+					###再実行
+					wWord = gVal.STR_SearchMode[wIndex]['Keyword']
+				
+				elif wWord=="\\q" :
+					###終了
+					wRes['Result'] = True
+					return wRes
+				else:
+					###ないコマンド
+					CLS_OSIF.sPrn( "そのコマンドはありません。" )
+					wRes['Result'] = True
+					return wRes
 		
 		if wWord=="" :
 			CLS_OSIF.sPrn( "キーワードが設定されていません。" )
