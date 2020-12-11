@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/11/2
+# ::Update= 2020/12/11
 #####################################################
 # Private Function:
 #   (none)
@@ -218,12 +218,12 @@ class CLS_TwitterMain():
 		wRes['Class'] = "CLS_TwitterMain"
 		wRes['Func']  = "End"
 		
-		#############################
-		# 検索モード保存
-		wResSub = self.SaveSearchMode()
-		if wResSub['Result']!=True :
-			wRes['Reason'] = "SetSearchMode_All failed: reason" + CLS_OSIF.sCatErr( wResSub )
-			return wRes
+###		#############################
+###		# 検索モード保存
+###		wResSub = self.SaveSearchMode()
+###		if wResSub['Result']!=True :
+###			wRes['Reason'] = "SetSearchMode_All failed: reason" + CLS_OSIF.sCatErr( wResSub )
+###			return wRes
 		
 		#############################
 		# 除外Twitter ID 書き込み
@@ -492,7 +492,20 @@ class CLS_TwitterMain():
 # キーユーザ変更
 #####################################################
 	def SetKeyuser(self):
+		#############################
+		# 検索設定モードの起動
 		wRes = self.OBJ_TwitterKeyword.SetKeyuser()
+		if wRes['Result']!=True :
+			return wRes
+		
+		# ※設定モード終了で戻ってきた
+		#############################
+		# 保存
+		wResSub = self.SaveSearchMode()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "SetKeyuser failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
 		return wRes
 
 

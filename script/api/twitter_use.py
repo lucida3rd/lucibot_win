@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/11/2
+# ::Update= 2020/12/11
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -56,6 +56,7 @@
 #     https://developer.twitter.com/en/docs/basics/rate-limits
 #
 #####################################################
+import time
 import json
 import subprocess as sp
 from requests_oauthlib import OAuth1Session
@@ -119,6 +120,7 @@ class CLS_Twitter_Use():
 	# name  リスト名
 
 	CHR_TimeDate = "1901-01-01 00:00:00"
+	DEF_VAL_SLEEP = 3		#Twitter処理遅延（秒）
 
 
 
@@ -277,6 +279,10 @@ class CLS_Twitter_Use():
 			return False	#失敗
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 初期化完了
 		self.TwStatus['Init'] = True
 		return True
@@ -297,6 +303,10 @@ class CLS_Twitter_Use():
 		# Twitter接続
 		if self.__twConnect()!=True :
 			return False
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
 		
 		return True
 
@@ -392,6 +402,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -471,6 +485,10 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
 		
 		#############################
 		# 結果
@@ -561,6 +579,10 @@ class CLS_Twitter_Use():
 					break
 				wIndex = len(wTimeline['statuses']) - 1
 				wParams['max_id'] = wTimeline['statuses'][wIndex]['id']
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
 			
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
@@ -586,24 +608,6 @@ class CLS_Twitter_Use():
 		#############################
 		# TLを取得
 		wRes['Responce'] = wARR_TL
-		
-##		#############################
-##		# タイムライン読み込み
-##		try:
-##			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
-##		except ValueError as err :
-##			wRes['Reason'] = "Twitter error: " + err
-##			return wRes
-##		
-##		#############################
-##		# 結果
-##		if wTweetRes.status_code != 200 :
-##			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
-##			return wRes
-##		
-##		#############################
-##		# TLを取得
-##		wRes['Responce'] = json.loads( wTweetRes.text )
 		
 		#############################
 		# 正常
@@ -652,6 +656,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -669,7 +677,6 @@ class CLS_Twitter_Use():
 #####################################################
 # ユーザ情報取得処理
 #####################################################
-###	def GetUserinfo( self, inID ):
 	def GetUserinfo( self, inID=-1, inScreenName=None ):
 		#############################
 		# 応答形式の取得
@@ -702,7 +709,6 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# パラメータの生成
-###		wParams = { "user_id" : inID }
 		if inID>=0 :
 			wParams = { "user_id" : inID }
 		else :
@@ -715,6 +721,10 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
 		
 		#############################
 		# 結果
@@ -772,6 +782,10 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
 		
 		#############################
 		# 結果
@@ -858,6 +872,10 @@ class CLS_Twitter_Use():
 				if wUsers['next_cursor_str']=="0" :
 					break
 				wParams['cursor'] = wUsers['next_cursor_str']
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
 			
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
@@ -961,6 +979,10 @@ class CLS_Twitter_Use():
 				if wUsers['next_cursor_str']=="0" :
 					break
 				wParams['cursor'] = wUsers['next_cursor_str']
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
 			
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
@@ -1034,6 +1056,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -1078,6 +1104,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -1091,7 +1121,6 @@ class CLS_Twitter_Use():
 #####################################################
 # いいね一覧読み込み処理
 #####################################################
-###	def GetFavolist( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
 	def GetFavolist(self):
 		#############################
 		# 応答形式の取得
@@ -1155,6 +1184,10 @@ class CLS_Twitter_Use():
 				if wTL['next_cursor_str']=="0" :
 					break
 				wParams['cursor'] = wUsers['next_cursor_str']
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
 			
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
@@ -1222,6 +1255,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -1278,6 +1315,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -1316,7 +1357,6 @@ class CLS_Twitter_Use():
 #####################################################
 # リスト登録者一覧の取得
 #####################################################
-###	def GetListMember( self, inListID ):
 	def GetListMember( self, inListName ):
 		#############################
 		# 応答形式の取得
@@ -1406,6 +1446,10 @@ class CLS_Twitter_Use():
 				if wUsers['next_cursor_str']=="0" :
 					break
 				wParams['cursor'] = wUsers['next_cursor_str']
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
 			
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
@@ -1442,7 +1486,6 @@ class CLS_Twitter_Use():
 #####################################################
 # リストへ追加処理
 #####################################################
-###	def AddUserList( self, inListID, inUserID ):
 	def AddUserList( self, inListName, inUserID ):
 		#############################
 		# 応答形式の取得
@@ -1496,6 +1539,10 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
 		
 		#############################
 		# 結果
@@ -1566,6 +1613,10 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
@@ -1620,6 +1671,10 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "GetTL: Twitter error: " + err
 			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
 		
 		#############################
 		# 結果
