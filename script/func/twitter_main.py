@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/12/11
+# ::Update= 2020/12/12
 #####################################################
 # Private Function:
 #   (none)
@@ -178,6 +178,13 @@ class CLS_TwitterMain():
 		wResSub = wOBJ_Config.GetExcTwitterID()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "GetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 除外Follow候補 読み込み
+		wResSub = wOBJ_Config.GetExcFollowID()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "GetExcFollowID failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 ###		self.ARR_ExcTwiitID = []

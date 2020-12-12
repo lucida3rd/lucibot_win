@@ -205,8 +205,8 @@ class CLS_TwitterKeyword():
 		
 		wSTR_Cell = {}
 		###セット
-###		wSTR_Cell.update({ "id"          : str(inLine['user']['id']) })
-		wSTR_Cell.update({ "id"          : inLine['user']['id'] })
+		wSTR_Cell.update({ "id"          : str(inLine['user']['id']) })
+###		wSTR_Cell.update({ "id"          : inLine['user']['id'] })
 		wSTR_Cell.update({ "user_name"   : str(inLine['user']['name']) })
 		wSTR_Cell.update({ "screen_name" : str(inLine['user']['screen_name']) })
 		wSTR_Cell.update({ "hit_word"    : inWord })
