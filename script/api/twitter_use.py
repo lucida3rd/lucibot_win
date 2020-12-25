@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/12/11
+# ::Update= 2020/12/25
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -1090,6 +1090,102 @@ class CLS_Twitter_Use():
 		#############################
 		# APIの指定
 		wAPI = "https://api.twitter.com/1.1/friendships/destroy.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# ミュート処理
+#####################################################
+	def CreateMute( self, inID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "CreateMute"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/mutes/users/create.json"
+		
+		#############################
+		# パラメータの生成
+		wParams = { "id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# ミュート解除処理
+#####################################################
+	def RemoveMute( self, inID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "RemoveFollow"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/mutes/users/destroy.json"
 		
 		#############################
 		# パラメータの生成

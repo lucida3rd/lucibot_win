@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/12/2
+# ::Update= 2020/12/25
 #####################################################
 # Private Function:
 #   (none)
@@ -682,6 +682,14 @@ class CLS_TwitterFollower():
 			wRemoveRes = gVal.OBJ_Twitter.RemoveFollow( wID )
 			if wRemoveRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error(RemoveFollow): " + wRemoveRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			CLS_OSIF.sSleep(5)
+			
+			###  ミュート解除する
+			wRemoveRes = gVal.OBJ_Twitter.RemoveMute( wID )
+			if wRemoveRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(RemoveMute): " + wRemoveRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
 			CLS_OSIF.sSleep(5)
