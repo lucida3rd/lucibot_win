@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2020/12/25
+# ::Update= 2021/1/4
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -38,8 +38,13 @@
 #   GetFollowInfo( self, inSrcID, inDstID ):
 #   GetMyFollowList(self):
 #   GetFollowerList(self):
+#   CreateFollow( self, inID ):
 #   RemoveFollow( self, inID ):
+#   GetMuteIDs(self):
+#   CreateMute( self, inID ):
+#   RemoveMute( self, inID ):
 #   GetFavolist(self):
+#   CreateFavo( self, inID ):
 #   RemoveFavo( self, inID ):
 #   GetLists(self):
 #   GetListMember( self, inListName ):
@@ -119,6 +124,8 @@ class CLS_Twitter_Use():
 	# id    リストid
 	# name  リスト名
 
+	ARR_MuteList = []	#ミュートIDs(リスト)
+
 	CHR_TimeDate = "1901-01-01 00:00:00"
 	DEF_VAL_SLEEP = 3		#Twitter処理遅延（秒）
 
@@ -163,6 +170,7 @@ class CLS_Twitter_Use():
 		self.__set_API( "status",      20, self.TwStatus['APIrect'] )	# POST: 3h/300 (ツイートとリツイは共通)
 		self.__set_API( "favorites",    8, self.TwStatus['APIrect'] )	# POST: 24h/1000
 		self.__set_API( "friendships",  3, self.TwStatus['APIrect'] )	# POST: 24h/400
+		self.__set_API( "muted",       20, self.TwStatus['APIrect'] )	# POST: 3h/300
 		
 		###	GET
 		self.__set_API( "home_timeline",  12, self.TwStatus['APIrect'] )# GET: 15m/15
@@ -177,6 +185,7 @@ class CLS_Twitter_Use():
 		self.__set_API( "lists_members", 720, self.TwStatus['APIrect'] )# GET: 15m/900
 		self.__set_API( "trends_place",   60, self.TwStatus['APIrect'] )# GET: 15m/75
 		self.__set_API( "users_show",    900, self.TwStatus['APIrect'] )# GET: 15m/900
+		self.__set_API( "mute_list",      12, self.TwStatus['APIrect'] )# GET: 15m/15
 		return
 
 	#####################################################
@@ -1119,6 +1128,110 @@ class CLS_Twitter_Use():
 
 
 #####################################################
+# ミュートIDs
+#####################################################
+	def GetMuteIDs(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetMuteIDs"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/mutes/users/ids.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "mute_list" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = { "cursor"		: "-1"
+		}
+		
+		#############################
+		# タイムライン読み込み
+		wARR_TL = []
+		wFLG_Limit = False
+		try:
+			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( "mute_list" )
+				
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wIDs = json.loads( wTweetRes.text )
+				
+				###要素チェック
+				if 'next_cursor_str' not in wIDs :
+					break
+				if 'users' not in wIDs :
+					break
+				
+				###情報抜き出し
+				if len(wIDs['ids'])>0 :
+					for wLine in wIDs['ids'] :
+						wARR_TL.append( wLine )
+				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( "mute_list" )!=True :
+					break
+				###ページング処理
+				if wParams['cursor']==wIDs['next_cursor_str'] :
+					break
+				if wIDs['next_cursor_str']=="0" :
+					break
+				wParams['cursor'] = wIDs['next_cursor_str']
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
+			
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wUsers :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		self.ARR_MuteList = wARR_TL
+		wRes['Responce']  = wARR_TL
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
 # ミュート処理
 #####################################################
 	def CreateMute( self, inID ):
@@ -1136,8 +1249,29 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# ミュート一覧が空ならまず取得しにいく
+		if len(self.ARR_MuteList)==0 :
+			wResList = self.GetMuteIDs()
+			if wResList['Result']!=True :
+				wRes['Reason'] = "GetLists failed: " + str(wResList['Reason'])
+				return wRes
+		
+		#############################
+		# ミュート一覧にあったら終了
+		if inID in self.ARR_MuteList :
+			wRes['Responce'] = False
+			wRes['Result']   = True
+			return wRes
+		
+		#############################
 		# APIの指定
 		wAPI = "https://api.twitter.com/1.1/mutes/users/create.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "muted" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
 		
 		#############################
 		# パラメータの生成
@@ -1161,7 +1295,8 @@ class CLS_Twitter_Use():
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
-		wRes['Result'] = True
+		wRes['Responce'] = True
+		wRes['Result']   = True
 		return wRes
 
 
@@ -1181,6 +1316,21 @@ class CLS_Twitter_Use():
 		wResIni = self.GetTwStatus()
 		if wResIni['Init']!=True :
 			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# ミュート一覧が空ならまず取得しにいく
+		if len(self.ARR_MuteList)==0 :
+			wResList = self.GetMuteIDs()
+			if wResList['Result']!=True :
+				wRes['Reason'] = "GetLists failed: " + str(wResList['Reason'])
+				return wRes
+		
+		#############################
+		# ミュート一覧になかったら終了
+		if inID not in self.ARR_MuteList :
+			wRes['Responce'] = False
+			wRes['Result']   = True
 			return wRes
 		
 		#############################
@@ -1209,7 +1359,8 @@ class CLS_Twitter_Use():
 			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
 			return wRes
 		
-		wRes['Result'] = True
+		wRes['Responce'] = True
+		wRes['Result']   = True
 		return wRes
 
 
@@ -1312,6 +1463,60 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# いいね処理
+#####################################################
+	def CreateFavo( self, inID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "CreateFavo"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/favorites/create.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "favorites" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = { "id" : inID }
+		
+		#############################
+		# 実行
+		try:
+			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
 		wRes['Result'] = True
 		return wRes
 
