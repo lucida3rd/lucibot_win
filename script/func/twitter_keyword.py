@@ -270,8 +270,6 @@ class CLS_TwitterKeyword():
 	def __run_Keyuser( self, inWord, outRes ):
 		pRes = outRes
 		
-###		### ※最初はコマンドチェックなので全正常で返す
-###		pRes['Result'] = True
 		#############################
 		# コマンドの分析
 		if inWord.find("\\")!=0 :
@@ -287,7 +285,6 @@ class CLS_TwitterKeyword():
 		if wLen==1 :
 			### \n
 			wCommand = wCommand[0]
-###			if wCommand=="\\n" :
 			if wCommand=="\\n" or wCommand=="\\ax" or wCommand=="\\ar" :
 				wFLG_Valid = True
 		
@@ -324,12 +321,10 @@ class CLS_TwitterKeyword():
 			gVal.sStruct_SearchMode()
 			wIndex = len( gVal.STR_SearchMode ) - 1
 			gVal.STR_SearchMode[wIndex]['id'] = wID
-###			gVal.STR_SearchMode[wIndex]['Update'] = True
 		
 		#############################
 		# 全未選択
 		elif wCommand=="\\ax" :
-###			self.__set_Keyuser( -1, True, False, pRes )
 			self.__select_Keyuser( -1, True, False, pRes )
 		
 		#############################
@@ -356,8 +351,6 @@ class CLS_TwitterKeyword():
 				pRes['Result'] = True
 				return
 		
-##		### ※ここから処理結果としてセットさせる
-##		pRes['Result'] = False
 		#############################
 		# \\n：新規キー追加
 		if wCommand=="\\n" :
@@ -376,28 +369,13 @@ class CLS_TwitterKeyword():
 		#############################
 		# \\s：キー選択
 		elif wCommand=="\\s" :
-###			self.__set_Keyuser( wIndex, False, True, pRes )
 			self.__select_Keyuser( wIndex, False, True, pRes )
 		
 		#############################
 		# \\x：キー未選択
 		elif wCommand=="\\x" :
-###			self.__set_Keyuser( wIndex, False, False, pRes )
 			self.__select_Keyuser( wIndex, False, False, pRes )
 		
-##		#############################
-##		# \\ax：全キー未選択
-##		elif wCommand=="\\ax" :
-##			self.__set_Keyuser( wIndex, True, False, pRes )
-##		
-##		#############################
-##		# \\ar：カウンタリセット
-##		elif wCommand=="\\ar" :
-##			self.__reset_Keyuser( pRes )
-##		
-###		#############################
-###		# 正常
-###		pRes['Result'] = True
 		return
 
 	#####################################################
@@ -409,7 +387,6 @@ class CLS_TwitterKeyword():
 		#############################
 		# コンソールを表示
 		while True :
-##			wWord = self.__view_TweetSearch()
 			wWord = self.__view_SetKeyuserDisp( inIndex, outRes )
 			
 			if wWord=="\\q" :
@@ -432,11 +409,6 @@ class CLS_TwitterKeyword():
 			#############################
 			# 入力の解析
 			wResCmd = self.ChangeSearchMode( inIndex, wWord )
-###			if wResCmd['Result']!=True :
-###				### 検索文字？
-###				if wWord!="" :
-###					gVal.STR_SearchMode[inIndex]['Keyword'] = wWord
-###					gVal.STR_SearchMode[inIndex]['Update']  = True
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			if wResCmd['Result']!=True :
 				### 処理失敗
@@ -479,7 +451,6 @@ class CLS_TwitterKeyword():
 		#############################
 		# 実行の確認
 		wID = str(gVal.STR_SearchMode[inIndex]['id'])
-###		wStr = "ID " + str(gVal.STR_SearchMode[inIndex]['id']) + " のキーユーザを削除します。" + '\n'
 		wStr = "ID=" + wID + " このキーユーザを削除します。" + '\n'
 		CLS_OSIF.sPrn( wStr )
 		wSelect = CLS_OSIF.sInp( "よろしいですか？(y/N)=> " )
@@ -504,7 +475,6 @@ class CLS_TwitterKeyword():
 		
 		gVal.STR_SearchMode.pop( inIndex )
 		
-###		wStr = "ID " + str(gVal.STR_SearchMode[inIndex]['id']) + " のキーユーザを削除しました。" + '\n'
 		wStr = "キーユーザを削除しました。 ID=" + wID + '\n'
 		CLS_OSIF.sPrn( wStr )
 		
@@ -516,7 +486,6 @@ class CLS_TwitterKeyword():
 	#####################################################
 	# キー選択/未選択
 	#####################################################
-###	def __set_Keyuser( self, inIndex, inFLG_Alls, in_FLG_Choice, outRes ):
 	def __select_Keyuser( self, inIndex, inFLG_Alls, in_FLG_Choice, outRes ):
 		pRes = outRes
 		
@@ -1256,7 +1225,6 @@ class CLS_TwitterKeyword():
 		#############################
 		# コンソールを表示
 		while True :
-###			wWord = self.__view_TweetSearch()
 			wWord = self.__view_TweetSearch( wIndex )
 			
 			if wWord=="\\q" :
@@ -1266,10 +1234,7 @@ class CLS_TwitterKeyword():
 				###未入力は再度入力
 				continue
 			
-###			wResSearch = self.__run_TweetSearch( wWord )
 			wResSearch = self.__run_TweetSearch( wIndex, wWord )
-###			if wResSearch['Result']==True :
-###				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			if wResSearch['Result']!=True :
 				### 処理失敗
@@ -1277,13 +1242,7 @@ class CLS_TwitterKeyword():
 			
 			#############################
 			# 更新する
-###			gVal.STR_SearchMode[0]['Update']  = True
 			gVal.STR_SearchMode[wIndex]['Update']  = True
-			
-###			#############################
-###			# 検索文字入力だったら検索文字を保存する
-###			if wResSearch['Responce']==False :
-###				gVal.STR_SearchMode[0]['Keyword'] = wWord
 		
 		wRes['Result'] = True
 		return wRes
@@ -1291,22 +1250,18 @@ class CLS_TwitterKeyword():
 	#####################################################
 	# ツイート検索 画面表示
 	#####################################################
-###	def __view_TweetSearch(self):
 	def __view_TweetSearch( self, inIndex ):
-###		wResDisp = CLS_MyDisp.sViewDisp( "SearchConsole", 0 )
 		wResDisp = CLS_MyDisp.sViewDisp( "SearchConsole", inIndex )
 		if wResDisp['Result']==False :
 			gVal.OBJ_L.Log( "D", wResDisp )
 			return "\\q"	#失敗=強制終了
 		
-###		wWord = CLS_OSIF.sInp( "検索文字？=> " )
 		wWord = CLS_OSIF.sInp( "検索文字？(\\rs=検索再実行)=> " )
 		return wWord
 
 	#####################################################
 	# ツイート検索 実行
 	#####################################################
-###	def __run_TweetSearch( self, inWord ):
 	def __run_TweetSearch( self, inIndex, inWord ):
 		#############################
 		# 応答形式の取得
@@ -1317,12 +1272,7 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# コマンド入力か
-###		wResCmd = self.ChangeSearchMode( 0, inWord )
 		wResCmd = self.ChangeSearchMode( inIndex, inWord )
-###		if wResCmd['Result']==True :
-###			### 先頭が\\ =コマンド処理をした
-###			wRes['Result'] = True
-###			return wRes
 		if wResCmd['Result']!=True :
 			### 処理失敗
 			wRes['Result'] = False
@@ -1339,7 +1289,6 @@ class CLS_TwitterKeyword():
 		#############################
 		# 再実行の場合
 		if wWord=="\\rs" :
-###			wWord = gVal.STR_SearchMode[0]['Keyword']
 			wWord = gVal.STR_SearchMode[inIndex]['Keyword']
 			if wWord=="" or wWord==None :
 				CLS_OSIF.sPrn( "再実行を指示されましたが、キーワードが未設定です。" )
@@ -1348,8 +1297,6 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# コマンド付加
-###		wResCmd = self.IncSearchMode( 0, inWord )
-###		wResCmd = self.IncSearchMode( 0, wWord )
 		wResCmd = self.IncSearchMode( inIndex, wWord )
 		if wResCmd['Result']!=True :
 			###やらかし
@@ -1397,11 +1344,6 @@ class CLS_TwitterKeyword():
 				if self.OBJ_Parent.CheckTrolls( wLine )==False :
 					continue
 			
-###			###検索にリツイートを含めない場合、
-###			###  リツイートはスキップする
-###			if gVal.STR_SearchMode[inIndex]['ExcRT']==True :
-###				if "retweeted_status" in wLine :
-###					continue
 			###検索からセンシティブを除外する場合、
 			###  センシティブツイートはスキップする
 			if gVal.STR_SearchMode[inIndex]['ExcSensi']==True :
@@ -1418,19 +1360,6 @@ class CLS_TwitterKeyword():
 			wCHR_Term = CLS_OSIF.sDel_HTML( str(wLine['source']) )
 			if self.OBJ_Parent.CheckExcWord( wCHR_Term )==False :
 				continue
-			
-###			###日時の変換
-###			wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
-###			if wTime['Result']!=True :
-###				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
-###				gVal.OBJ_L.Log( "B", wRes )
-###				continue
-###			wLine['created_at'] = wTime['TimeDate']
-###			
-###			###荒らしチェック
-###			if gVal.STR_SearchMode[inIndex]['Arashi']==True :
-###				if self.OBJ_Parent.CheckTrolls( wLine )==False :
-###					continue
 			
 			wStrLine = self.__getStr_TweetSearch( wLine )
 			CLS_OSIF.sPrn( wStrLine )
@@ -1466,7 +1395,6 @@ class CLS_TwitterKeyword():
 				CLS_OSIF.sPrn( wStrLine )
 				if str(wLine['retweeted_status']['user']['id']) not in wARR_UserID :
 					wARR_UserID.append( str(wLine['retweeted_status']['user']['id']) )
-###				self.__set_KeyUser( wLine['retweeted_status']['user'], wCommand )
 				self.__set_KeyUser( wLine['retweeted_status'], wCommand )
 				wVAL_Count += 1
 		
@@ -1482,7 +1410,6 @@ class CLS_TwitterKeyword():
 		# コンソールに表示
 		CLS_OSIF.sPrn( wStr )
 		
-
 		#############################
 		# CSV書き込み
 		
@@ -1501,10 +1428,8 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# 荒らしCSV書き込み
-###		wResArashi = self.OutArashiCSV( inHeader=False )
 		wResArashi = self.__out_tsOutArashiCSV()
 		if wResArashi['Result']!=True :
-###			wRes['Reason'] = "OutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
 			wRes['Reason'] = "__out_tsOutArashiCSV is failed: " + CLS_OSIF.sCatErr( wResArashi )
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
@@ -1565,7 +1490,6 @@ class CLS_TwitterKeyword():
 #####################################################
 # 荒らしユーザCSV出力
 #####################################################
-###	def OutArashiCSV( self, inHeader=True ):
 	def OutArashiCSV( self, inReSearch=False ):
 		#############################
 		# 応答形式の取得
@@ -1775,10 +1699,6 @@ class CLS_TwitterKeyword():
 			elif self.OBJ_Parent.ARR_newExcUser[wIndex]['arashi']==False :
 				### 荒らし判定なしのためスキップ
 				continue
-###			elif self.OBJ_Parent.ARR_newExcUser[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
-###				wMark = "■"
-###			else:
-###				wMark = ""
 			
 			###理由の日本語変換
 			wReasonID = self.OBJ_Parent.ARR_newExcUser[wIndex]['reason_id']
@@ -1787,13 +1707,11 @@ class CLS_TwitterKeyword():
 			else :
 				wCHR_Reason = "Undefined(" + str(wReasonID) + ")"
 			
-###			wLine = ""
 			wLine = self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
 			wLine = wLine + str( self.OBJ_Parent.ARR_newExcUser[wIndex]['count']) + ", "
 			wLine = wLine + "https://twitter.com/" + self.OBJ_Parent.ARR_newExcUser[wIndex]['screen_name'] + ", "
 			wLine = wLine + str( self.OBJ_Parent.ARR_newExcUser[wIndex]['lastdate']) + ", "
 			wLine = wLine + wCHR_Reason + ", "
-###			wLine = wLine + wMark + ", " + '\n'
 			wLine = wLine + '\n'
 			wSetLine.append(wLine)
 		

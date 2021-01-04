@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2020/11/1
+# ::Update= 2021/1/4
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -49,6 +49,9 @@ class CLS_MyDisp():
 		###キーユーザ変更画面
 		elif inDisp=="KeyuserConsole" :
 			cls.__dispInp_Keyuser( inLine, wRes )
+		###ユーザ管理画面
+		elif inDisp=="UserAdminConsole" :
+			cls.__dispInp_UserAdmin( inLine, wRes )
 		
 		return wRes
 
@@ -193,6 +196,96 @@ class CLS_MyDisp():
 				pRes['Responce'] = wList
 			else:
 				pRes['Responce'] = "    (キーユーザ設定がありません)" + '\n'
+	
+	#####################################################
+	# ユーザ管理画面
+	@classmethod
+	def __dispInp_UserAdmin( cls, inLine, outRes ):
+		pRes = outRes
+		#############################
+		# インプリメント処理
+		
+		###インプリ：対象ユーザ
+		if "[@USERADMIN-TWITTER@]"==inLine :
+			pRes['Responce'] = "対象ユーザ  @" + gVal.STR_UserAdminInfo['screen_name']
+		
+		###インプリ：フォロー者
+		elif "[@USERADMIN-MYFOLLOW@]"==inLine :
+			if gVal.STR_UserAdminInfo['MyFollow']==True :
+				wStr = "〇はい"
+			else:
+				wStr = "▼いいえ"
+			pRes['Responce'] = "    フォロー中                  : " + wStr
+		
+		###インプリ：フォロワー
+		elif "[@USERADMIN-FOLLOWER@]"==inLine :
+			if gVal.STR_UserAdminInfo['Follower']==True :
+				wStr = "〇はい"
+			else:
+				wStr = "▼いいえ"
+			pRes['Responce'] = "    フォロワー                  : " + wStr
+		
+		###インプリ：一度フォローしたことがある
+		elif "[@USERADMIN-R_MYFOLLOW@]"==inLine :
+			if gVal.STR_UserAdminInfo['DB_r_myfollow']==True :
+				wStr = "  はい"
+			else:
+				if gVal.STR_UserAdminInfo['DB_exist']==True :
+					wStr = "  いいえ"
+				else:
+					wStr = "  －－－"
+			pRes['Responce'] = "    １度フォローしたことがある  : " + wStr
+		
+		###インプリ：一度フォローされたことがある
+		elif "[@USERADMIN-R_REMOVE@]"==inLine :
+			if gVal.STR_UserAdminInfo['DB_r_remove']==True :
+				wStr = "  はい"
+			else:
+				wStr = "  いいえ"
+			pRes['Responce'] = "    １度フォローされたことがある: " + wStr
+		
+		###インプリ：フォロー解除候補
+		elif "[@USERADMIN-LIMITED@]"==inLine :
+			if gVal.STR_UserAdminInfo['DB_limited']==True :
+				wStr = "●はい"
+			else:
+				if gVal.STR_UserAdminInfo['DB_exist']==True :
+					wStr = "  いいえ"
+				else:
+					wStr = "  －－－"
+			pRes['Responce'] = "    フォロー解除候補            : " + wStr
+		
+		###インプリ：鍵アカウント
+		elif "[@USERADMIN-PROTECT@]"==inLine :
+			if gVal.STR_UserAdminInfo['Protect']==True :
+				wStr = "●はい"
+			else:
+				wStr = "  いいえ"
+			pRes['Responce'] = "    鍵アカウント                : " + wStr
+		
+		###インプリ：ブロック中
+		elif "[@USERADMIN-MYBLOCK@]"==inLine :
+			if gVal.STR_UserAdminInfo['MyBlock']==True :
+				wStr = "●はい"
+			else:
+				wStr = "  いいえ"
+			pRes['Responce'] = "    ブロック中                  : " + wStr
+		
+		###インプリ：被ブロック
+		elif "[@USERADMIN-BLOCKED@]"==inLine :
+			if gVal.STR_UserAdminInfo['Blocked']==True :
+				wStr = "●はい"
+			else:
+				wStr = "  いいえ"
+			pRes['Responce'] = "    被ブロック                  : " + wStr
+		
+		###インプリ：DB情報あり
+		elif "[@USERADMIN-EXIST@]"==inLine :
+			if gVal.STR_UserAdminInfo['DB_exist']==True :
+				wStr = "〇はい"
+			else:
+				wStr = "▼いいえ"
+			pRes['Responce'] = "    DB情報あり                  : " + wStr
 		
 		#############################
 		# 正常

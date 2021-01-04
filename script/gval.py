@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2020/11/2
+# ::Update= 2021/1/4
 #####################################################
 
 #####################################################
@@ -62,6 +62,30 @@ class gVal() :
 	STR_SearchMode = {}
 	# [0]..手動用
 	# [1]以降..自動用
+
+#############################
+# ユーザ管理情報
+	STR_UserAdminInfo = {
+		"user_name"			: None,		#Twitterユーザ名(日本語)
+		"screen_name"		: None,		#Twitterアカウント名(英語)
+		"id"        		: -1,
+		"statuses_count"	: -1,
+		
+		"DB_exist"	    : False,
+		"DB_r_myfollow"	: False,
+		"DB_r_remove"	: False,
+		"DB_limited"	: False,
+		
+		"Protect"	: False,
+		"MyFollow"	: False,
+		"Follower"	: False,
+		
+		"MyBlock"	: False,
+		"Blocked"	: False,
+		
+		"NorList"	: False,
+		"UnrList"	: False
+	}
 
 
 
@@ -131,6 +155,7 @@ class gVal() :
 		"MainConsole"			: DEF_DISPPATH + "main_console.disp",
 		"SearchConsole"			: DEF_DISPPATH + "search_console.disp",
 		"KeyuserConsole"		: DEF_DISPPATH + "keyuser_console.disp",
+		"UserAdminConsole"		: DEF_DISPPATH + "useradmin_console.disp",
 		
 		"(dummy)"				: 0
 	}

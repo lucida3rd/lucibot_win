@@ -1,0 +1,30 @@
+--------------------
+ ユーザ管理
+--------------------
+[@USERADMIN-TWITTER@]
+
+--------------------
+[@USERADMIN-MYFOLLOW@]
+[@USERADMIN-R_MYFOLLOW@]
+
+[@USERADMIN-FOLLOWER@]
+[@USERADMIN-R_REMOVE@]
+
+[@USERADMIN-LIMITED@]
+
+[@USERADMIN-PROTECT@]
+[@USERADMIN-MYBLOCK@]
+[@USERADMIN-BLOCKED@]
+[@USERADMIN-EXIST@]
+--------------------
+
+コマンドを入力してください。
+
+    [\f]        フォローする
+    [\rm]       リムーブする
+    [\rma]      関係をリセットする（リムーブもする）
+
+    [\v]        ブラウザでプロフィールを表示する
+
+    [\q]        １つ前に戻る
+
