@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2020/10/27
+# ::Update= 2021/1/5
 #####################################################
 # Private Function:
 #   (none)
@@ -489,6 +489,281 @@ class CLS_TwitterFavo():
 		# 完了
 		wRes['Result'] = True
 		return wRes
+
+
+
+#####################################################
+# 自動いいねの実行
+#####################################################
+	def AutoFavo(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFavo"
+		wRes['Func']  = "AutoFavo"
+		
+		#############################
+		# 画面クリア
+		CLS_OSIF.sDispClr()
+		
+		#############################
+		# 実行の確認
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 自動いいね 実行" + '\n'
+		wStr = wStr + "--------------------"
+#		wStr = wStr + "相互フォローユーザに対していいねを実行します。よろしいですか？"
+		CLS_OSIF.sPrn( wStr )
+#		wResGet = CLS_OSIF.sInp( "(y=Yes / other=No)=> " )
+#		if wResGet!="y" :
+#			CLS_OSIF.sPrn( "処理を中止しました。" )
+#			wRes['Result'] = True
+#			return wRes
+		
+		CLS_OSIF.sPrn( "いいねするユーザを抽出しています......" + '\n' )
+		#############################
+		# 集計のリセット
+		self.OBJ_Parent.STR_Cope['tAutoFavo'] = 0
+		self.OBJ_Parent.STR_Cope['AutoFavo']  = 0
+		
+		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		### wTD['TimeDate']
+		
+		#############################
+		# DBのフォロワー情報取得
+		wQuery = "select * from tbl_follower_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
+					"rc_follower = True and " + \
+					"limited = False and " + \
+					"removed = False " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		#############################
+		# 辞書型に整形
+		wARR_RateFollowers = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
+		
+		#############################
+		# フォロー一覧 取得(idだけ)
+		wMyFollowRes = gVal.OBJ_Twitter.GetMyFollowList()
+		if wMyFollowRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_MyFollowID = []
+		for wROW in wMyFollowRes['Responce'] :
+			wARR_MyFollowID.append( str(wROW['id']) )
+		
+		#############################
+		# フォロワー一覧 取得(idだけ)
+		wFollowerRes = gVal.OBJ_Twitter.GetFollowerList()
+		if wFollowerRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetFollowerList): " + wFollowerRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_FollowerID = []
+		for wROW in wFollowerRes['Responce'] :
+			wARR_FollowerID.append( str(wROW['id']) )
+		
+		#############################
+		# 自動いいね候補IDの作成
+		# 現Twitter相互フォロー かつ 監視時フォロワーであること
+		wKeylist = list(wARR_RateFollowers)
+		wDstAutoFavoID = []
+		for wKey in wKeylist :
+			if wARR_RateFollowers[wKey]['id'] not in wARR_MyFollowID :
+				continue
+			if wARR_RateFollowers[wKey]['id'] not in wARR_FollowerID :
+				continue
+			wDstAutoFavoID.append( wARR_RateFollowers[wKey]['id'] )
+		
+		self.OBJ_Parent.STR_Cope['tAutoFavo'] = len( wDstAutoFavoID )
+		
+		wVAL_ZanNum = len( wDstAutoFavoID )
+		#############################
+		# 候補のツイートを取得し、いいねしていく
+		for wID in wDstAutoFavoID :
+			#############################
+			# キーを抽出
+			wIndex = -1
+			for wKey in wKeylist :
+				if wARR_RateFollowers[wKey]['id']==wID :
+					wIndex = wKey
+					break
+			if wIndex==-1 :
+				###キーが見当たらない(ここではありえない)
+				wRes['Reason'] = "Key is not found: id=" + wID
+				gVal.OBJ_L.Log( "B", wRes )
+				wVAL_ZanNum -= 1
+				continue
+			
+			#############################
+			# ユーザの直近のツイートを取得
+			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False, inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=10 )
+			if wTweetRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			
+			#############################
+			# 対象ユーザの表示
+			wText = '\n' + "--------------------" + '\n'
+			wText = wText + "処理ユーザ: " + wARR_RateFollowers[wIndex]['user_name']
+			wText = wText + " (@" + wARR_RateFollowers[wIndex]['screen_name'] + ")"
+#			wText = wText + "抽出ツイ数: " + str( len(wTweetRes['Responce']) )
+			CLS_OSIF.sPrn( wText )
+			if len(wTweetRes['Responce'])==0 :
+				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
+				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+					break	#ウエイト中止
+				continue	#スキップ
+			
+			#############################
+			# いいねするツイートIDを取得する
+			wFavoTweetID = None
+			for wTweet in wTweetRes['Responce'] :
+				### リプライは除外
+				if wTweet['in_reply_to_status_id']!=None :
+###					CLS_OSIF.sPrn( str(wTweet['in_reply_to_status_id']) )
+					continue
+				
+				### 前回いいねしたIDは除外
+				if wARR_RateFollowers[wIndex]['favoid']==str(wTweet['id']) :
+					continue
+				
+				###日時の変換
+				wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+				if wTime['Result']!=True :
+					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wTweet['created_at'])
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				wTweet['created_at'] = wTime['TimeDate']
+				
+				### 1日以内のツイートか
+				wLimmin = 24 * 60 * 60	#1日の秒に変換
+				wGetLag = CLS_OSIF.sTimeLag( str(wTweet['created_at']), inThreshold=wLimmin )
+				if wGetLag['Result']!=True :
+					wRes['Reason'] = "sTimeLag failed"
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				if wGetLag['Beyond']==True :
+					### 1日超経過は除外
+					continue
+				
+				### 前のいいねから1日以上経ったか
+				if wARR_RateFollowers[wIndex]['favodate']!=None :
+#					wLimmin = 24 * 60 * 60	#1日の秒に変換
+					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wLimmin )
+					if wGetLag['Result']!=True :
+						wRes['Reason'] = "sTimeLag failed"
+						gVal.OBJ_L.Log( "B", wRes )
+						return wRes
+					if wGetLag['Beyond']==False :
+						### 1日以内は除外
+						continue
+				
+				### ID決定
+				wFavoTweetID = str(wTweet['id'])
+				break
+			
+			if wFavoTweetID==None :
+				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
+				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+					break	#ウエイト中止
+				continue	#スキップ
+			
+			#############################
+			# いいねを実行する
+			wFavoRes = gVal.OBJ_Twitter.CreateFavo( wFavoTweetID )
+			if wFavoRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error: " + wFavoRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			
+			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
+			CLS_OSIF.sPrn( wTweet['text'] )
+			self.OBJ_Parent.STR_Cope['AutoFavo'] += 1
+			
+			#############################
+			# DBに記録する
+			wQuery = "update tbl_follower_data set " + \
+						"favoid = '" + str(wFavoTweetID) + "', " + \
+						"favodate = '" + str(wTD['TimeDate']) + "' " + \
+						"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+						" and id = '" + str(wID) + "' ;"
+			
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(6): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			
+			###  カウント
+			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+			
+			#############################
+			# 次へのウェイト
+			CLS_OSIF.sPrn("")
+			if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+				break	#ウエイト中止
+		
+		#############################
+		# 統計
+		wStr = "--------------------" + '\n'
+		wStr = wStr + "DB更新数         = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
+		wStr = wStr + "自動いいね対象数 = " + str(self.OBJ_Parent.STR_Cope['tAutoFavo']) + '\n'
+		wStr = wStr + "自動いいね実行数 = " + str(self.OBJ_Parent.STR_Cope['AutoFavo']) + '\n'
+		
+		#############################
+		# コンソールに表示
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+	#####################################################
+	def __wait_AutoFavo( self, outZanNum ):
+		pVAL_ZanNum = outZanNum
+		pVAL_ZanNum -= 1
+		#############################
+		# 処理全て終わり
+		if pVAL_ZanNum==0 :
+			return False	#ウェイト中止
+		
+		#############################
+		# 処理ウェイト
+		else:
+###			CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
+###			CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(pVAL_ZanNum) + " 個" + '\n' )
+			CLS_OSIF.sPrn( "CTRL+Cで中止できます。" )
+			
+			wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['AutoFavoWait'] )
+			if wResStop==False :
+				CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
+				return False	#ウェイト中止
+		
+		return True
 
 
 

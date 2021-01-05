@@ -112,6 +112,8 @@ class gVal() :
 		"favoDBLimmin"		: 20160,					#DBのいいね削除時間 14日 (60x24)x14=20160(分)
 		"rFavoLimNum"		: 5,						# 1回のいいね解除数
 		"favoLimWait"		: 115,						#いいね解除処理待ち(秒)   900秒/8回(createの場合)
+		"AutoFavoWait"		: 20,						#自動いいね待機(秒)
+#		"AutoFavoWait"		: 150,						#自動いいね待機(秒)
 
 		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=7200(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数

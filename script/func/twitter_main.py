@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2020/12/12
+# ::Update= 2021/1/5
 #####################################################
 # Private Function:
 #   (none)
@@ -58,6 +58,9 @@ class CLS_TwitterMain():
 		
 		"ArashiNum"			: 0,	#荒らし登録者数
 		"ArashiOnNum"		: 0,	#荒らし者数
+		
+		"tAutoFavo"			: 0,	#自動いいね 対象
+		"AutoFavo"			: 0,	#自動いいね 実施数
 		
 		"DB_Num"			: 0,	#DB登録数
 		"DB_Insert"			: 0,	#DB挿入
@@ -428,6 +431,15 @@ class CLS_TwitterMain():
 #####################################################
 	def KeyUserFollow(self):
 		wRes = self.OBJ_TwitterKeyword.KeyUserFollow()
+		return wRes
+
+
+
+#####################################################
+# 自動いいね
+#####################################################
+	def AutoFavo(self):
+		wRes = self.OBJ_TwitterFavo.AutoFavo()
 		return wRes
 
 

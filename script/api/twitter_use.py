@@ -428,7 +428,8 @@ class CLS_Twitter_Use():
 #####################################################
 # タイムライン読み込み処理
 #####################################################
-	def GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
+###	def GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
+	def GetTL( self, inTLmode="home", inFLG_Rep=True, inFLG_Rts=False, inScreenName=STR_TWITTERdata['TwitterID'], inCount=VAL_TwitNum, inListID=None ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -467,16 +468,16 @@ class CLS_Twitter_Use():
 		# パラメータの生成
 		if inTLmode=="list" :
 			wParams = {
-				"count"           : self.VAL_TwitNum,
-				"screen_name"     : self.STR_TWITTERdata['TwitterID'],
+				"count"           : inCount,
+				"screen_name"     : inScreenName,
 				"exclude_replies" : inFLG_Rep,
 				"include_rts"     : inFLG_Rts,
 				"list_id"         : inListID
 			}
 		else :
 			wParams = {
-				"count"           : self.VAL_TwitNum,
-				"screen_name"     : self.STR_TWITTERdata['TwitterID'],
+				"count"           : inCount,
+				"screen_name"     : inScreenName,
 				"exclude_replies" : inFLG_Rep,
 				"include_rts"     : inFLG_Rts
 			}
