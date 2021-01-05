@@ -645,6 +645,10 @@ class CLS_TwitterFavo():
 ###					CLS_OSIF.sPrn( str(wTweet['in_reply_to_status_id']) )
 					continue
 				
+				### タグ付きは除外
+				if wTweet['text'].find("#")!=-1 :
+					continue
+				
 				### 前回いいねしたIDは除外
 				if wARR_RateFollowers[wIndex]['favoid']==str(wTweet['id']) :
 					continue
