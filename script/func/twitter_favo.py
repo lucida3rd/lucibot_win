@@ -645,8 +645,10 @@ class CLS_TwitterFavo():
 					return wRes
 				if wGetLag['Beyond']==False :
 					### 1日以内は除外
-					CLS_OSIF.sPrn( "▼前回の自動いいねから1日経ってないためスキップします" + '\n' )
-					if self.__wait_AutoFavo( 1 )!=True :
+					CLS_OSIF.sPrn( "▼前回の自動いいねから1日経ってないためスキップします" )
+###					if self.__wait_AutoFavo( 1 )!=True :
+					self.VAL_ZanNum -= 1
+					if self.VAL_ZanNum==0 :
 						break	#ウエイト中止
 					continue	#スキップ
 			
@@ -743,7 +745,7 @@ class CLS_TwitterFavo():
 				return wRes
 			
 			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
-			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "ツイート日時: " + str(wTweet['created_at']) )
+			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "【ツイート日時: " + str(wTweet['created_at']) + "】" )
 			self.OBJ_Parent.STR_Cope['AutoFavo'] += 1
 			
 			#############################
@@ -790,32 +792,18 @@ class CLS_TwitterFavo():
 		return wRes
 
 	#####################################################
-###	def __wait_AutoFavo( self, outZanNum, inWaitSec ):
 	def __wait_AutoFavo( self, inWaitSec ):
-##		pVAL_ZanNum = outZanNum
-##		pVAL_ZanNum -= 1
-###		CLS_OSIF.sPrn( str(outZanNum) )
-###		CLS_OSIF.sPrn( str(pVAL_ZanNum) )
-###		pVAL_ZanNum = outZanNum - 1
-##		CLS_OSIF.sPrn( str(outZanNum) )
-##		CLS_OSIF.sPrn( str(pVAL_ZanNum) )
-
 		self.VAL_ZanNum -= 1
 		#############################
 		# 処理全て終わり
-###		if pVAL_ZanNum==0 :
 		if self.VAL_ZanNum==0 :
 			return False	#ウェイト中止
 		
 		#############################
 		# 処理ウェイト
 		else:
-###			CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
-###			CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(pVAL_ZanNum) + " 個" )
-###			CLS_OSIF.sPrn( "CTRL+Cで中止できます。" )
 			CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(self.VAL_ZanNum) + " 個" )
 			
-###			wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['AutoFavoWait'] )
 			wResStop = CLS_OSIF.sPrnWAIT( inWaitSec )
 			if wResStop==False :
 				CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
