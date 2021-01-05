@@ -612,8 +612,43 @@ class CLS_TwitterFavo():
 				###キーが見当たらない(ここではありえない)
 				wRes['Reason'] = "Key is not found: id=" + wID
 				gVal.OBJ_L.Log( "B", wRes )
-				self.VAL_ZanNum -= 1
-				continue
+				CLS_OSIF.sPrn( "▼キーの取得に失敗したためスキップします" + '\n' )
+				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+					break	#ウエイト中止
+				continue	#スキップ
+			
+###			#############################
+###			# ユーザの直近のツイートを取得
+###			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False, inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=10 )
+###			if wTweetRes['Result']!=True :
+###				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
+###				gVal.OBJ_L.Log( "B", wRes )
+###				CLS_OSIF.sPrn( "▼ツイートの取得に失敗したためスキップします" + '\n' )
+###				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+###					break	#ウエイト中止
+###				continue	#スキップ
+###			
+			#############################
+			# 対象ユーザの表示
+			wText = '\n' + "--------------------" + '\n'
+			wText = wText + "処理ユーザ: " + wARR_RateFollowers[wIndex]['user_name']
+			wText = wText + " (@" + wARR_RateFollowers[wIndex]['screen_name'] + ")"
+			CLS_OSIF.sPrn( wText )
+			
+			### 前のいいねから1日以上経ったか
+			if wARR_RateFollowers[wIndex]['favodate']!=None :
+				wLimmin = 24 * 60 * 60	#1日の秒に変換
+				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wLimmin )
+				if wGetLag['Result']!=True :
+					wRes['Reason'] = "sTimeLag failed"
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				if wGetLag['Beyond']==False :
+					### 1日以内は除外
+					CLS_OSIF.sPrn( "▼前回の自動いいねから1日経ってないためスキップします" + '\n' )
+					if self.__wait_AutoFavo( 1 )!=True :
+						break	#ウエイト中止
+					continue	#スキップ
 			
 			#############################
 			# ユーザの直近のツイートを取得
@@ -621,19 +656,13 @@ class CLS_TwitterFavo():
 			if wTweetRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
-				return wRes
+				CLS_OSIF.sPrn( "▼ツイートの取得に失敗したためスキップします" + '\n' )
+				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+					break	#ウエイト中止
+				continue	#スキップ
 			
-			#############################
-			# 対象ユーザの表示
-			wText = '\n' + "--------------------" + '\n'
-			wText = wText + "処理ユーザ: " + wARR_RateFollowers[wIndex]['user_name']
-			wText = wText + " (@" + wARR_RateFollowers[wIndex]['screen_name'] + ")"
-#			wText = wText + "抽出ツイ数: " + str( len(wTweetRes['Responce']) )
-			CLS_OSIF.sPrn( wText )
 			if len(wTweetRes['Responce'])==0 :
 				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
-###				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
-###				if self.__wait_AutoFavo( wVAL_ZanNum, gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
@@ -644,7 +673,6 @@ class CLS_TwitterFavo():
 			for wTweet in wTweetRes['Responce'] :
 				### リプライは除外
 				if wTweet['in_reply_to_status_id']!=None :
-###					CLS_OSIF.sPrn( str(wTweet['in_reply_to_status_id']) )
 					continue
 				
 				### タグ付きは除外
@@ -682,18 +710,18 @@ class CLS_TwitterFavo():
 					### 1日超経過は除外
 					continue
 				
-				### 前のいいねから1日以上経ったか
-				if wARR_RateFollowers[wIndex]['favodate']!=None :
-#					wLimmin = 24 * 60 * 60	#1日の秒に変換
-					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wLimmin )
-					if wGetLag['Result']!=True :
-						wRes['Reason'] = "sTimeLag failed"
-						gVal.OBJ_L.Log( "B", wRes )
-						return wRes
-					if wGetLag['Beyond']==False :
-						### 1日以内は除外
-						continue
-				
+###				### 前のいいねから1日以上経ったか
+###				if wARR_RateFollowers[wIndex]['favodate']!=None :
+####				wLimmin = 24 * 60 * 60	#1日の秒に変換
+###					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wLimmin )
+###					if wGetLag['Result']!=True :
+###						wRes['Reason'] = "sTimeLag failed"
+###						gVal.OBJ_L.Log( "B", wRes )
+###						return wRes
+###					if wGetLag['Beyond']==False :
+###						### 1日以内は除外
+###						continue
+###				
 				### ID決定
 				wFavoTweetID = str(wTweet['id'])
 				break
@@ -715,7 +743,7 @@ class CLS_TwitterFavo():
 				return wRes
 			
 			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
-			CLS_OSIF.sPrn( wTweet['text'] )
+			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "ツイート日時: " + str(wTweet['created_at']) )
 			self.OBJ_Parent.STR_Cope['AutoFavo'] += 1
 			
 			#############################
