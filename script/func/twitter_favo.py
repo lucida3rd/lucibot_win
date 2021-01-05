@@ -631,7 +631,8 @@ class CLS_TwitterFavo():
 			CLS_OSIF.sPrn( wText )
 			if len(wTweetRes['Responce'])==0 :
 				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
-				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+###				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+				if self.__wait_AutoFavo( wVAL_ZanNum, 10 )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
 			
@@ -685,7 +686,8 @@ class CLS_TwitterFavo():
 			
 			if wFavoTweetID==None :
 				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
-				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+###				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+				if self.__wait_AutoFavo( wVAL_ZanNum, 10 )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
 			
@@ -723,7 +725,8 @@ class CLS_TwitterFavo():
 			#############################
 			# 次へのウェイト
 			CLS_OSIF.sPrn("")
-			if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+###			if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
+			if self.__wait_AutoFavo( wVAL_ZanNum, gVal.DEF_STR_TLNUM['AutoFavoWait'] )!=True :
 				break	#ウエイト中止
 		
 		#############################
@@ -743,7 +746,7 @@ class CLS_TwitterFavo():
 		return wRes
 
 	#####################################################
-	def __wait_AutoFavo( self, outZanNum ):
+	def __wait_AutoFavo( self, outZanNum, inWaitSec ):
 		pVAL_ZanNum = outZanNum
 		pVAL_ZanNum -= 1
 		#############################
@@ -758,7 +761,8 @@ class CLS_TwitterFavo():
 ###			CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(pVAL_ZanNum) + " 個" + '\n' )
 			CLS_OSIF.sPrn( "CTRL+Cで中止できます。" )
 			
-			wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['AutoFavoWait'] )
+###			wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['AutoFavoWait'] )
+			wResStop = CLS_OSIF.sPrnWAIT( inWaitSec )
 			if wResStop==False :
 				CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
 				return False	#ウェイト中止
