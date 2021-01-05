@@ -632,7 +632,7 @@ class CLS_TwitterFavo():
 			if len(wTweetRes['Responce'])==0 :
 				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
 ###				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
-				if self.__wait_AutoFavo( wVAL_ZanNum, 10 )!=True :
+				if self.__wait_AutoFavo( wVAL_ZanNum, gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
 			
@@ -661,8 +661,8 @@ class CLS_TwitterFavo():
 					continue
 				wTweet['created_at'] = wTime['TimeDate']
 				
-				### 1日以内のツイートか
-				wLimmin = 24 * 60 * 60	#1日の秒に変換
+				### 範囲時間内のツイートか
+				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoHour'] * 60 * 60
 				wGetLag = CLS_OSIF.sTimeLag( str(wTweet['created_at']), inThreshold=wLimmin )
 				if wGetLag['Result']!=True :
 					wRes['Reason'] = "sTimeLag failed"
@@ -691,7 +691,7 @@ class CLS_TwitterFavo():
 			if wFavoTweetID==None :
 				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
 ###				if self.__wait_AutoFavo( wVAL_ZanNum )!=True :
-				if self.__wait_AutoFavo( wVAL_ZanNum, 10 )!=True :
+				if self.__wait_AutoFavo( wVAL_ZanNum, gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
 			
