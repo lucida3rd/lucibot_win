@@ -681,10 +681,10 @@ class CLS_TwitterFavo():
 				if len(wTweet['text'])<20 :
 					continue
 				
-				### タグ付きは除外
-				if wTweet['text'].find("#")!=-1 :
-					continue
-				
+#				### タグ付きは除外
+#				if wTweet['text'].find("#")!=-1 :
+#					continue
+#				
 				###ツイートに除外文字が含まれている場合は除外
 				if self.OBJ_Parent.CheckExcWord( wTweet['text'] )==False :
 					continue
