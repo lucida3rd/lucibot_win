@@ -24,6 +24,7 @@
 #####################################################
 
 from osif import CLS_OSIF
+from mydisp import CLS_MyDisp
 from gval import gVal
 #####################################################
 class CLS_TwitterFavo():
@@ -662,16 +663,22 @@ class CLS_TwitterFavo():
 			wFavoTweetID = None
 			for wTweet in wTweetRes['Responce'] :
 				### リプライは除外
-				if wTweet['in_reply_to_status_id']!=None :
-					continue
+###				if wTweet['in_reply_to_status_id']!=None :
+				if gVal.STR_AutoFavo['Rip']==False :
+					if wTweet['in_reply_to_status_id']!=None :
+						continue
 				
 				### リツイートは除外
-				if "retweeted_status" in wTweet :
-					continue
+###				if "retweeted_status" in wTweet :
+				if gVal.STR_AutoFavo['Ret']==False :
+					if "retweeted_status" in wTweet :
+						continue
 				
 				### 引用リツイートは除外
-				if "quoted_status" in wTweet :
-					continue
+###				if "quoted_status" in wTweet :
+				if gVal.STR_AutoFavo['iRet']==False :
+					if "quoted_status" in wTweet :
+						continue
 				
 				### 前回いいねしたIDは除外
 				if wARR_RateFollowers[wIndex]['favoid']==str(wTweet['id']) :
@@ -681,10 +688,12 @@ class CLS_TwitterFavo():
 				if len(wTweet['text'])<20 :
 					continue
 				
-#				### タグ付きは除外
-#				if wTweet['text'].find("#")!=-1 :
-#					continue
-#				
+				### タグ付きは除外
+###				if wTweet['text'].find("#")!=-1 :
+				if gVal.STR_AutoFavo['Tag']==False :
+					if wTweet['text'].find("#")!=-1 :
+						continue
+				
 				###ツイートに除外文字が含まれている場合は除外
 				if self.OBJ_Parent.CheckExcWord( wTweet['text'] )==False :
 					continue
@@ -698,7 +707,8 @@ class CLS_TwitterFavo():
 				wTweet['created_at'] = wTime['TimeDate']
 				
 				### 範囲時間内のツイートか
-				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoHour'] * 60 * 60
+###				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoHour'] * 60 * 60
+				wLimmin = gVal.STR_AutoFavo['Len'] * 60 * 60
 				wGetLag = CLS_OSIF.sTimeLag( str(wTweet['created_at']), inThreshold=wLimmin )
 				if wGetLag['Result']!=True :
 					wRes['Reason'] = "sTimeLag failed"
@@ -790,6 +800,132 @@ class CLS_TwitterFavo():
 				return False	#ウェイト中止
 		
 		return True
+
+
+
+#####################################################
+# 自動いいね設定
+#####################################################
+	def SetAutoFavo(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFavo"
+		wRes['Func']  = "SetAutoFavo"
+		
+		#############################
+		# コンソールを表示
+		while True :
+			#############################
+			# 画面クリア
+			CLS_OSIF.sDispClr()
+			
+			#############################
+			# 管理画面を表示する
+			wWord = self.__view_AutoFavo()
+			
+			if wWord=="\\q" :
+				###終了
+				break
+			if wWord=="" :
+				###未入力は再度入力
+				continue
+			
+			wResSearch = self.__run_AutoFavo( wWord )
+			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
+###			if wResSearch['Result']!=True :
+###				### 処理失敗
+###				continue
+		
+		wRes['Result'] = True
+		return wRes
+
+	#####################################################
+	# 自動いいね設定 画面表示
+	#####################################################
+	def __view_AutoFavo(self):
+		wResDisp = CLS_MyDisp.sViewDisp( "AutoFavoConsole", -1 )
+		if wResDisp['Result']==False :
+			gVal.OBJ_L.Log( "D", wResDisp )
+			return "\\q"	#失敗=強制終了
+		
+		wWord = CLS_OSIF.sInp( "コマンド？=> " )
+		return wWord
+
+	#####################################################
+	# 自動いいね設定 実行
+	#####################################################
+	def __run_AutoFavo( self, inWord ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFavo"
+		wRes['Func']  = "__run_AutoFavo"
+		
+		#############################
+		# コマンドを分解する
+		wARR_Cmd = inWord.split(":")
+		if len(wARR_Cmd)>2 :
+			CLS_OSIF.sPrn( "コマンドが誤ってます" + '\n' )
+			return wRes
+		wWord = wARR_Cmd[0]
+		
+		#############################
+		# コマンド：リプライを含める
+		if wWord=="\\p" :
+			if gVal.STR_AutoFavo['Rip']==True :
+				gVal.STR_AutoFavo['Rip'] = False
+			else:
+				gVal.STR_AutoFavo['Rip'] = True
+		
+		#############################
+		# コマンド：リツイートを含める
+		elif wWord=="\\r" :
+			if gVal.STR_AutoFavo['Ret']==True :
+				gVal.STR_AutoFavo['Ret'] = False
+			else:
+				gVal.STR_AutoFavo['Ret'] = True
+		
+		#############################
+		# コマンド：引用リツイートを含める
+		elif wWord=="\\i" :
+			if gVal.STR_AutoFavo['iRet']==True :
+				gVal.STR_AutoFavo['iRet'] = False
+			else:
+				gVal.STR_AutoFavo['iRet'] = True
+		
+		#############################
+		# コマンド：タグを含める
+		elif wWord=="\\t" :
+			if gVal.STR_AutoFavo['Tag']==True :
+				gVal.STR_AutoFavo['Tag'] = False
+			else:
+				gVal.STR_AutoFavo['Tag'] = True
+		
+		#############################
+		# コマンド：対象範囲時間
+		elif wWord=="\\l" and len(wARR_Cmd)==2 :
+			wLengRes = CLS_OSIF.sChgInt( wARR_Cmd[1] )
+			if wLengRes['Result']!=True :
+				CLS_OSIF.sPrn( "数値ではありません" + '\n' )
+				return wRes
+			if wLengRes['Value']<1 or wLengRes['Value']>24 :
+				CLS_OSIF.sPrn( "数値が範囲外です(1-24)" + '\n' )
+				return wRes
+			gVal.STR_AutoFavo['Len'] = wLengRes['Value']
+		
+		#############################
+		# 不明なコマンド
+		else :
+			CLS_OSIF.sPrn( "不明なコマンドです" + '\n' )
+			return wRes
+		
+		#############################
+		# 正常終了
+		wRes['Result'] = True
+		return wRes
 
 
 

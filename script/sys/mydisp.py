@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2021/1/4
+# ::Update= 2021/1/6
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -52,6 +52,9 @@ class CLS_MyDisp():
 		###ユーザ管理画面
 		elif inDisp=="UserAdminConsole" :
 			cls.__dispInp_UserAdmin( inLine, wRes )
+		###自動いいね設定画面
+		elif inDisp=="AutoFavoConsole" :
+			cls.__dispInp_AutoFavo( inLine, wRes )
 		
 		return wRes
 
@@ -286,6 +289,57 @@ class CLS_MyDisp():
 			else:
 				wStr = "▼いいえ"
 			pRes['Responce'] = "    DB情報あり                  : " + wStr
+		
+		#############################
+		# 正常
+		pRes['Result'] = True
+		return
+
+
+
+	#####################################################
+	# 自動いいね設定画面
+	@classmethod
+	def __dispInp_AutoFavo( cls, inLine, outRes ):
+		pRes = outRes
+		#############################
+		# インプリメント処理
+		
+		###インプリ：リプライを含める
+		if "[@AUTOFAVO-RIP@]"==inLine :
+			if gVal.STR_AutoFavo['Rip']==True :
+				wStr = "含める"
+			else:
+				wStr = "除外する"
+			pRes['Responce'] = "    リプライ            : " + wStr
+		
+		###インプリ：リツイートを含める
+		elif "[@AUTOFAVO-RETWEET@]"==inLine :
+			if gVal.STR_AutoFavo['Ret']==True :
+				wStr = "含める"
+			else:
+				wStr = "除外する"
+			pRes['Responce'] = "    リツイート          : " + wStr
+		
+		###インプリ：引用リツイートを含める
+		elif "[@AUTOFAVO-INYOURT@]"==inLine :
+			if gVal.STR_AutoFavo['iRet']==True :
+				wStr = "含める"
+			else:
+				wStr = "除外する"
+			pRes['Responce'] = "    引用リツイート      : " + wStr
+		
+		###インプリ：タグを含める
+		elif "[@AUTOFAVO-TAG@]"==inLine :
+			if gVal.STR_AutoFavo['Tag']==True :
+				wStr = "含める"
+			else:
+				wStr = "除外する"
+			pRes['Responce'] = "    タグ                : " + wStr
+		
+		###インプリ：対象時間
+		elif "[@AUTOFAVO-LENGTH@]"==inLine :
+			pRes['Responce'] = "    対象範囲時間        : " + str( gVal.STR_AutoFavo['Len'] )
 		
 		#############################
 		# 正常

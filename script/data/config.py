@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2020/12/2
+# ::Update= 2021/1/6
 #####################################################
 # Private Function:
 #   (none)
@@ -891,6 +891,89 @@ class CLS_Config() :
 		#############################
 		# 完了
 		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 自動いいね設定 読み込み
+#####################################################
+	def GetAutoFavo(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "GetAutoFavo"
+		
+		#############################
+		# DBの取得
+		wQuery = "select favorp,favort,favoirt,favotag,favolen from tbl_user_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 辞書型に整形
+		wARR_RateAutoFavo = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateAutoFavo )
+		wARR_RateAutoFavo = wARR_RateAutoFavo[0]
+		
+		#############################
+		# 読み込み
+		gVal.STR_AutoFavo['Rip']  = wARR_RateAutoFavo['favorp']
+		gVal.STR_AutoFavo['Ret']  = wARR_RateAutoFavo['favort']
+		gVal.STR_AutoFavo['iRet'] = wARR_RateAutoFavo['favoirt']
+		gVal.STR_AutoFavo['Tag']  = wARR_RateAutoFavo['favotag']
+		gVal.STR_AutoFavo['Len']  = int( wARR_RateAutoFavo['favolen'] )
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 自動いいね 設定
+#####################################################
+	def SetAutoFavo(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_Config"
+		wRes['Func']  = "SetAutoFavo"
+		
+		#############################
+		# DBにあれば更新する
+		wQuery = "update tbl_user_data set " + \
+				"favorp = " + str( gVal.STR_AutoFavo['Rip'] ) + ", " + \
+				"favort = " + str( gVal.STR_AutoFavo['Ret'] ) + ", " + \
+				"favoirt = " + str( gVal.STR_AutoFavo['iRet'] ) + ", " + \
+				"favotag = " + str( gVal.STR_AutoFavo['Tag'] ) + ", " + \
+				"favolen = " + str( gVal.STR_AutoFavo['Len'] ) + " " + \
+				"where twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
+				";"
+		
+		#############################
+		# Query実行
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			return wRes
+		
+		#############################
+		# 完了
+		wRes['Result']   = True
 		return wRes
 
 

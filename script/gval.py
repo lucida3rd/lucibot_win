@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2021/1/5
+# ::Update= 2021/1/6
 #####################################################
 
 #####################################################
@@ -55,6 +55,17 @@ class gVal() :
 		"id"		: "",			#Twitter ID(番号)
 		
 		"UserFolder_path"	: ""	#ユーザフォルダパス
+	}
+
+#############################
+# 自動いいね設定
+	STR_AutoFavo = {
+		"Rip"		: False,		#リプライを含める
+		"Ret"		: False,		#リツイートを含める
+		"iRet"		: False,		#引用リツイートを含める
+		"Tag"		: True,			#タグを含める
+		
+		"Len"		: 8				#対象範囲(時間)
 	}
 
 #############################
@@ -116,7 +127,7 @@ class gVal() :
 ###		"AutoFavoWait"		: 20,						#自動いいね待機(秒)
 		"AutoFavoWait"		: 150,						#自動いいね待機(秒)
 		"AutoFavoSkipWait"	: 5,						#自動いいね スキップ待機(秒)
-		"AutoFavoHour"		: 8,						#自動いいね対象のツイート時間範囲(時間)
+###		"AutoFavoHour"		: 8,						#自動いいね対象のツイート時間範囲(時間)
 
 		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=7200(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
@@ -161,6 +172,7 @@ class gVal() :
 		"SearchConsole"			: DEF_DISPPATH + "search_console.disp",
 		"KeyuserConsole"		: DEF_DISPPATH + "keyuser_console.disp",
 		"UserAdminConsole"		: DEF_DISPPATH + "useradmin_console.disp",
+		"AutoFavoConsole"		: DEF_DISPPATH + "autofavo_console.disp",
 		
 		"(dummy)"				: 0
 	}

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/1/5
+# ::Update= 2021/1/6
 #####################################################
 # Private Function:
 #   (none)
@@ -211,6 +211,13 @@ class CLS_TwitterMain():
 			)
 		
 		#############################
+		# 自動いいね読み込み
+		wResSub = wOBJ_Config.GetAutoFavo()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "GetAutoFavo failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
 		# 完了
 		wRes['Result'] = True
 		return wRes
@@ -278,6 +285,16 @@ class CLS_TwitterMain():
 		
 		###再ロード(念のため)
 		wRes = wOBJ_Config.GetExcTwitterID()
+		return wRes
+
+
+
+#####################################################
+# 自動いいね保存
+#####################################################
+	def SaveAutoFavo(self):
+		wOBJ_Config = CLS_Config()
+		wRes = wOBJ_Config.SetAutoFavo()
 		return wRes
 
 
@@ -523,6 +540,28 @@ class CLS_TwitterMain():
 		wResSub = self.SaveSearchMode()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetKeyuser failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		return wRes
+
+
+
+#####################################################
+# 自動いいね変更
+#####################################################
+	def SetAutoFavo(self):
+		#############################
+		# 自動いいね変更の起動
+		wRes = self.OBJ_TwitterFavo.SetAutoFavo()
+		if wRes['Result']!=True :
+			return wRes
+		
+		# ※戻ってきた
+		#############################
+		# 保存
+		wResSub = self.SaveAutoFavo()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "SaveAutoFavo failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
 		return wRes
