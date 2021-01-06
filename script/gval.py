@@ -127,7 +127,7 @@ class gVal() :
 ###		"AutoFavoWait"		: 20,						#自動いいね待機(秒)
 		"AutoFavoWait"		: 150,						#自動いいね待機(秒)
 		"AutoFavoSkipWait"	: 5,						#自動いいね スキップ待機(秒)
-###		"AutoFavoHour"		: 8,						#自動いいね対象のツイート時間範囲(時間)
+		"AutoFavoRateHour"	: 12,						#自動いいね 前回のいいねからの経過時間(時間)
 
 		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=7200(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数

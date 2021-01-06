@@ -625,9 +625,10 @@ class CLS_TwitterFavo():
 			wText = wText + " (@" + wARR_RateFollowers[wIndex]['screen_name'] + ")"
 			CLS_OSIF.sPrn( wText )
 			
-			### 前のいいねから1日以上経ったか
+			### 前のいいねから一定期間以上経ったか
 			if wARR_RateFollowers[wIndex]['favodate']!=None :
-				wLimmin = 24 * 60 * 60	#1日の秒に変換
+###				wLimmin = 24 * 60 * 60	#1日の秒に変換
+				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoRateHour'] * 60 * 60	#秒に変換
 				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wLimmin )
 				if wGetLag['Result']!=True :
 					wRes['Reason'] = "sTimeLag failed"
