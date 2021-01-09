@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/9
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -200,6 +200,11 @@ class CLS_MyDisp():
 			else:
 				pRes['Responce'] = "    (キーユーザ設定がありません)" + '\n'
 	
+		#############################
+		# 正常
+		pRes['Result'] = True
+		return
+
 	#####################################################
 	# ユーザ管理画面
 	@classmethod

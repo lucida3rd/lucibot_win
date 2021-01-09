@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/9
 #####################################################
 # Private Function:
 #   (none)
@@ -85,9 +85,9 @@ class CLS_TwitterFavo():
 		
 		#############################
 		# 辞書型に整形
-		wARR_RateFavoID = {}
-		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavoID )
-		self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFavoID)
+		wARR_RateFavo = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavo )
+###		self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFavo)
 		
 		#############################
 		# 取得
@@ -123,11 +123,14 @@ class CLS_TwitterFavo():
 				return wRes
 			###wTime['TimeDate']
 			
-			###記録を探す
+			#############################
+			# 記録を探す
+			#   記録されている場合、いいね期間外であれば解除対象にする
+			#   記録されていない場合、DBに記録する
 			wFLG_Ditect = False
-			wKeylist = wARR_RateFavoID.keys()
+			wKeylist = wARR_RateFavo.keys()
 			for wIndex in wKeylist :
-				if str(wARR_RateFavoID[wIndex]['id'])==str(wROW['id']) :
+				if str(wARR_RateFavo[wIndex]['id'])==str(wROW['id']) :
 					wFLG_Ditect = True	#DB記録あり
 					break
 			
@@ -135,13 +138,13 @@ class CLS_TwitterFavo():
 				###DBに記録されている
 				
 				###  既にリムーブor期間外ならばスキップ
-				if wARR_RateFavoID[wIndex]['removed']==True or \
-				   wARR_RateFavoID[wIndex]['limited']==True :
+				if wARR_RateFavo[wIndex]['removed']==True or \
+				   wARR_RateFavo[wIndex]['limited']==True :
 					continue
 				
 				###  いいね期間外かを求める (変換＆差)
 				wFavoLimmin = gVal.DEF_STR_TLNUM['favoLimmin'] * 60	#秒に変換
-				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFavoID[wIndex]['regdate']), inThreshold=wFavoLimmin )
+				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFavo[wIndex]['regdate']), inThreshold=wFavoLimmin )
 				if wGetLag['Result']!=True :
 					wRes['Reason'] = "sTimeLag failed"
 					gVal.OBJ_L.Log( "B", wRes )
@@ -195,21 +198,41 @@ class CLS_TwitterFavo():
 				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
 		
 		#############################
+		# DBのいいね一覧 再取得
+		wQuery = "select * from tbl_favo_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		#############################
+		# 辞書型に整形
+		wARR_RateFavo = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavo )
+		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFavo)
+		
+		#############################
 		# DBに記録があるのに、Twitterのいいね一覧にない情報
 		#   リムーブ済みでなければ、リムーブ済みにする
 		# 保存期間を過ぎた情報
 		#   DBから削除する
-		wKeylist = wARR_RateFavoID.keys()
+		wKeylist = wARR_RateFavo.keys()
 		for wIndex in wKeylist :
 			### DBに記録があるのに、Twitterのいいね一覧にない
 			###   リムーブ済みにする
-			if wARR_RateFavoID[wIndex]['id'] not in wARR_FavoID :
+			if wARR_RateFavo[wIndex]['id'] not in wARR_FavoID :
 				###まだリムーブ済みではない
-				if wARR_RateFavoID[wIndex]['removed']==False :
+				if wARR_RateFavo[wIndex]['removed']==False :
 					wQuery = "update tbl_favo_data set " + \
 								"removed = True " + \
 								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-								" and id = '" + str(wARR_RateFavoID[wIndex]['id']) + "' ;"
+								" and id = '" + str(wARR_RateFavo[wIndex]['id']) + "' ;"
 					
 					wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 					wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -227,15 +250,15 @@ class CLS_TwitterFavo():
 			### Twitterのいいね一覧にある
 			else:
 				###リムーブ済み
-				if wARR_RateFavoID[wIndex]['removed']==True :
+				if wARR_RateFavo[wIndex]['removed']==True :
 					self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
 				###期間外
-				elif wARR_RateFavoID[wIndex]['limited']==True :
+				elif wARR_RateFavo[wIndex]['limited']==True :
 					self.OBJ_Parent.STR_Cope['tFavoRemove'] += 1
 			
 			###保存期間外かを求める (変換＆差)
 			wFavoLimmin = gVal.DEF_STR_TLNUM['favoDBLimmin'] * 60	#秒に変換
-			wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFavoID[wIndex]['regdate']), inThreshold=wFavoLimmin )
+			wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFavo[wIndex]['regdate']), inThreshold=wFavoLimmin )
 			if wGetLag['Result']!=True :
 				wRes['Reason'] = "sTimeLag failed(2)"
 				gVal.OBJ_L.Log( "B", wRes )
@@ -245,7 +268,7 @@ class CLS_TwitterFavo():
 				###  削除する
 				wQuery = "delete from tbl_favo_data " + \
 							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-							" and id = '" + str(wARR_RateFavoID[wIndex]['id']) + "' ;"
+							" and id = '" + str(wARR_RateFavo[wIndex]['id']) + "' ;"
 				
 				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 				wResDB = gVal.OBJ_DB.GetQueryStat()

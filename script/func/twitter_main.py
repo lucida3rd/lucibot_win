@@ -156,7 +156,6 @@ class CLS_TwitterMain():
 		wOBJ_Config = CLS_Config()
 		#############################
 		# 検索モード読み込み
-###		wOBJ_Config = CLS_Config()
 		wResSub = wOBJ_Config.GetSearchMode()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "GetSearchMode failed: reason" + CLS_OSIF.sCatErr( wResSub )
@@ -190,17 +189,9 @@ class CLS_TwitterMain():
 			wRes['Reason'] = "GetExcFollowID failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
-###		self.ARR_ExcTwiitID = []
 		self.ARR_newExcUser = {}
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
-###			wCell = {
-###				"id"          : str(gVal.STR_ExcTwitterID_Info[wIndex]['id']),
-###				"screen_name" : gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'],
-###				"count"       : gVal.STR_ExcTwitterID_Info[wIndex]['count'],
-###				"lastdate"    : gVal.STR_ExcTwitterID_Info[wIndex]['lastdate']
-###				}
-###			self.ARR_newExcUser.update({ str(gVal.STR_ExcTwitterID_Info[wIndex]['id']) : wCell })
 			self.SetnewExcUser(
 				gVal.STR_ExcTwitterID_Info[wIndex]['id'],
 				gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'],
@@ -412,12 +403,6 @@ class CLS_TwitterMain():
 		
 		#############################
 		# キーワードの表示
-###		wStr = '\n'
-###		wStr = wStr + " キーワードごとのヒット数" + '\n'
-###		wStr = wStr + "--------------------" + '\n'
-###		wKeylist = self.STR_Keywords.keys()
-###		for wWord in wKeylist :
-###			wStr = wStr + wWord + " = " + str(self.STR_Keywords[wWord]) + '\n'
 		wRange = len(gVal.STR_SearchMode)
 		if wRange>1 :
 			wStr = '\n'

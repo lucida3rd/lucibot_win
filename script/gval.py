@@ -98,6 +98,47 @@ class gVal() :
 		"UnrList"	: False
 	}
 
+#############################
+# トラヒック情報
+	STR_TrafficInfo = {
+		"TimelineNum"		: 0,	#取得タイムライン数
+###		"KeyUserNum"		: 0,	#キーユーザ数
+		
+									#いいね情報
+		"FavoNum"			: 0,	#現いいね数
+		"tFavoRemove"		: 0,	#解除対象 いいね数
+		"FavoRemove"		: 0,	#解除実行 いいね数
+		
+		"MyFollowNum"		: 0,	#現フォロー数
+		"FollowerNum"		: 0,	#現フォロワー数
+		"PieceFollowNum"	: 0,	#片フォロー数
+		"NewFollowerNum"	: 0,	#新規フォロワー数
+		"RemoveNum"			: 0,	#被リムーブ数
+		
+									#自動リムーブ情報
+		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
+		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
+		
+									#自動いいね情報
+		"tAutoFavo"			: 0,	#自動いいね 対象
+		"AutoFavo"			: 0,	#自動いいね 実施数
+		
+									#荒らし情報
+		"ArashiNum"			: 0,	#荒らし登録者数
+		"ArashiOnNum"		: 0,	#荒らし者数
+		"ArashiRemNum"		: 0,	#荒らし解除者数
+		
+									#データベース情報
+		"DB_Request"		: 0,	#リクエスト回数
+		"DB_Num"			: 0,	#DB登録数
+		"DB_Insert"			: 0,	#DB挿入
+		"DB_Update"			: 0,	#DB更新
+		"DB_Delete"			: 0,	#DB削除
+		
+		"RunNum"			: 0,	#Bot実行回数
+		"Update"			: None	#トラヒック更新日時
+	}
+
 
 
 #############################

@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/1/4
+# ::Update= 2021/1/9
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -1396,11 +1396,12 @@ class CLS_Twitter_Use():
 		#############################
 		# パラメータの生成
 		wParams = {
-			"count"			: self.VAL_TwitNum,
-			"cursor"		: "-1",
-			"skip_status"	: "True"
-##			"screen_name"	: "..."
+			"count"			: self.VAL_TwitNum
+###			"count"			: 5
+###			"since_id"			: -1
+###			"include_entities" : True
 		}
+		wNowID = -1
 		
 		#############################
 		# タイムライン読み込み
@@ -1415,23 +1416,24 @@ class CLS_Twitter_Use():
 				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 				wTL = json.loads( wTweetRes.text )
 				
+				wFLG_Add = False
 				###情報抜き出し
 				if len(wTL)>0 :
 					for wLine in wTL :
+						if wNowID==wLine['id'] :
+							continue
 						wARR_TL.append( wLine )
+						wNowID   = wLine['id']
+						wFLG_Add = True
 				
 				#############################
 				# API規制チェック
 				if self.__get_APIrect( "favorites_list" )!=True :
 					break
 				###ページング処理
-				if 'next_cursor_str' not in wTL :
+				if wFLG_Add==False :
 					break
-				if wParams['cursor']==wTL['next_cursor_str'] :
-					break
-				if wTL['next_cursor_str']=="0" :
-					break
-				wParams['cursor'] = wUsers['next_cursor_str']
+				wParams['max_id'] = wNowID
 				
 				#############################
 				# 遅延

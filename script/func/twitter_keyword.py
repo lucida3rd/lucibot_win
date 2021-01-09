@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2020/11/1
+# ::Update= 2021/1/9
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -256,7 +256,7 @@ class CLS_TwitterKeyword():
 	def __view_Keyuser( self, outRes ):
 		pRes = outRes
 		
-		wResDisp = CLS_MyDisp.sViewDisp( "KeyuserConsole" )
+		wResDisp = CLS_MyDisp.sViewDisp( "KeyuserConsole", -1 )
 		if wResDisp['Result']==False :
 			pRes['Reason'] = "__view_Keyuser is failed: " + CLS_OSIF.sCatErr( wResDisp )
 			return "\\q"	#失敗=強制終了
