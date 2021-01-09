@@ -109,7 +109,7 @@ class CLS_Traffic():
 			gVal.STR_TrafficInfo['dbup']  = wARR_RateTraffic['dbup']
 			gVal.STR_TrafficInfo['dbdel'] = wARR_RateTraffic['dbdel']
 			
-			gVal.STR_TrafficInfo['run']    = wARR_RateTraffic['dbdel']
+			gVal.STR_TrafficInfo['run']    = wARR_RateTraffic['run']
 			gVal.STR_TrafficInfo['update'] = wTD['TimeDate']
 		
 		#############################

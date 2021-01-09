@@ -98,7 +98,7 @@ class CLS_TwitterFavo():
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 ###		self.OBJ_Parent.STR_Cope['FavoNum'] = len(wTwitterRes['Responce'])
-		gVal.STR_TrafficInfo['favo'] += len(wTwitterRes['Responce'])
+		gVal.STR_TrafficInfo['favo'] = len(wTwitterRes['Responce'])
 		
 		#############################
 		# 時間を取得

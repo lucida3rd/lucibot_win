@@ -362,6 +362,8 @@ class CLS_TwitterFollower():
 		# 自動リムーブ対象で、既にアンフォロワーならリムーブ済みにする
 		
 		self.OBJ_Parent.ARR_OldUserID = []	#一度でもフォロー・リムーブしたことあるユーザID
+		gVal.STR_TrafficInfo['piefollow'] = 0
+		gVal.STR_TrafficInfo['autofollowt'] = 0
 		
 		wKeylist = wARR_RateFollowers.keys()
 		for wIndex in wKeylist :
@@ -394,8 +396,10 @@ class CLS_TwitterFollower():
 					wFLG_LastCount = True
 					wLast_Count = str( wF_Count )
 					wLast_Date  = wTD['TimeDate']
-			else:
-				###リムーブされた
+			
+			###リムーブされたか
+			if wARR_RateFollowers[wIndex]['rc_follower']==True and \
+			   str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_FollowerID :
 				gVal.STR_TrafficInfo['selremove'] += 1
 			
 			###※少なくともフォロワーではない
@@ -437,7 +441,7 @@ class CLS_TwitterFollower():
 			###  既にリムーブ対象ならばスキップ
 			if wARR_RateFollowers[wIndex]['limited']==True :
 ###				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
-				gVal.STR_TrafficInfo['piefollow'] += 1
+				gVal.STR_TrafficInfo['autofollowt'] += 1
 				wFLG_UnRemove = True
 			
 			###  ここまで自動リムーブ候補(False)で、フォローしてからの時間が範囲内なら  自動リムーブ対象外
