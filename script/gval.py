@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/10
 #####################################################
 
 #####################################################
@@ -53,6 +53,7 @@ class gVal() :
 		"NorList"	: "",			#一般ユーザリスト名
 		"UrfList"	: "",			#フォロー解除リスト名
 		"id"		: "",			#Twitter ID(番号)
+		"Traffic"	: False,		#Twitterにトラヒックを報告するか
 		
 		"UserFolder_path"	: ""	#ユーザフォルダパス
 	}
@@ -101,42 +102,40 @@ class gVal() :
 #############################
 # トラヒック情報
 	STR_TrafficInfo = {
-		"TimelineNum"		: 0,	#取得タイムライン数
-###		"KeyUserNum"		: 0,	#キーユーザ数
+		"timeline"			: 0,	#取得タイムライン数
 		
 									#いいね情報
-		"FavoNum"			: 0,	#現いいね数
-		"tFavoRemove"		: 0,	#解除対象 いいね数
-		"FavoRemove"		: 0,	#解除実行 いいね数
+		"favo"				: 0,	#現いいね数
+		"favoremovet"		: 0,	#解除対象 いいね数
+		"favoremove"		: 0,	#解除実行 いいね数
 		
-		"MyFollowNum"		: 0,	#現フォロー数
-		"FollowerNum"		: 0,	#現フォロワー数
-		"PieceFollowNum"	: 0,	#片フォロー数
-		"NewFollowerNum"	: 0,	#新規フォロワー数
-		"RemoveNum"			: 0,	#被リムーブ数
+		"myfollow"			: 0,	#現フォロー数
+		"follower"			: 0,	#現フォロワー数
+		"piefollow"			: 0,	#片フォロー数
+		"newfollower"		: 0,	#新規フォロワー数
+		"selremove"			: 0,	#被リムーブ数
 		
 									#自動リムーブ情報
-		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
-		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
+		"autofollowt"		: 0,	#自動リムーブ 対象数
+		"autofollow"		: 0,	#自動リムーブ 実行数
 		
 									#自動いいね情報
-		"tAutoFavo"			: 0,	#自動いいね 対象
-		"AutoFavo"			: 0,	#自動いいね 実施数
+		"autofavot"			: 0,	#自動いいね 対象
+		"autofavo"			: 0,	#自動いいね 実施数
 		
 									#荒らし情報
-		"ArashiNum"			: 0,	#荒らし登録者数
-		"ArashiOnNum"		: 0,	#荒らし者数
-		"ArashiRemNum"		: 0,	#荒らし解除者数
+		"arashi"			: 0,	#荒らし登録者数
+		"arashii"			: 0,	#荒らし検出回数
+		"arashir"			: 0,	#荒らし解除者数
 		
 									#データベース情報
-		"DB_Request"		: 0,	#リクエスト回数
-		"DB_Num"			: 0,	#DB登録数
-		"DB_Insert"			: 0,	#DB挿入
-		"DB_Update"			: 0,	#DB更新
-		"DB_Delete"			: 0,	#DB削除
+		"dbreq"				: 0,	#クエリ要求回数
+		"dbins"				: 0,	#DB挿入回数
+		"dbup"				: 0,	#DB更新回数
+		"dbdel"				: 0,	#DB削除回数
 		
-		"RunNum"			: 0,	#Bot実行回数
-		"Update"			: None	#トラヒック更新日時
+		"run"				: 0,	#Bot実行回数
+		"update"			: None	#トラヒック更新日時
 	}
 
 

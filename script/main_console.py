@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/10
 #####################################################
 # Private Function:
 #   (none)
@@ -24,6 +24,7 @@
 #####################################################
 
 from osif import CLS_OSIF
+from traffic import CLS_Traffic
 from filectrl import CLS_File
 from setup import CLS_Setup
 from botctrl import CLS_BotCtrl
@@ -127,6 +128,20 @@ class CLS_Main_Console() :
 				break
 			
 			wResCmd = cls().sRunCommand( wCommand )
+			gVal.STR_TrafficInfo['run'] += 1	#Bot実行
+			
+			#############################
+			# トラヒック情報の記録
+			wResTraffic = CLS_Traffic.sSet()
+			if wResTraffic['Result']!=True :
+				wRes['Reason'] = "Set Traffic failed: reason" + CLS_OSIF.sCatErr( wResTraffic )
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			if wResTraffic['Responce']==True :
+				CLS_OSIF.sInp( "トラヒック情報が翌日分に切り替わりました。" )
+			
+			#############################
+			# 待機(入力待ち)
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 			
 			#############################
@@ -339,6 +354,14 @@ class CLS_Main_Console() :
 		# システム情報の表示
 		if inCommand=="\\v" :
 			cls().sView_Sysinfo()
+			wFlg = True
+		
+		#############################
+		# トラヒック情報の表示
+		if inCommand=="\\vt" :
+			wResTraffic = CLS_Traffic.sView()
+			if wResTraffic['Result']!=True :
+				gVal.OBJ_L.Log( "B", wResTraffic )
 			wFlg = True
 		
 	#####################################################

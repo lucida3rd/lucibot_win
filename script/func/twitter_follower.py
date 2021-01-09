@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2020/12/25
+# ::Update= 2021/1/10
 #####################################################
 # Private Function:
 #   (none)
@@ -80,6 +80,7 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
 		
 		#############################
 		# 辞書型に整形
@@ -96,7 +97,8 @@ class CLS_TwitterFollower():
 		self.OBJ_Parent.ARR_MyFollowID = []
 		for wROW in wMyFollowRes['Responce'] :
 			self.OBJ_Parent.ARR_MyFollowID.append( str(wROW['id']) )
-		self.OBJ_Parent.STR_Cope['MyFollowNum'] = len(self.OBJ_Parent.ARR_MyFollowID)
+###		self.OBJ_Parent.STR_Cope['MyFollowNum'] = len(self.OBJ_Parent.ARR_MyFollowID)
+		gVal.STR_TrafficInfo['myfollow'] = len( wMyFollowRes['Responce'] )
 		
 		#############################
 		# フォロワー一覧 取得
@@ -105,6 +107,7 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Twitter API Error(GetFollowerList): " + wFollowerRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		gVal.STR_TrafficInfo['follower'] = len( wFollowerRes['Responce'] )
 		
 		#############################
 		# normal、un_refollowl登録者 取得(idだけ)
@@ -198,7 +201,9 @@ class CLS_TwitterFollower():
 					return wRes
 				
 				###  カウント
-				self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+###				self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+				gVal.STR_TrafficInfo['dbreq'] += 1
+				gVal.STR_TrafficInfo['dbup'] += 1
 			
 			else:
 				###DBに記録されていない
@@ -236,12 +241,14 @@ class CLS_TwitterFollower():
 					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				
-				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
+###				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
+				gVal.STR_TrafficInfo['dbreq'] += 1
+				gVal.STR_TrafficInfo['dbins'] += 1
 		
-		#############################
-		# フォロワー数のセット
-		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(self.OBJ_Parent.ARR_FollowerID)
-		
+###		#############################
+###		# フォロワー数のセット
+###		self.OBJ_Parent.STR_Cope['FollowerNum'] = len(self.OBJ_Parent.ARR_FollowerID)
+###		
 		#############################
 		# 片フォローをDBに記録する
 		#   ・一度もフォローされたことがない(DBに記録がない)
@@ -321,7 +328,9 @@ class CLS_TwitterFollower():
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
 			
-			self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
+###			self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
+			gVal.STR_TrafficInfo['dbreq'] += 1
+			gVal.STR_TrafficInfo['dbins'] += 1
 		
 		#############################
 		# DBのフォロワー一覧 再取得
@@ -336,12 +345,13 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Run Query is failed(5): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-		self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFollowers)
+###		self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFollowers)
 		
 		#############################
 		# 自動リムーブ対象を設定する
@@ -384,6 +394,9 @@ class CLS_TwitterFollower():
 					wFLG_LastCount = True
 					wLast_Count = str( wF_Count )
 					wLast_Date  = wTD['TimeDate']
+			else:
+				###リムーブされた
+				gVal.STR_TrafficInfo['selremove'] += 1
 			
 			###※少なくともフォロワーではない
 			
@@ -394,7 +407,8 @@ class CLS_TwitterFollower():
 			else :
 				### フォロー かつ 非フォロワー = 片フォロー
 				if wFLG_Follower==False :
-					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
+###					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
+					gVal.STR_TrafficInfo['piefollow'] += 1
 			
 			###  一度リムーブしたことあるなら 自動リムーブ対象外
 			if wARR_RateFollowers[wIndex]['r_remove']==True :
@@ -422,7 +436,8 @@ class CLS_TwitterFollower():
 			
 			###  既にリムーブ対象ならばスキップ
 			if wARR_RateFollowers[wIndex]['limited']==True :
-				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
+###				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
+				gVal.STR_TrafficInfo['piefollow'] += 1
 				wFLG_UnRemove = True
 			
 			###  ここまで自動リムーブ候補(False)で、フォローしてからの時間が範囲内なら  自動リムーブ対象外
@@ -448,7 +463,8 @@ class CLS_TwitterFollower():
 							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 							" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
 				
-				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
+###				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
+				gVal.STR_TrafficInfo['autofollowt'] += 1
 			
 			else:
 				###前回もフォロワー かつ フォロー状態に変化がなければスキップ
@@ -475,30 +491,14 @@ class CLS_TwitterFollower():
 				return wRes
 			
 			###  カウント
-			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+###			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+			gVal.STR_TrafficInfo['dbreq'] += 1
+			gVal.STR_TrafficInfo['dbup'] += 1
 		
 		#############################
 		# 正常終了
 		wRes['Result'] = True
 		return wRes
-
-
-
-
-
-		#
-		# 新規フォロワー
-		#   ・フォロー者ではない かつ フォロワー
-		#   ・一度もフォローしたことがない
-		#   ・一度もリムーブしたことがない
-#				#############################
-#				# 新規フォロワー
-#				### フォロワーではなければスキップ
-#				if str(wROW['id']) not in self.OBJ_Parent.ARR_FollowerID :
-#					continue
-#				
-
-
 
 
 
@@ -513,17 +513,17 @@ class CLS_TwitterFollower():
 		wRes['Class'] = "CLS_TwitterFollower"
 		wRes['Func']  = "View"
 		
-		#############################
-		# 集計のリセット
-		self.OBJ_Parent.STR_Cope['MyFollowNum'] = 0
-		self.OBJ_Parent.STR_Cope['FollowerNum'] = 0
-		self.OBJ_Parent.STR_Cope['PieceFollowNum'] = 0
-		self.OBJ_Parent.STR_Cope['NewFollowerNum']  = 0
-		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
-		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
-		
-		self.OBJ_Parent.STR_Cope['DB_Num']    = 0
-		
+###		#############################
+###		# 集計のリセット
+###		self.OBJ_Parent.STR_Cope['MyFollowNum'] = 0
+###		self.OBJ_Parent.STR_Cope['FollowerNum'] = 0
+###		self.OBJ_Parent.STR_Cope['PieceFollowNum'] = 0
+###		self.OBJ_Parent.STR_Cope['NewFollowerNum']  = 0
+###		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
+###		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
+###		
+###		self.OBJ_Parent.STR_Cope['DB_Num']    = 0
+###		
 		#############################
 		# DBのフォロワー一覧取得
 		wQuery = "select * from tbl_follower_data where " + \
@@ -537,12 +537,13 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Run Query is failed: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFollowers)
+###		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFollowers)
 		
 		#############################
 		# 画面クリア
@@ -571,19 +572,19 @@ class CLS_TwitterFollower():
 			
 			if wARR_RateFollowers[wIndex]['rc_follower']==False :
 				wStr = wStr + " [●非フォロワー]"
-				if wARR_RateFollowers[wIndex]['removed']==False :
-					# フォロー かつ 非フォロワー = 片フォロー
-					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
+###				if wARR_RateFollowers[wIndex]['removed']==False :
+###					# フォロー かつ 非フォロワー = 片フォロー
+###					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
 			
 			else:
 				wStr = wStr + " [〇フォロワー]  "
-				self.OBJ_Parent.STR_Cope['FollowerNum'] += 1
-				if wARR_RateFollowers[wIndex]['removed']==False :
-					self.OBJ_Parent.STR_Cope['MyFollowNum'] += 1
+###				self.OBJ_Parent.STR_Cope['FollowerNum'] += 1
+###				if wARR_RateFollowers[wIndex]['removed']==False :
+###					self.OBJ_Parent.STR_Cope['MyFollowNum'] += 1
 			
 			if wARR_RateFollowers[wIndex]['limited']==True :
 				wStr = wStr + " [★自動リムーブ対象]"
-				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
+###				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
 			
 			wStr = wStr + '\n'
 			
@@ -594,12 +595,15 @@ class CLS_TwitterFollower():
 		#############################
 		# 統計
 		wStr = wStr + "--------------------" + '\n'
-		wStr = wStr + "DB登録数         = " + str(self.OBJ_Parent.STR_Cope['DB_Num']) + '\n'
-		wStr = wStr + '\n'
-		wStr = wStr + "現フォロワー数   = " + str(self.OBJ_Parent.STR_Cope['FollowerNum']) + '\n'
-		wStr = wStr + "相互フォロー数   = " + str(self.OBJ_Parent.STR_Cope['MyFollowNum']) + '\n'
-		wStr = wStr + "片フォロー数     = " + str(self.OBJ_Parent.STR_Cope['PieceFollowNum']) + '\n'
-		wStr = wStr + "自動リムーブ対象 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
+###		wStr = wStr + "DB登録数         = " + str(self.OBJ_Parent.STR_Cope['DB_Num']) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "現フォロワー数   = " + str(self.OBJ_Parent.STR_Cope['FollowerNum']) + '\n'
+###		wStr = wStr + "相互フォロー数   = " + str(self.OBJ_Parent.STR_Cope['MyFollowNum']) + '\n'
+###		wStr = wStr + "片フォロー数     = " + str(self.OBJ_Parent.STR_Cope['PieceFollowNum']) + '\n'
+###		wStr = wStr + "自動リムーブ対象 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
+		wStr = wStr + "現フォロワー数   = " + str(gVal.STR_TrafficInfo['follower']) + '\n'
+		wStr = wStr + "片フォロー数     = " + str(gVal.STR_TrafficInfo['piefollow']) + '\n'
+		wStr = wStr + "自動リムーブ対象 = " + str(gVal.STR_TrafficInfo['autofollowt']) + '\n'
 		
 		#############################
 		# コンソールに表示
@@ -623,14 +627,14 @@ class CLS_TwitterFollower():
 		wRes['Class'] = "CLS_TwitterFollower"
 		wRes['Func']  = "Run"
 		
-		#############################
-		# 集計のリセット
-		self.OBJ_Parent.STR_Cope['FollowerNum']     = 0
-		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
-		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
-		
-		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
-		
+###		#############################
+###		# 集計のリセット
+###		self.OBJ_Parent.STR_Cope['FollowerNum']     = 0
+###		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
+###		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
+###		
+###		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
+###		
 		#############################
 		# DBのフォロワー一覧取得(自動リムーブ対象の抜き出し)
 		wQuery = "select * from tbl_follower_data where " + \
@@ -646,12 +650,14 @@ class CLS_TwitterFollower():
 			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
 		
 		#############################
 		# 辞書型に整形
 		wARR_RateFollowers = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = len(wARR_RateFollowers)
+###		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = len(wARR_RateFollowers)
+		gVal.STR_TrafficInfo['autofollowt'] = len(wARR_RateFollowers)
 		
 		#############################
 		# 画面クリア
@@ -714,7 +720,8 @@ class CLS_TwitterFollower():
 			wStr = "リムーブ成功" + '\n'
 			CLS_OSIF.sPrn( wStr )
 			
-			self.OBJ_Parent.STR_Cope['MyFollowRemove'] += 1
+###			self.OBJ_Parent.STR_Cope['MyFollowRemove'] += 1
+			gVal.STR_TrafficInfo['autofollow'] += 1
 			
 			###  limited をOFF、removed をONにする
 			wQuery = "update tbl_follower_data set " + \
@@ -732,7 +739,9 @@ class CLS_TwitterFollower():
 				return wRes
 			
 			###  カウント
-			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+###			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
+			gVal.STR_TrafficInfo['dbreq'] += 1
+			gVal.STR_TrafficInfo['dbup'] += 1
 			
 			wRemoveLimNum += 1
 			wVAL_ZanNum -= 1
@@ -764,9 +773,11 @@ class CLS_TwitterFollower():
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-		wStr = wStr + "DB更新数              = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
-		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
-		wStr = wStr + "リムーブ済み ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['MyFollowRemove']) + '\n'
+###		wStr = wStr + "DB更新数              = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
+###		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
+###		wStr = wStr + "リムーブ済み ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['MyFollowRemove']) + '\n'
+		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(gVal.STR_TrafficInfo['autofollowt']) + '\n'
+		wStr = wStr + "リムーブ済み ユーザ数 = " + str(gVal.STR_TrafficInfo['autofollow']) + '\n'
 		
 		#############################
 		# コンソールに表示

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/10
 #####################################################
 # Private Function:
 #   (none)
@@ -34,41 +34,41 @@ from twitter_admin import CLS_TwitterAdmin
 ###import sys, time
 
 from osif import CLS_OSIF
-###from filectrl import CLS_File
+from traffic import CLS_Traffic
 from config import CLS_Config
 from gval import gVal
 #####################################################
 class CLS_TwitterMain():
 #####################################################
 
-	STR_Cope = {				#処理カウンタ
-		"TimelineNum"		: 0,	#タイムライン数
-		"KeyUserNum"		: 0,	#キーユーザ数
-		
-		"FavoNum"			: 0,	#現いいね数
-		"tFavoRemove"		: 0,	#解除対象 いいね数
-		"FavoRemove"		: 0,	#解除実行 いいね数
-		
-		"MyFollowNum"		: 0,	#現フォロー数
-		"FollowerNum"		: 0,	#現フォロワー数
-		"PieceFollowNum"	: 0,	#片フォロー数
-		"NewFollowerNum"	: 0,	#新規フォロワー数
-		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
-		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
-		
-		"ArashiNum"			: 0,	#荒らし登録者数
-		"ArashiOnNum"		: 0,	#荒らし者数
-		
-		"tAutoFavo"			: 0,	#自動いいね 対象
-		"AutoFavo"			: 0,	#自動いいね 実施数
-		
-		"DB_Num"			: 0,	#DB登録数
-		"DB_Insert"			: 0,	#DB挿入
-		"DB_Update"			: 0,	#DB更新
-		"DB_Delete"			: 0,	#DB削除
-		
-		"dummy"				: 0		#(未使用)
-	}
+###	STR_Cope = {				#処理カウンタ
+###		"TimelineNum"		: 0,	#タイムライン数
+###		"KeyUserNum"		: 0,	#キーユーザ数
+###		
+###		"FavoNum"			: 0,	#現いいね数
+###		"tFavoRemove"		: 0,	#解除対象 いいね数
+###		"FavoRemove"		: 0,	#解除実行 いいね数
+###		
+###		"MyFollowNum"		: 0,	#現フォロー数
+###		"FollowerNum"		: 0,	#現フォロワー数
+###		"PieceFollowNum"	: 0,	#片フォロー数
+###		"NewFollowerNum"	: 0,	#新規フォロワー数
+###		"tMyFollowRemove"	: 0,	#自動リムーブ 対象数
+###		"MyFollowRemove"	: 0,	#自動リムーブ 実行数
+###		
+###		"ArashiNum"			: 0,	#荒らし登録者数
+###		"ArashiOnNum"		: 0,	#荒らし者数
+###		
+###		"tAutoFavo"			: 0,	#自動いいね 対象
+###		"AutoFavo"			: 0,	#自動いいね 実施数
+###		
+###		"DB_Num"			: 0,	#DB登録数
+###		"DB_Insert"			: 0,	#DB挿入
+###		"DB_Update"			: 0,	#DB更新
+###		"DB_Delete"			: 0,	#DB削除
+###		
+###		"dummy"				: 0		#(未使用)
+###	}
 
 ###	VAL_WaitCount = 0
 
@@ -109,10 +109,10 @@ class CLS_TwitterMain():
 #####################################################
 # 集計取得
 #####################################################
-	def GetCope(self):
-		return self.STR_Cope	#返すだけ
-
-
+###	def GetCope(self):
+###		return self.STR_Cope	#返すだけ
+###
+###
 
 #####################################################
 # 新規フォロワー取得
@@ -152,6 +152,13 @@ class CLS_TwitterMain():
 			wRes['Reason'] = "Twitter API Error(GetUserinfo): " + wUserinfoRes['Reason']
 			return wRes
 		gVal.STR_UserInfo['id'] = wUserinfoRes['Responce']['id']
+		
+		#############################
+		# トラヒック情報読み込み
+		wResSub = CLS_Traffic.sGet()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "Get Traffic failed: reason" + CLS_OSIF.sCatErr( wResSub )
+			return wRes
 		
 		wOBJ_Config = CLS_Config()
 		#############################
@@ -318,30 +325,30 @@ class CLS_TwitterMain():
 		wRes['Class'] = "CLS_TwitterMain"
 		wRes['Func']  = "Run"
 		
-		#############################
-		# 集計のリセット
-		self.STR_Cope['TimelineNum'] = 0
-		self.STR_Cope['KeyUserNum']  = 0
-		
-		self.STR_Cope['FavoNum'] = 0
-		self.STR_Cope['tFavoRemove'] = 0
-		self.STR_Cope['FavoRemove']  = 0
-		
-		self.STR_Cope['MyFollowNum'] = 0
-		self.STR_Cope['FollowerNum'] = 0
-		self.STR_Cope['PieceFollowNum'] = 0
-		self.STR_Cope['NewFollowerNum']  = 0
-		self.STR_Cope['tMyFollowRemove'] = 0
-		self.STR_Cope['MyFollowRemove']  = 0
-		
-		self.STR_Cope['ArashiNum']  = 0
-		self.STR_Cope['ArashiOnNum']  = 0
-		
-		self.STR_Cope['DB_Num']    = 0
-		self.STR_Cope['DB_Insert'] = 0
-		self.STR_Cope['DB_Update'] = 0
-		self.STR_Cope['DB_Delete'] = 0
-		
+###		#############################
+###		# 集計のリセット
+###		self.STR_Cope['TimelineNum'] = 0
+###		self.STR_Cope['KeyUserNum']  = 0
+###		
+###		self.STR_Cope['FavoNum'] = 0
+###		self.STR_Cope['tFavoRemove'] = 0
+###		self.STR_Cope['FavoRemove']  = 0
+###		
+###		self.STR_Cope['MyFollowNum'] = 0
+###		self.STR_Cope['FollowerNum'] = 0
+###		self.STR_Cope['PieceFollowNum'] = 0
+###		self.STR_Cope['NewFollowerNum']  = 0
+###		self.STR_Cope['tMyFollowRemove'] = 0
+###		self.STR_Cope['MyFollowRemove']  = 0
+###		
+###		self.STR_Cope['ArashiNum']  = 0
+###		self.STR_Cope['ArashiOnNum']  = 0
+###		
+###		self.STR_Cope['DB_Num']    = 0
+###		self.STR_Cope['DB_Insert'] = 0
+###		self.STR_Cope['DB_Update'] = 0
+###		self.STR_Cope['DB_Delete'] = 0
+###		
 		#############################
 		# いいね情報の取得
 		wResSub = self.OBJ_TwitterFavo.Get()
@@ -373,30 +380,61 @@ class CLS_TwitterMain():
 		wStr = "--------------------" + '\n'
 		wStr = wStr + " 監視情報 結果" + '\n'
 		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + str(gVal.STR_TrafficInfo['update']) + '\n'
+		wStr = wStr + '\n'
 		
 		#############################
 		# 情報組み立て
-		wStr = wStr + "タイムライン数    = " + str(self.STR_Cope['TimelineNum']) + '\n'
-		wStr = wStr + "キーユーザ数      = " + str(self.STR_Cope['KeyUserNum']) + '\n'
+###		wStr = wStr + "タイムライン数    = " + str(self.STR_Cope['TimelineNum']) + '\n'
+###		wStr = wStr + "キーユーザ数      = " + str(self.STR_Cope['KeyUserNum']) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "現いいね数        = " + str(self.STR_Cope['FavoNum']) + '\n'
+###		wStr = wStr + "解除対象 いいね数 = " + str(self.STR_Cope['tFavoRemove']) + '\n'
+###		wStr = wStr + "解除済み いいね数 = " + str(self.STR_Cope['FavoRemove']) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "現フォロー数        = " + str(self.STR_Cope['MyFollowNum']) + '\n'
+###		wStr = wStr + "現フォロワー数      = " + str(self.STR_Cope['FollowerNum']) + '\n'
+###		wStr = wStr + "片フォロー数        = " + str(self.STR_Cope['PieceFollowNum']) + '\n'
+###		wStr = wStr + "新規フォロワー数    = " + str(self.STR_Cope['NewFollowerNum']) + '\n'
+###		wStr = wStr + "自動リムーブ 対象数 = " + str(self.STR_Cope['tMyFollowRemove']) + '\n'
+###		wStr = wStr + "自動リムーブ 実行数 = " + str(self.STR_Cope['MyFollowRemove']) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "荒らし登録者数 = " + str(self.STR_Cope['ArashiNum']) + '\n'
+###		wStr = wStr + "荒らし者数     = " + str(self.STR_Cope['ArashiOnNum']) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "DB登録数 = " + str(self.STR_Cope['DB_Num']) + '\n'
+###		wStr = wStr + "DB挿入   = " + str(self.STR_Cope['DB_Insert']) + '\n'
+###		wStr = wStr + "DB更新   = " + str(self.STR_Cope['DB_Update']) + '\n'
+###		wStr = wStr + "DB削除   = " + str(self.STR_Cope['DB_Delete']) + '\n'
+		
+		wStr = wStr + "Bot実行回数        : " + str( gVal.STR_TrafficInfo['run'] ) + '\n'
+		wStr = wStr + "取得タイムライン数 : " + str( gVal.STR_TrafficInfo['timeline'] ) + '\n'
 		wStr = wStr + '\n'
-		wStr = wStr + "現いいね数        = " + str(self.STR_Cope['FavoNum']) + '\n'
-		wStr = wStr + "解除対象 いいね数 = " + str(self.STR_Cope['tFavoRemove']) + '\n'
-		wStr = wStr + "解除済み いいね数 = " + str(self.STR_Cope['FavoRemove']) + '\n'
+		wStr = wStr + "現いいね数         : " + str( gVal.STR_TrafficInfo['favo'] ) + '\n'
+		wStr = wStr + "解除対象 いいね数  : " + str( gVal.STR_TrafficInfo['favoremovet'] ) + '\n'
+		wStr = wStr + "解除実行 いいね数  : " + str( gVal.STR_TrafficInfo['favoremove'] ) + '\n'
 		wStr = wStr + '\n'
-		wStr = wStr + "現フォロー数        = " + str(self.STR_Cope['MyFollowNum']) + '\n'
-		wStr = wStr + "現フォロワー数      = " + str(self.STR_Cope['FollowerNum']) + '\n'
-		wStr = wStr + "片フォロー数        = " + str(self.STR_Cope['PieceFollowNum']) + '\n'
-		wStr = wStr + "新規フォロワー数    = " + str(self.STR_Cope['NewFollowerNum']) + '\n'
-		wStr = wStr + "自動リムーブ 対象数 = " + str(self.STR_Cope['tMyFollowRemove']) + '\n'
-		wStr = wStr + "自動リムーブ 実行数 = " + str(self.STR_Cope['MyFollowRemove']) + '\n'
+		wStr = wStr + "現フォロー数       : " + str( gVal.STR_TrafficInfo['myfollow'] ) + '\n'
+		wStr = wStr + "現フォロワー数     : " + str( gVal.STR_TrafficInfo['follower'] ) + '\n'
+		wStr = wStr + "片フォロワー数     : " + str( gVal.STR_TrafficInfo['piefollow'] ) + '\n'
+###		wStr = wStr + "新規フォロワー数   : " + str( gVal.STR_TrafficInfo['newfollower'] ) + '\n'
+		wStr = wStr + "被リムーブ数       : " + str( gVal.STR_TrafficInfo['selremove'] ) + '\n'
 		wStr = wStr + '\n'
-		wStr = wStr + "荒らし登録者数 = " + str(self.STR_Cope['ArashiNum']) + '\n'
-		wStr = wStr + "荒らし者数     = " + str(self.STR_Cope['ArashiOnNum']) + '\n'
+		wStr = wStr + "自動リムーブ対象数 : " + str( gVal.STR_TrafficInfo['autofollowt'] ) + '\n'
+		wStr = wStr + "自動リムーブ実行数 : " + str( gVal.STR_TrafficInfo['autofollow'] ) + '\n'
 		wStr = wStr + '\n'
-		wStr = wStr + "DB登録数 = " + str(self.STR_Cope['DB_Num']) + '\n'
-		wStr = wStr + "DB挿入   = " + str(self.STR_Cope['DB_Insert']) + '\n'
-		wStr = wStr + "DB更新   = " + str(self.STR_Cope['DB_Update']) + '\n'
-		wStr = wStr + "DB削除   = " + str(self.STR_Cope['DB_Delete']) + '\n'
+		wStr = wStr + "自動いいね対象数   : " + str( gVal.STR_TrafficInfo['autofavot'] ) + '\n'
+		wStr = wStr + "自動いいね実施数   : " + str( gVal.STR_TrafficInfo['autofavo'] ) + '\n'
+		wStr = wStr + '\n'
+		wStr = wStr + "荒らし登録者数     : " + str( gVal.STR_TrafficInfo['arashi'] ) + '\n'
+		wStr = wStr + "荒らし検出回数     : " + str( gVal.STR_TrafficInfo['arashii'] ) + '\n'
+		wStr = wStr + "荒らし解除者数     : " + str( gVal.STR_TrafficInfo['arashir'] ) + '\n'
+		wStr = wStr + '\n'
+		wStr = wStr + "クエリ要求回数     : " + str( gVal.STR_TrafficInfo['dbreq'] ) + '\n'
+		wStr = wStr + "DB挿入回数         : " + str( gVal.STR_TrafficInfo['dbins'] ) + '\n'
+		wStr = wStr + "DB更新回数         : " + str( gVal.STR_TrafficInfo['dbup'] ) + '\n'
+		wStr = wStr + "DB削除回数         : " + str( gVal.STR_TrafficInfo['dbdel'] ) + '\n'
+		wStr = wStr + '\n'
 		
 		###コンソールに表示
 		CLS_OSIF.sPrn( wStr )

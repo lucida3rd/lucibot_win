@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/10
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -186,7 +186,13 @@ class CLS_Setup():
 						"False," + \
 						"'1901-01-01 00:00:00'," + \
 						"'" + wResList['Responce']['norlist'] + "'," + \
-						"'" + wResList['Responce']['urflist'] + "' " + \
+						"'" + wResList['Responce']['urflist'] + "'," + \
+						"False," + \
+						"False," + \
+						"False," + \
+						"True," + \
+						"8," + \
+						"False " + \
 						") ;"
 			
 			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -633,6 +639,7 @@ class CLS_Setup():
 		self.__create_TBL_EXC_FOLLOWID( gVal.OBJ_DB )
 		self.__create_TBL_EXC_TWITTERID( gVal.OBJ_DB )
 		self.__create_TBL_EXC_TWEETID( gVal.OBJ_DB )
+		self.__create_TBL_KEYWORD_DATA( gVal.OBJ_DB )
 		
 		#############################
 		# 終わり
@@ -657,6 +664,7 @@ class CLS_Setup():
 		self.__create_TBL_EXC_WORD( inDBobj )
 		self.__create_TBL_EXC_TWITTERID( inDBobj )
 		self.__create_TBL_EXC_TWEETID( inDBobj )
+		self.__create_TBL_KEYWORD_DATA( inDBobj )
 		return True
 
 	#####################################################
@@ -680,6 +688,8 @@ class CLS_Setup():
 		wQuery = "drop table if exists tbl_exc_twitterid ;"
 		inOBJ_DB.RunQuery( wQuery )
 		wQuery = "drop table if exists tbl_exc_tweetid ;"
+		inOBJ_DB.RunQuery( wQuery )
+		wQuery = "drop table if exists tbl_traffic_data ;"
 		inOBJ_DB.RunQuery( wQuery )
 		return True
 
@@ -711,6 +721,7 @@ class CLS_Setup():
 					"favoirt     BOOL  DEFAULT false," + \
 					"favotag     BOOL  DEFAULT true," + \
 					"favolen     INTEGER DEFAULT 8," + \
+					"traffic     BOOL  DEFAULT false," + \
 					" PRIMARY KEY ( twitterid ) ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
@@ -1008,6 +1019,76 @@ class CLS_Setup():
 		
 ##					"regdate     DB登録日時
 ##					"id          Tweet ID
+		
+		inOBJ_DB.RunQuery( wQuery )
+		return
+
+
+
+#####################################################
+# テーブル作成: TBL_TRAFFIC_DATA
+#####################################################
+	def __create_TBL_KEYWORD_DATA( self, inOBJ_DB, inTBLname="tbl_traffic_data" ):
+		#############################
+		# テーブルのドロップ
+		wQuery = "drop table if exists " + inTBLname + ";"
+		inOBJ_DB.RunQuery( wQuery )
+		
+		#############################
+		# テーブル枠の作成
+		wQuery = "create table " + inTBLname + "(" + \
+					"twitterid   TEXT  NOT NULL," + \
+					"regdate     TIMESTAMP," + \
+					"update      TIMESTAMP," + \
+					"day         TEXT  NOT NULL," + \
+					"reported    BOOL  DEFAULT false," + \
+					"timeline    INTEGER DEFAULT 0," + \
+					"favo        INTEGER DEFAULT 0," + \
+					"favoremove  INTEGER DEFAULT 0," + \
+					"myfollow    INTEGER DEFAULT 0," + \
+					"follower    INTEGER DEFAULT 0," + \
+					"piefollow   INTEGER DEFAULT 0," + \
+					"newfollower INTEGER DEFAULT 0," + \
+					"selremove   INTEGER DEFAULT 0," + \
+					"autofollow  INTEGER DEFAULT 0," + \
+					"autofavo    INTEGER DEFAULT 0," + \
+					"arashi      INTEGER DEFAULT 0," + \
+					"arashii     INTEGER DEFAULT 0," + \
+					"arashir     INTEGER DEFAULT 0," + \
+					"dbreq       INTEGER DEFAULT 0," + \
+					"dbins       INTEGER DEFAULT 0," + \
+					"dbup        INTEGER DEFAULT 0," + \
+					"dbdel       INTEGER DEFAULT 0," + \
+					"run         INTEGER DEFAULT 0" + \
+					" ) ;"
+		
+##					"timeline"			: 0,	#取得タイムライン数
+##
+##												#いいね情報
+##					"favo"				: 0,	#現いいね数
+##					"favoremove"		: 0,	#解除実行 いいね数
+##					
+##					"myfollow"			: 0,	#現フォロー数
+##					"follower"			: 0,	#現フォロワー数
+##					"piefollow"			: 0,	#片フォロー数
+##					"newfollower"		: 0,	#新規フォロワー数
+##					"selremove"			: 0,	#被リムーブ数
+##					
+##					"autofollow"		: 0,	#自動リムーブ 実行数
+##					"autofavo"			: 0,	#自動いいね 実施数
+##					
+##												#荒らし情報
+##					"arashi"			: 0,	#荒らし登録者数
+##					"arashii"			: 0,	#荒らし検出回数
+##					"arashir"			: 0,	#荒らし解除者数
+##					
+##												#データベース情報
+##					"dbreq"				: 0,	#クエリ要求回数
+##					"dbins"				: 0,	#DB挿入回数
+##					"dbup"				: 0,	#DB更新回数
+##					"dbdel"				: 0,	#DB削除回数
+##					
+##					"run"				: 0,	#Bot実行回数
 		
 		inOBJ_DB.RunQuery( wQuery )
 		return
