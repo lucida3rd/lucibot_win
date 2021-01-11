@@ -4,8 +4,8 @@
 ::Admin= Lucida（lucida3hai@twitter.com）
 ::TwitterURL= https://twitter.com/lucida3hai
 
-::Update= 2021/1/10
-::Version= 1.6.0.1
+::Update= 2021/1/11
+::Version= 1.6.1.0
 
 
 <a id="iSystemSummary"></a>
@@ -217,7 +217,8 @@ App name
 Description
 　アプリの説明。わかりやすいように。
 App permissions
-　Read and Write　を指定してください。
+　Read and Write, and Direct Messages　を指定してください。
+　DMはトラヒック報告で使用します。
 
 **Authentication settings**
 Enable 3rd party authentication

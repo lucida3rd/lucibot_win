@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   (none)
@@ -140,6 +140,12 @@ class CLS_Main_Console() :
 			if wResTraffic['Responce']==True :
 				CLS_OSIF.sInp( "トラヒック情報が翌日分に切り替わりました。" )
 			
+			wResTraffic = CLS_Traffic.sReport()
+			if wResTraffic['Result']!=True :
+				wRes['Reason'] = "sReport failed: reason" + CLS_OSIF.sCatErr( wResTraffic )
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			
 			#############################
 			# 待機(入力待ち)
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
@@ -196,85 +202,85 @@ class CLS_Main_Console() :
 		wRes['Class'] = "CLS_Main_Console"
 		wRes['Func']  = "sRunCommand"
 		
-		wCLS_work = ""
-		wFlg = False
-		
+###		wCLS_work = ""
+###		wFlg = False
+###		
 	#####################################################
 		#############################
 		# 監視情報の取得
 		if inCommand=="\\g" :
 			cls.OBJ_TwitterMain.Run()
-			wFlg = True
+###			wFlg = True
 		
 	#####################################################
 		#############################
 		# キーユーザフォロー(手動)
-		if inCommand=="\\f" :
+		elif inCommand=="\\f" :
 			cls.OBJ_TwitterMain.KeyUserFollow()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# 自動いいね(相互フォロー)
-		if inCommand=="\\i" :
+		elif inCommand=="\\i" :
 			cls.OBJ_TwitterMain.AutoFavo()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# キーユーザCSV出力
-		if inCommand=="\\k" :
+		elif inCommand=="\\k" :
 			cls.OBJ_TwitterMain.KeyUserCSV()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# 荒らしユーザCSV出力
-		if inCommand=="\\t" :
+		elif inCommand=="\\t" :
 			cls.OBJ_TwitterMain.ArashiCSV()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# 荒らしユーザCSV出力(再実行)
-		if inCommand=="\\tr" :
+		elif inCommand=="\\tr" :
 			cls.OBJ_TwitterMain.ArashiCSV( inReSearch=True )
-			wFlg = True
+###			wFlg = True
 		
 	#####################################################
 		#############################
 		# いいね情報の表示
-		if inCommand=="\\vi" :
+		elif inCommand=="\\vi" :
 			cls.OBJ_TwitterMain.ViewFavo()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# いいね監視の実行
-		if inCommand=="\\ri" :
+		elif inCommand=="\\ri" :
 			cls.OBJ_TwitterMain.RunFavo()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# フォロワー情報の表示
-		if inCommand=="\\vf" :
+		elif inCommand=="\\vf" :
 			cls.OBJ_TwitterMain.ViewFollower()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# フォロワー監視の実行
-		if inCommand=="\\rf" :
+		elif inCommand=="\\rf" :
 			cls.OBJ_TwitterMain.RunFollower()
-			wFlg = True
+###			wFlg = True
 		
 	#####################################################
 		#############################
 		# ユーザ管理
 		elif inCommand=="\\u" :
 			cls.OBJ_TwitterMain.UserAdmin()
-			wFlg = True
+###			wFlg = True
 		
 	#####################################################
 		#############################
 		# キーユーザ検索の変更
 		elif inCommand=="\\cs" :
 			cls.OBJ_TwitterMain.SetKeyuser()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# Twitterリストの変更
@@ -286,7 +292,7 @@ class CLS_Main_Console() :
 				wRes['Reason'] = "Set Twitter List failed: " + wResList['Reason']
 				gVal.OBJ_L.Log( "D", wRes )
 			
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# Twitter APIの変更
@@ -297,81 +303,94 @@ class CLS_Main_Console() :
 				wRes['Reason'] = "Set Twitter API failed: " + wResAPI['Reason']
 				gVal.OBJ_L.Log( "D", wRes )
 			
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# 荒らしユーザ設定
 		elif inCommand=="\\cu" :
 			cls.OBJ_TwitterMain.ArashiUser()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# 自動いいね設定
 		elif inCommand=="\\ci" :
 			cls.OBJ_TwitterMain.SetAutoFavo()
-			wFlg = True
+###			wFlg = True
 		
 	#####################################################
 		#############################
 		# ツイート検索
 		elif inCommand=="\\s" :
 			cls.OBJ_TwitterMain.TweetSearch()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# 手動トゥートモード
 #		elif inCommand=="\\t" :
 #			wCLS_work = CLS_Toot()
 #			wCLS_work.ManualToot()
-#			wFlg = True
+###			wFlg = True
 		
 	#####################################################
 		#############################
 		# ログの表示(異常ログ)
-		if inCommand=="\\l" :
+		elif inCommand=="\\l" :
 			gVal.OBJ_L.View( inViewMode="E" )
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# ログの表示(運用ログ)
-		if inCommand=="\\lr" :
+		elif inCommand=="\\lr" :
 			gVal.OBJ_L.View( inViewMode="R" )
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# ログの表示(全ログ)
-		if inCommand=="\\la" :
+		elif inCommand=="\\la" :
 			gVal.OBJ_L.View()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# ログクリア
-		if inCommand=="\\lc" :
+		elif inCommand=="\\lc" :
 			gVal.OBJ_L.Clear()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# システム情報の表示
-		if inCommand=="\\v" :
+		elif inCommand=="\\v" :
 			cls().sView_Sysinfo()
-			wFlg = True
+###			wFlg = True
 		
 		#############################
 		# トラヒック情報の表示
-		if inCommand=="\\vt" :
+		elif inCommand=="\\vt" :
 			wResTraffic = CLS_Traffic.sView()
 			if wResTraffic['Result']!=True :
 				gVal.OBJ_L.Log( "B", wResTraffic )
-			wFlg = True
+###			wFlg = True
+		
+	#####################################################
+		#############################
+		# テスト
+		elif inCommand=="\\test" :
+			wTwitterRes = gVal.OBJ_Twitter.SendDM( gVal.STR_UserInfo['id'], "てすと" )
+			if wTwitterRes['Result']!=True :
+				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
+
+
 		
 	#####################################################
 		#############################
 		# ないコマンド
-		if wFlg!=True :
+###		if wFlg!=True :
+		else :
 			wRes['Reason'] = "存在しないコマンド :" + str(inCommand)
 			gVal.OBJ_L.Log( "D", wRes )
+			return False
 		
-		return wFlg
+###		return wFlg
+		return True
 
 
 

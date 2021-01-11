@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -664,7 +664,7 @@ class CLS_Setup():
 		self.__create_TBL_EXC_WORD( inDBobj )
 		self.__create_TBL_EXC_TWITTERID( inDBobj )
 		self.__create_TBL_EXC_TWEETID( inDBobj )
-		self.__create_TBL_KEYWORD_DATA( inDBobj )
+		self.__create_TBL_TRAFFIC_DATA( inDBobj )
 		return True
 
 	#####################################################
@@ -720,8 +720,7 @@ class CLS_Setup():
 					"favort      BOOL  DEFAULT false," + \
 					"favoirt     BOOL  DEFAULT false," + \
 					"favotag     BOOL  DEFAULT true," + \
-					"favolen     INTEGER DEFAULT 8," + \
-					"traffic     BOOL  DEFAULT false," + \
+					"favolen     INTEGER DEFAULT 8" + \
 					" PRIMARY KEY ( twitterid ) ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
@@ -1028,7 +1027,7 @@ class CLS_Setup():
 #####################################################
 # テーブル作成: TBL_TRAFFIC_DATA
 #####################################################
-	def __create_TBL_KEYWORD_DATA( self, inOBJ_DB, inTBLname="tbl_traffic_data" ):
+	def __create_TBL_TRAFFIC_DATA( self, inOBJ_DB, inTBLname="tbl_traffic_data" ):
 		#############################
 		# テーブルのドロップ
 		wQuery = "drop table if exists " + inTBLname + ";"

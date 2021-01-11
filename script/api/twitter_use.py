@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/1/9
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -171,6 +171,7 @@ class CLS_Twitter_Use():
 		self.__set_API( "favorites",    8, self.TwStatus['APIrect'] )	# POST: 24h/1000
 		self.__set_API( "friendships",  3, self.TwStatus['APIrect'] )	# POST: 24h/400
 		self.__set_API( "muted",       20, self.TwStatus['APIrect'] )	# POST: 3h/300
+		self.__set_API( "directmsg",    8, self.TwStatus['APIrect'] )	# POST: 24h/400
 		
 		###	GET
 		self.__set_API( "home_timeline",  12, self.TwStatus['APIrect'] )# GET: 15m/15
@@ -406,6 +407,80 @@ class CLS_Twitter_Use():
 		# ついーと
 		try:
 			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# DM送信処理
+#####################################################
+	def SendDM( self, inID, inTweet ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "SendDM"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "directmsg" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# 入力チェック
+		if inTweet=='' :
+			wRes['Reason'] = "Twitter内容がない"
+			return wRes
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/direct_messages/events/new.json"
+		
+		#############################
+		# パラメータの生成
+###		wParams = { "status" : inTweet }
+		wHeaders = { "content-type" : "application/json" }
+		wPayload = { "event" : { "type" : "message_create",
+						"message_create" : {
+							"target" : { "recipient_id" : inID },
+							"message_data" : { "text" : inTweet, }
+						}
+					}
+		}
+		
+		#############################
+		# APIカウント
+		self.__set_APIcount( "directmsg" )
+		
+		#############################
+		# ついーと
+		try:
+###			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
+			wPayload = json.dumps( wPayload )
+			wTweetRes = self.Twitter_use.post( wAPI, headers=wHeaders, data=wPayload )
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes

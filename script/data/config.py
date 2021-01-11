@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2021/1/6
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   (none)
@@ -142,9 +142,9 @@ class CLS_Config() :
 		# DBにセーブ
 		wQuery = "update tbl_user_data set " + \
 				"apikey = '"    + wRes['Responce']['APIkey'] + "', " + \
-				"apisecret = '" + wRes['Responce']['APIsecret'] + "' " + \
-				"acctoken = '"  + wRes['Responce']['ACCtoken'] + "' " + \
-				"accsecret = '" + wRes['Responce']['ACCsecret'] + " " + \
+				"apisecret = '" + wRes['Responce']['APIsecret'] + "', " + \
+				"acctoken = '"  + wRes['Responce']['ACCtoken'] + "', " + \
+				"accsecret = '" + wRes['Responce']['ACCsecret'] + "' " + \
 				"where twitterid = '" + inTwitterID + "' ;"
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : トラヒック
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   (none)
@@ -325,6 +325,11 @@ class CLS_Traffic():
 		wIndex = 0
 		while True :
 			#############################
+			# 全て報告した
+			if wReportNum<=wIndex :
+				break
+			
+			#############################
 			# 今日分はスキップする
 			if wARR_RateTraffic[wIndex]['day']==wARR_TD[0] and inToday==False :
 				wIndex += 1
@@ -352,33 +357,29 @@ class CLS_Traffic():
 			
 			#############################
 			# Twitterに送信する
-			if gVal.STR_UserInfo['Traffic']==False :
-				### 有効でない場合、送信するか確認する
-				wResSend = CLS_OSIF.sInp( '\n' + "このトラヒックをTwitterに送信しますか？(y=送信する / other=送信しない)=> " )
-				if wResSend=="y" :
-					### Twitterに送信する
-					wResTwitter = cls.__send_Twitter( wARR_RateTraffic[wIndex] )
-					if wResTwitter['Result']!=True :
-						##失敗
-						wResTwitter['Reason'] = "__send_Twitter is failed: " + CLS_OSIF.sCatErr( wResTwitter )
-						gVal.OBJ_L.Log( "B", wResTwitter )
-			else:
-				### 無確認でTwitterに送信する
-				wResTwitter = cls.__send_Twitter( wARR_RateTraffic[wIndex] )
-				if wResTwitter['Result']!=True :
-					##失敗
-					wResTwitter['Reason'] = "__send_Twitter is failed(Traffic=True): " + CLS_OSIF.sCatErr( wResTwitter )
-					gVal.OBJ_L.Log( "B", wResTwitter )
+###			if gVal.STR_UserInfo['Traffic']==False :
+###				### 有効でない場合、送信するか確認する
+###				wResSend = CLS_OSIF.sInp( '\n' + "このトラヒックをTwitterに送信しますか？(y=送信する / other=送信しない)=> " )
+###				if wResSend=="y" :
+###					### Twitterに送信する
+###					wResTwitter = cls.__send_Twitter( wARR_RateTraffic[wIndex] )
+###					if wResTwitter['Result']!=True :
+###						##失敗
+###						wResTwitter['Reason'] = "__send_Twitter is failed: " + CLS_OSIF.sCatErr( wResTwitter )
+###						gVal.OBJ_L.Log( "B", wResTwitter )
+###			else:
+###				### 無確認でTwitterに送信する
+			wResTwitter = cls.__send_Twitter( wARR_RateTraffic[wIndex] )
+			if wResTwitter['Result']!=True :
+				##失敗
+				wResTwitter['Reason'] = "__send_Twitter is failed(Traffic=True): " + CLS_OSIF.sCatErr( wResTwitter )
+				gVal.OBJ_L.Log( "B", wResTwitter )
 			
 			#############################
 			# 1回だけならループ終了
 			if inAll==False :
 				break
 			
-			#############################
-			# 全て報告した
-			if wReportNum<=wIndex :
-				break
 		
 		#############################
 		# 1件以上報告した
@@ -393,13 +394,14 @@ class CLS_Traffic():
 	#####################################################
 	@classmethod
 	def __view_Traffic( cls, inTraffic, inConfirm=True ):
-		#############################
-		# 画面クリア
-		CLS_OSIF.sDispClr()
-		
+##		#############################
+##		# 画面クリア
+##		CLS_OSIF.sDispClr()
+##		
 		#############################
 		# ヘッダ表示
-		wStr = "--------------------" + '\n'
+###		wStr = "--------------------" + '\n'
+		wStr = '\n' + "--------------------" + '\n'
 		wStr = wStr + " トラヒック情報 報告" + '\n'
 		wStr = wStr + "--------------------" + '\n'
 		wStr = wStr + str( inTraffic['update'] ) + '\n'
@@ -462,7 +464,8 @@ class CLS_Traffic():
 		
 		#############################
 		# Twitterに送信
-		wTwitterRes = gVal.OBJ_Twitter.Tweet( wTweet )
+###		wTwitterRes = gVal.OBJ_Twitter.Tweet( wTweet )
+		wTwitterRes = gVal.OBJ_Twitter.SendDM( gVal.STR_UserInfo['id'], wTweet )
 		if wTwitterRes['Result']!=True :
 			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )

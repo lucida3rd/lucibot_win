@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : bot制御(共通)
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   (none)
@@ -163,7 +163,7 @@ class CLS_BotCtrl():
 		
 		gVal.STR_UserInfo['NorList'] = wChgDict[0]['norlist']
 		gVal.STR_UserInfo['UrfList'] = wChgDict[0]['urflist']
-		gVal.STR_UserInfo['Traffic'] = wChgDict[0]['traffic']
+###		gVal.STR_UserInfo['Traffic'] = wChgDict[0]['traffic']
 		
 		#############################
 		# 排他開始
