@@ -6,6 +6,7 @@
 [@AUTOFAVO-RETWEET@]
 [@AUTOFAVO-INYOURT@]
 [@AUTOFAVO-TAG@]
+[@AUTOFAVO-PIEFOLLOW@]
 
 [@AUTOFAVO-LENGTH@]
 
@@ -17,6 +18,7 @@
     [\r]        リツイートを含める
     [\i]        引用リツイートを含める
     [\t]        タグを含める
+    [\f]        片フォローを含める
 
     [\l:n]      対象範囲時間(nに時間を入力 1-24 (時間))
 

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ディスプレイ表示
 # 
-# ::Update= 2021/1/9
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -341,6 +341,14 @@ class CLS_MyDisp():
 			else:
 				wStr = "除外する"
 			pRes['Responce'] = "    タグ                : " + wStr
+		
+		###インプリ：片フォローを含める
+		elif "[@AUTOFAVO-PIEFOLLOW@]"==inLine :
+			if gVal.STR_AutoFavo['PieF']==True :
+				wStr = "含める"
+			else:
+				wStr = "除外する"
+			pRes['Responce'] = "    片フォロー          : " + wStr
 		
 		###インプリ：対象時間
 		elif "[@AUTOFAVO-LENGTH@]"==inLine :

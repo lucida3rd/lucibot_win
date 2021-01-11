@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/1/12
 #####################################################
 # Private Function:
 #   (none)
@@ -589,11 +589,14 @@ class CLS_TwitterFavo():
 		
 		#############################
 		# DBのフォロワー情報取得
+###		wQuery = "select * from tbl_follower_data where " + \
+###					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
+###					"rc_follower = True and " + \
+###					"limited = False and " + \
+###					"removed = False " + \
+###					";"
 		wQuery = "select * from tbl_follower_data where " + \
-					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
-					"rc_follower = True and " + \
-					"limited = False and " + \
-					"removed = False " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					";"
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -637,14 +640,19 @@ class CLS_TwitterFavo():
 		# 現Twitter相互フォロー かつ 監視時フォロワーであること
 		wKeylist = list(wARR_RateFollowers)
 		wDstAutoFavoID = []
-		for wKey in wKeylist :
-			if wARR_RateFollowers[wKey]['id'] not in wARR_MyFollowID :
-				continue
-			if wARR_RateFollowers[wKey]['id'] not in wARR_FollowerID :
-				continue
-			wDstAutoFavoID.append( wARR_RateFollowers[wKey]['id'] )
-		
-###		self.OBJ_Parent.STR_Cope['tAutoFavo'] = len( wDstAutoFavoID )
+		if gVal.STR_AutoFavo['PieF']==False :
+			for wKey in wKeylist :
+				if wARR_RateFollowers[wKey]['id'] not in wARR_MyFollowID :
+					continue
+				if wARR_RateFollowers[wKey]['id'] not in wARR_FollowerID :
+					continue
+				wDstAutoFavoID.append( wARR_RateFollowers[wKey]['id'] )
+		else:
+			for wKey in wKeylist :
+				if wARR_RateFollowers[wKey]['id'] not in wARR_MyFollowID :
+					continue
+				wDstAutoFavoID.append( wARR_RateFollowers[wKey]['id'] )
+		###トラヒック
 		gVal.STR_TrafficInfo['autofavot'] = len( wDstAutoFavoID )
 		
 		self.VAL_ZanNum = len( wDstAutoFavoID )
@@ -676,7 +684,6 @@ class CLS_TwitterFavo():
 			
 			### 前のいいねから一定期間以上経ったか
 			if wARR_RateFollowers[wIndex]['favodate']!=None :
-###				wLimmin = 24 * 60 * 60	#1日の秒に変換
 				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoRateHour'] * 60 * 60	#秒に変換
 				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wLimmin )
 				if wGetLag['Result']!=True :
@@ -715,19 +722,16 @@ class CLS_TwitterFavo():
 			wFavoTweetID = None
 			for wTweet in wTweetRes['Responce'] :
 				### リプライは除外
-###				if wTweet['in_reply_to_status_id']!=None :
 				if gVal.STR_AutoFavo['Rip']==False :
 					if wTweet['in_reply_to_status_id']!=None :
 						continue
 				
 				### リツイートは除外
-###				if "retweeted_status" in wTweet :
 				if gVal.STR_AutoFavo['Ret']==False :
 					if "retweeted_status" in wTweet :
 						continue
 				
 				### 引用リツイートは除外
-###				if "quoted_status" in wTweet :
 				if gVal.STR_AutoFavo['iRet']==False :
 					if "quoted_status" in wTweet :
 						continue
@@ -741,7 +745,6 @@ class CLS_TwitterFavo():
 					continue
 				
 				### タグ付きは除外
-###				if wTweet['text'].find("#")!=-1 :
 				if gVal.STR_AutoFavo['Tag']==False :
 					if wTweet['text'].find("#")!=-1 :
 						continue
@@ -759,7 +762,6 @@ class CLS_TwitterFavo():
 				wTweet['created_at'] = wTime['TimeDate']
 				
 				### 範囲時間内のツイートか
-###				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoHour'] * 60 * 60
 				wLimmin = gVal.STR_AutoFavo['Len'] * 60 * 60
 				wGetLag = CLS_OSIF.sTimeLag( str(wTweet['created_at']), inThreshold=wLimmin )
 				if wGetLag['Result']!=True :
@@ -790,7 +792,6 @@ class CLS_TwitterFavo():
 			
 			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
 			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "【ツイート日時: " + str(wTweet['created_at']) + "】" )
-###			self.OBJ_Parent.STR_Cope['AutoFavo'] += 1
 			gVal.STR_TrafficInfo['autofavo'] += 1
 			
 			#############################
@@ -810,7 +811,6 @@ class CLS_TwitterFavo():
 				return wRes
 			
 			###  カウント
-###			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 			gVal.STR_TrafficInfo['dbreq'] += 1
 			gVal.STR_TrafficInfo['dbup'] += 1
 			
@@ -823,9 +823,6 @@ class CLS_TwitterFavo():
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-###		wStr = wStr + "DB更新数         = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
-###		wStr = wStr + "自動いいね対象数 = " + str(self.OBJ_Parent.STR_Cope['tAutoFavo']) + '\n'
-###		wStr = wStr + "自動いいね実行数 = " + str(self.OBJ_Parent.STR_Cope['AutoFavo']) + '\n'
 		wStr = wStr + "自動いいね対象数 = " + str(gVal.STR_TrafficInfo['autofavot']) + '\n'
 		wStr = wStr + "自動いいね実行数 = " + str(gVal.STR_TrafficInfo['autofavo']) + '\n'
 		
@@ -960,6 +957,14 @@ class CLS_TwitterFavo():
 				gVal.STR_AutoFavo['Tag'] = False
 			else:
 				gVal.STR_AutoFavo['Tag'] = True
+		
+		#############################
+		# コマンド：片フォローを含める
+		elif wWord=="\\f" :
+			if gVal.STR_AutoFavo['PieF']==True :
+				gVal.STR_AutoFavo['PieF'] = False
+			else:
+				gVal.STR_AutoFavo['PieF'] = True
 		
 		#############################
 		# コマンド：対象範囲時間

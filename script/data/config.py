@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/1/12
 #####################################################
 # Private Function:
 #   (none)
@@ -908,7 +908,8 @@ class CLS_Config() :
 		
 		#############################
 		# DBの取得
-		wQuery = "select favorp,favort,favoirt,favotag,favolen from tbl_user_data where " + \
+###		wQuery = "select favorp,favort,favoirt,favotag,favolen from tbl_user_data where " + \
+		wQuery = "select * from tbl_user_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					";"
 		
@@ -931,6 +932,7 @@ class CLS_Config() :
 		gVal.STR_AutoFavo['Ret']  = wARR_RateAutoFavo['favort']
 		gVal.STR_AutoFavo['iRet'] = wARR_RateAutoFavo['favoirt']
 		gVal.STR_AutoFavo['Tag']  = wARR_RateAutoFavo['favotag']
+		gVal.STR_AutoFavo['PieF'] = wARR_RateAutoFavo['favopief']
 		gVal.STR_AutoFavo['Len']  = int( wARR_RateAutoFavo['favolen'] )
 		
 		#############################
@@ -958,6 +960,7 @@ class CLS_Config() :
 				"favort = " + str( gVal.STR_AutoFavo['Ret'] ) + ", " + \
 				"favoirt = " + str( gVal.STR_AutoFavo['iRet'] ) + ", " + \
 				"favotag = " + str( gVal.STR_AutoFavo['Tag'] ) + ", " + \
+				"favopief = " + str( gVal.STR_AutoFavo['PieF'] ) + ", " + \
 				"favolen = " + str( gVal.STR_AutoFavo['Len'] ) + " " + \
 				"where twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 				";"

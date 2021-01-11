@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/1/12
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -720,6 +720,7 @@ class CLS_Setup():
 					"favort      BOOL  DEFAULT false," + \
 					"favoirt     BOOL  DEFAULT false," + \
 					"favotag     BOOL  DEFAULT true," + \
+					"favopief    BOOL  DEFAULT false," + \
 					"favolen     INTEGER DEFAULT 8" + \
 					" PRIMARY KEY ( twitterid ) ) ;"
 		
@@ -819,6 +820,7 @@ class CLS_Setup():
 					"regdate     TIMESTAMP," + \
 					"r_myfollow  BOOL  DEFAULT false," + \
 					"r_remove    BOOL  DEFAULT false," + \
+					"rc_myfollow BOOL  DEFAULT false," + \
 					"rc_follower BOOL  DEFAULT false," + \
 					"foldate     TIMESTAMP," + \
 					"limited     BOOL  DEFAULT false," + \
@@ -830,13 +832,14 @@ class CLS_Setup():
 					"lastdate    TIMESTAMP," + \
 					"reason      TEXT," + \
 					"favoid      TEXT," + \
-					"favodate     TIMESTAMP," + \
+					"favodate     TIMESTAMP" + \
 					" ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
 ##					"regdate     DB登録日時
 ##					"r_myfollow  1度でもフォローしたことがある
 ##					"r_remove    1度でもリムーブされたことがある
+##					"rc_myfollow 前のチェックでフォローしてた
 ##					"rc_follower 前のチェックでフォローされてた
 ##					"foldate     フォローした日
 ##					"limited     リムーブ期限切れ or 自動リムーブ解除対象

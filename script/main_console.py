@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/1/12
 #####################################################
 # Private Function:
 #   (none)
@@ -370,16 +370,14 @@ class CLS_Main_Console() :
 				gVal.OBJ_L.Log( "B", wResTraffic )
 ###			wFlg = True
 		
-	#####################################################
-		#############################
-		# テスト
-		elif inCommand=="\\test" :
-			wTwitterRes = gVal.OBJ_Twitter.SendDM( gVal.STR_UserInfo['id'], "てすと" )
-			if wTwitterRes['Result']!=True :
-				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
-
-
-		
+##	#####################################################
+##		#############################
+##		# テスト
+##		elif inCommand=="\\test" :
+##			wTwitterRes = gVal.OBJ_Twitter.SendDM( gVal.STR_UserInfo['id'], "てすと" )
+##			if wTwitterRes['Result']!=True :
+##				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
+##		
 	#####################################################
 		#############################
 		# ないコマンド

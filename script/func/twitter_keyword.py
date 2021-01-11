@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -1062,6 +1062,7 @@ class CLS_TwitterKeyword():
 				###DBに記録あり
 				wQuery = "update tbl_follower_data set " + \
 							"r_myfollow = True, " + \
+							"rc_myfollow = True, " + \
 							"foldate = '" + str(wTD['TimeDate']) + "' " + \
 							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 							" and id = '" + str( wID ) + "' ;"
@@ -1075,6 +1076,7 @@ class CLS_TwitterKeyword():
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"True," + \
 							"False," + \
+							"True," + \
 							"False," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"False," + \

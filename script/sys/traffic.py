@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : トラヒック
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/1/12
 #####################################################
 # Private Function:
 #   (none)
@@ -400,7 +400,6 @@ class CLS_Traffic():
 ##		
 		#############################
 		# ヘッダ表示
-###		wStr = "--------------------" + '\n'
 		wStr = '\n' + "--------------------" + '\n'
 		wStr = wStr + " トラヒック情報 報告" + '\n'
 		wStr = wStr + "--------------------" + '\n'
@@ -418,7 +417,7 @@ class CLS_Traffic():
 		wStr = wStr + "現フォロー数       : " + str( inTraffic['myfollow'] ) + '\n'
 		wStr = wStr + "現フォロワー数     : " + str( inTraffic['follower'] ) + '\n'
 		wStr = wStr + "片フォロワー数     : " + str( inTraffic['piefollow'] ) + '\n'
-###		wStr = wStr + "新規フォロワー数   : " + str( inTraffic['newfollower'] ) + '\n'
+		wStr = wStr + "新規フォロワー数   : " + str( inTraffic['newfollower'] ) + '\n'
 		wStr = wStr + "被リムーブ数       : " + str( inTraffic['selremove'] ) + '\n'
 		wStr = wStr + '\n'
 		wStr = wStr + "自動リムーブ実行数 : " + str( inTraffic['autofollow'] ) + '\n'
@@ -458,13 +457,12 @@ class CLS_Traffic():
 		# 文の組み立て
 		wTweet = "Traffic: " + str(gVal.STR_TrafficInfo['update']) + '\n'
 		wTweet = "run " + str(gVal.STR_TrafficInfo['run']) + '\n'
-###		wTweet = "newfollower " + str(gVal.STR_TrafficInfo['newfollower']) + '\n'
+		wTweet = "newfollower " + str(gVal.STR_TrafficInfo['newfollower']) + '\n'
 		wTweet = "selfremove " + str(gVal.STR_TrafficInfo['selremove']) + '\n'
 		wTweet = "arashi detect " + str(gVal.STR_TrafficInfo['arashii'])
 		
 		#############################
 		# Twitterに送信
-###		wTwitterRes = gVal.OBJ_Twitter.Tweet( wTweet )
 		wTwitterRes = gVal.OBJ_Twitter.SendDM( gVal.STR_UserInfo['id'], wTweet )
 		if wTwitterRes['Result']!=True :
 			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
