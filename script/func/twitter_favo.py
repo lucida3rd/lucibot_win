@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 # Private Function:
 #   (none)
@@ -693,7 +693,8 @@ class CLS_TwitterFavo():
 			
 			#############################
 			# ユーザの直近のツイートを取得
-			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False, inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=10 )
+			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False,
+				 inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=gVal.DEF_STR_TLNUM['AutoFavoCount'] )
 			if wTweetRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )

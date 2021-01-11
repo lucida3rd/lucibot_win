@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2021/1/10
+# ::Update= 2021/1/11
 #####################################################
 
 #####################################################
@@ -164,7 +164,7 @@ class gVal() :
 		"rFavoLimNum"		: 5,						# 1回のいいね解除数
 		"favoLimWait"		: 115,						#いいね解除処理待ち(秒)   900秒/8回(createの場合)
 
-###		"AutoFavoWait"		: 20,						#自動いいね待機(秒)
+		"AutoFavoCount"		: 20,						#自動いいね タイムライン取得数
 		"AutoFavoWait"		: 150,						#自動いいね待機(秒)
 		"AutoFavoSkipWait"	: 5,						#自動いいね スキップ待機(秒)
 		"AutoFavoRateHour"	: 12,						#自動いいね 前回のいいねからの経過時間(時間)
