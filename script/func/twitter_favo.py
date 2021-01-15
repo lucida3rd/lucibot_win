@@ -819,8 +819,8 @@ class CLS_TwitterFavo():
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-		wStr = wStr + "指定いいね対象数 = " + str(gVal.STR_TrafficInfo['dejiavot']) + '\n'
-		wStr = wStr + "指定いいね実行数 = " + str(gVal.STR_TrafficInfo['dejiofavo']) + '\n'
+		wStr = wStr + "指定いいね対象数 = " + str(gVal.STR_TrafficInfo['dejifavot']) + '\n'
+		wStr = wStr + "指定いいね実行数 = " + str(gVal.STR_TrafficInfo['dejifavo']) + '\n'
 		
 		#############################
 		# コンソールに表示
