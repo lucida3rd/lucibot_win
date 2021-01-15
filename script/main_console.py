@@ -220,10 +220,14 @@ class CLS_Main_Console() :
 ###			wFlg = True
 		
 		#############################
-		# 自動いいね(相互フォロー)
+		# 指定いいね
 		elif inCommand=="\\i" :
+			cls.OBJ_TwitterMain.DesiFavo()
+		
+		#############################
+		# 自動いいね(相互フォロー)
+		elif inCommand=="\\ia" :
 			cls.OBJ_TwitterMain.AutoFavo()
-###			wFlg = True
 		
 		#############################
 		# キーユーザCSV出力
@@ -370,14 +374,25 @@ class CLS_Main_Console() :
 				gVal.OBJ_L.Log( "B", wResTraffic )
 ###			wFlg = True
 		
-##	#####################################################
-##		#############################
-##		# テスト
-##		elif inCommand=="\\test" :
+	#####################################################
+		#############################
+		# テスト
+		elif inCommand=="\\test" :
 ##			wTwitterRes = gVal.OBJ_Twitter.SendDM( gVal.STR_UserInfo['id'], "てすと" )
 ##			if wTwitterRes['Result']!=True :
 ##				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
-##		
+##			wTwitterRes = gVal.OBJ_Twitter.GetMention()
+##			if wTwitterRes['Result']==True :
+##				CLS_OSIF.sPrn( str(wTwitterRes['Responce']) )
+##			wTwitterRes = gVal.OBJ_Twitter.GetTL( inTLmode="user" )
+##			if wTwitterRes['Result']==True :
+##				CLS_OSIF.sPrn( str(wTwitterRes['Responce']) )
+			wTwitterRes = gVal.OBJ_Twitter.GetTweetStat2( inID="1349021137309757446" )
+			if wTwitterRes['Result']==True :
+				CLS_OSIF.sPrn( str(wTwitterRes['Responce']) )
+			else:
+				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
+		
 	#####################################################
 		#############################
 		# ないコマンド

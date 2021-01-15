@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2021/1/12
+# ::Update= 2021/1/15
 #####################################################
 # Private Function:
 #   (none)
@@ -176,7 +176,8 @@ class CLS_Config() :
 		wRes['Func']  = "SetTwitterList"
 		
 		wRes['Responce'] = {}
-		wRes['Responce'].update({ "norlist" : "(none)", "urflist" : "(none)" })
+###		wRes['Responce'].update({ "norlist" : "(none)", "urflist" : "(none)" })
+		wRes['Responce'].update({ "norlist" : "(none)", "urflist" : "(none)", "favolist" : "(none)" })
 		
 		#############################
 		# リスト一覧の取得
@@ -254,6 +255,27 @@ class CLS_Config() :
 				continue
 			
 			#############################
+			# favolistリストの選択
+			wStr = "favolistリストに設定するリスト名を入力してください。(=指定いいね対象ユーザ)"
+			CLS_OSIF.sPrn( wStr )
+			wSelectFavolist = CLS_OSIF.sInp( "favolist list name ?(name or \\q=Cancel)=> " )
+			if wSelectFavolist=="\\q" :
+				##キャンセル
+				CLS_OSIF.sPrn( "入力がキャンセルされました" + '\n' )
+				wRes['Result'] = True
+				return wRes
+			###名前があるかチェック
+			wKeylist = wResTwitter['Responce'].keys()
+			wFLG_C_Favolist = False
+			for wKey in wKeylist :
+				if wResTwitter['Responce'][wKey]['name']==wSelectFavolist :
+					wFLG_C_Favolist = True
+					break
+			if wFLG_C_Favolist==False :
+				CLS_OSIF.sPrn( "リストにない名前です" )
+				continue
+			
+			#############################
 			# 最終チェック
 			if wSelectNormal==wSelectUnrefollow :
 				CLS_OSIF.sPrn( "同じリストは登録できません" )
@@ -266,6 +288,7 @@ class CLS_Config() :
 		# 完了
 		wRes['Responce']['norlist'] = wSelectNormal
 		wRes['Responce']['urflist'] = wSelectUnrefollow
+		wRes['Responce']['favolist'] = wSelectFavolist
 		
 		#############################
 		# セーブしなければここで完了
@@ -277,7 +300,8 @@ class CLS_Config() :
 		# DBにセーブ
 		wQuery = "update tbl_user_data set " + \
 				"norlist = '" + wRes['Responce']['norlist'] + "', " + \
-				"urflist = '" + wRes['Responce']['urflist'] + "' " + \
+				"urflist = '" + wRes['Responce']['urflist'] + "'," + \
+				"favolist = '" + wRes['Responce']['favolist'] + "' " + \
 				"where twitterid = '" + inTwitterID + "' ;"
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )

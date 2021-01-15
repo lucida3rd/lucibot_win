@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2021/1/12
+# ::Update= 2021/1/15
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -721,7 +721,8 @@ class CLS_Setup():
 					"favoirt     BOOL  DEFAULT false," + \
 					"favotag     BOOL  DEFAULT true," + \
 					"favopief    BOOL  DEFAULT false," + \
-					"favolen     INTEGER DEFAULT 8" + \
+					"favolen     INTEGER DEFAULT 8," + \
+					"favolist    TEXT  DEFAULT '(none)," + \
 					" PRIMARY KEY ( twitterid ) ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
@@ -1054,6 +1055,7 @@ class CLS_Setup():
 					"selremove   INTEGER DEFAULT 0," + \
 					"autofollow  INTEGER DEFAULT 0," + \
 					"autofavo    INTEGER DEFAULT 0," + \
+					"dejifavo    INTEGER DEFAULT 0," + \
 					"arashi      INTEGER DEFAULT 0," + \
 					"arashii     INTEGER DEFAULT 0," + \
 					"arashir     INTEGER DEFAULT 0," + \
@@ -1078,6 +1080,7 @@ class CLS_Setup():
 ##					
 ##					"autofollow"		: 0,	#自動リムーブ 実行数
 ##					"autofavo"			: 0,	#自動いいね 実施数
+##					"dejifavo"			: 0,	#指定いいね 実施数
 ##					
 ##												#荒らし情報
 ##					"arashi"			: 0,	#荒らし登録者数

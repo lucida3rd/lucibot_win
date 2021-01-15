@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : トラヒック
 # 
-# ::Update= 2021/1/12
+# ::Update= 2021/1/15
 #####################################################
 # Private Function:
 #   (none)
@@ -99,6 +99,7 @@ class CLS_Traffic():
 			
 			gVal.STR_TrafficInfo['autofollow']  = wARR_RateTraffic['autofollow']
 			gVal.STR_TrafficInfo['autofavo']  = wARR_RateTraffic['autofavo']
+			gVal.STR_TrafficInfo['dejifavo']  = wARR_RateTraffic['dejifavo']
 			
 			gVal.STR_TrafficInfo['arashi']  = wARR_RateTraffic['arashi']
 			gVal.STR_TrafficInfo['arashii'] = wARR_RateTraffic['arashii']
@@ -143,7 +144,7 @@ class CLS_Traffic():
 					"0, 0," + \
 					"0, 0, 0, 0, 0," + \
 					"0," + \
-					"0," + \
+					"0, 0," + \
 					"0, 0, 0," + \
 					"0, 0, 0, 0," + \
 					"0" + \
@@ -175,6 +176,7 @@ class CLS_Traffic():
 		
 		gVal.STR_TrafficInfo['autofavot'] = 0
 		gVal.STR_TrafficInfo['autofavo']  = 0
+		gVal.STR_TrafficInfo['dejifavo']  = 0
 		
 		gVal.STR_TrafficInfo['arashi']  = 0
 		gVal.STR_TrafficInfo['arashii'] = 0
@@ -231,6 +233,7 @@ class CLS_Traffic():
 					"selremove = " + str( gVal.STR_TrafficInfo['selremove'] ) + "," + \
 					"autofollow = " + str( gVal.STR_TrafficInfo['autofollow'] ) + "," + \
 					"autofavo = " + str( gVal.STR_TrafficInfo['autofavo'] ) + "," + \
+					"dejifavo = " + str( gVal.STR_TrafficInfo['dejifavo'] ) + "," + \
 					"arashi = " + str( gVal.STR_TrafficInfo['arashi'] ) + "," + \
 					"arashii = " + str( gVal.STR_TrafficInfo['arashii'] ) + "," + \
 					"arashir = " + str( gVal.STR_TrafficInfo['arashir'] ) + "," + \
@@ -422,6 +425,7 @@ class CLS_Traffic():
 		wStr = wStr + '\n'
 		wStr = wStr + "自動リムーブ実行数 : " + str( inTraffic['autofollow'] ) + '\n'
 		wStr = wStr + "自動いいね実施数   : " + str( inTraffic['autofavo'] ) + '\n'
+		wStr = wStr + "指定いいね実施数   : " + str( inTraffic['dejifavo'] ) + '\n'
 		wStr = wStr + '\n'
 		wStr = wStr + "荒らし登録者数     : " + str( inTraffic['arashi'] ) + '\n'
 		wStr = wStr + "荒らし検出回数     : " + str( inTraffic['arashii'] ) + '\n'

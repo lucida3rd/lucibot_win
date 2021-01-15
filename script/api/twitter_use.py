@@ -175,6 +175,7 @@ class CLS_Twitter_Use():
 		
 		###	GET
 		self.__set_API( "home_timeline",  12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "mention_timeline", 60, self.TwStatus['APIrect'] )# GET: 15m/75
 		self.__set_API( "user_timeline", 720, self.TwStatus['APIrect'] )# GET: 15m/900
 		self.__set_API( "lists_status",  720, self.TwStatus['APIrect'] )# GET: 15m/900
 		self.__set_API( "search_tweets", 144, self.TwStatus['APIrect'] )# GET: 15m/180
@@ -187,6 +188,7 @@ class CLS_Twitter_Use():
 		self.__set_API( "trends_place",   60, self.TwStatus['APIrect'] )# GET: 15m/75
 		self.__set_API( "users_show",    900, self.TwStatus['APIrect'] )# GET: 15m/900
 		self.__set_API( "mute_list",      12, self.TwStatus['APIrect'] )# GET: 15m/15
+		self.__set_API( "tweet_status",  240, self.TwStatus['APIrect'] )# GET: 15m/300
 		return
 
 	#####################################################
@@ -562,6 +564,87 @@ class CLS_Twitter_Use():
 		#############################
 		# APIカウント
 		self.__set_APIcount( wAPIname )
+		
+		#############################
+		# タイムライン読み込み
+		try:
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 遅延
+		time.sleep( self.DEF_VAL_SLEEP )
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = json.loads( wTweetRes.text )
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# Tweetステータス
+#####################################################
+	def GetTweetStat2( self, inID=None ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetTweetStat2"
+		
+		#############################
+		# 入力チェック
+		if inID=='' or inID==None :
+			wRes['Reason'] = "IDがない"
+			return wRes
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+###		wAPI = "https://api.twitter.com/2/tweets"
+###		wAPI = "https://api.twitter.com/1.1/statuses/lookup.json"
+###		wAPI = "https://api.twitter.com/1.1/statuses/show.json"
+		wAPI = "https://twitter.com/i/activity/favorited_popup"
+
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "tweet_status" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+###		wParams = {
+###			"ids"			: inID,
+###			"tweet.fields"	: "created_at"
+###		}
+		wParams = {
+			"id"			: inID,
+			"include_entities" : True
+		}
+		
+		#############################
+		# APIカウント
+		self.__set_APIcount( "tweet_status" )
 		
 		#############################
 		# タイムライン読み込み

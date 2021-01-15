@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : グローバル値
 # 
-# ::Update= 2021/1/12
+# ::Update= 2021/1/15
 #####################################################
 
 #####################################################
@@ -52,6 +52,7 @@ class gVal() :
 		"Account"	: "",			#Twitterアカウント名
 		"NorList"	: "",			#一般ユーザリスト名
 		"UrfList"	: "",			#フォロー解除リスト名
+		"FavoList"	: "",			#指定いいねリスト名
 		"id"		: "",			#Twitter ID(番号)
 		"Traffic"	: False,		#Twitterにトラヒックを報告するか
 		
@@ -123,6 +124,10 @@ class gVal() :
 									#自動いいね情報
 		"autofavot"			: 0,	#自動いいね 対象
 		"autofavo"			: 0,	#自動いいね 実施数
+		
+									#指定いいね情報
+		"dejifavot"			: 0,	#指定いいね 対象
+		"dejifavo"			: 0,	#指定いいね 実施数
 		
 									#荒らし情報
 		"arashi"			: 0,	#荒らし登録者数
