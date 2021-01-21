@@ -746,6 +746,9 @@ class CLS_Twitter_Use():
 				if inRoundNum<=wRound :
 					break
 				wIndex = len(wTimeline['statuses']) - 1
+				if wIndex<0 :
+					###キーがない =全ツイート読んだ
+					break
 				wParams['max_id'] = wTimeline['statuses'][wIndex]['id']
 				
 				#############################
