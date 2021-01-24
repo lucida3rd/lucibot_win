@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/1/21
+# ::Update= 2021/1/24
 #####################################################
 # Private Function:
 #   (none)
@@ -209,9 +209,9 @@ class CLS_TwitterFollower():
 					gVal.STR_TrafficInfo['newfollower'] += 1
 					
 				###記録上リムーブされたことがない かつ リムーブ =初リムーブ
-				if wARR_RateFollowers[wIndex]['r_remove']==False and \
-				   wARR_RateFollowers[wIndex]['rc_follower']==True and \
-				   wARR_ObjUser[wObjectUserID]['Follower']==False :
+				elif wARR_RateFollowers[wIndex]['r_remove']==False and \
+				     wARR_RateFollowers[wIndex]['rc_follower']==True and \
+				     wARR_ObjUser[wObjectUserID]['Follower']==False :
 					wQuery = "update tbl_follower_data set " + \
 								"r_remove = True, " + \
 								"rc_follower = False, " + \
@@ -231,6 +231,9 @@ class CLS_TwitterFollower():
 					   wARR_RateFollowers[wIndex]['lastcount']==wARR_ObjUser[wObjectUserID]['statuses_count'] :
 						###更新されてないならスキップ
 						continue
+					if wARR_RateFollowers[wIndex]['screen_name']=="MMPPmayukichi" :
+						CLS_OSIF.sInp( str(wARR_ObjUser[wObjectUserID]['Follower']) )
+
 					wQuery = "update tbl_follower_data set " + \
 								"rc_myfollow = " + str(wARR_ObjUser[wObjectUserID]['MyFollow']) + ", " + \
 								"rc_follower = " + str(wARR_ObjUser[wObjectUserID]['Follower']) + ", " + \
@@ -240,7 +243,8 @@ class CLS_TwitterFollower():
 								"lastcount = " + wARR_ObjUser[wObjectUserID]['statuses_count'] + ", " + \
 								"lastdate = '" + str(wTD['TimeDate']) + "' " + \
 								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-								" and id = '" + str(wROW['id']) + "' ;"
+								" and id = '" + str( wObjectUserID ) + "' ;"
+###								" and id = '" + str(wROW['id']) + "' ;"
 				
 				###フォロー済み 前回フォロワー状態、フォロー日時を記録
 				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -363,6 +367,10 @@ class CLS_TwitterFollower():
 			
 			###フォローしてない
 			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_MyFollowID :
+				wFLG_UnRemove = True
+			
+			###フォロワー
+			if str(wARR_RateFollowers[wIndex]['id']) in self.OBJ_Parent.ARR_FollowerID :
 				wFLG_UnRemove = True
 			
 			###一度リムーブされたことがある

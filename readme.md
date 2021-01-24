@@ -4,8 +4,8 @@
 ::Admin= Lucida（lucida3hai@twitter.com）
 ::TwitterURL= https://twitter.com/lucida3hai
 
-::Update= 2021/1/21
-::Version= 2.1.1.1
+::Update= 2021/1/24
+::Version= 2.1.2.0
 
 
 <a id="iSystemSummary"></a>

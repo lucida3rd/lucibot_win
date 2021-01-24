@@ -175,7 +175,7 @@ class gVal() :
 		"AutoFavoSkipWait"	: 5,						#自動いいね スキップ待機(秒)
 		"AutoFavoRateHour"	: 12,						#自動いいね 前回のいいねからの経過時間(時間)
 
-		"removeLimmin"		: 4320,						#自動リムーブ時間 3日 (60x24)x3=7200(分)
+		"removeLimmin"		: 2880,						#自動リムーブ時間 2日 (60x24)x2=2880(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 100,						#自動リムーブ処理待ち(秒) 900秒/3回(createの場合)
 
