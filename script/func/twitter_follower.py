@@ -231,9 +231,7 @@ class CLS_TwitterFollower():
 					   wARR_RateFollowers[wIndex]['lastcount']==wARR_ObjUser[wObjectUserID]['statuses_count'] :
 						###更新されてないならスキップ
 						continue
-					if wARR_RateFollowers[wIndex]['screen_name']=="MMPPmayukichi" :
-						CLS_OSIF.sInp( str(wARR_ObjUser[wObjectUserID]['Follower']) )
-
+					
 					wQuery = "update tbl_follower_data set " + \
 								"rc_myfollow = " + str(wARR_ObjUser[wObjectUserID]['MyFollow']) + ", " + \
 								"rc_follower = " + str(wARR_ObjUser[wObjectUserID]['Follower']) + ", " + \
