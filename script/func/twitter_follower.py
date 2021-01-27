@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/1/24
+# ::Update= 2021/1/27
 #####################################################
 # Private Function:
 #   (none)
@@ -235,13 +235,13 @@ class CLS_TwitterFollower():
 					wQuery = "update tbl_follower_data set " + \
 								"rc_myfollow = " + str(wARR_ObjUser[wObjectUserID]['MyFollow']) + ", " + \
 								"rc_follower = " + str(wARR_ObjUser[wObjectUserID]['Follower']) + ", " + \
-								"foldate = '" + wARR_ObjUser[wObjectUserID]['FolDate'] + "', " + \
 								"user_name = '" + wARR_ObjUser[wObjectUserID]['user_name'] + "', " + \
 								"screen_name = '" + wARR_ObjUser[wObjectUserID]['screen_name'] + "', " + \
 								"lastcount = " + wARR_ObjUser[wObjectUserID]['statuses_count'] + ", " + \
 								"lastdate = '" + str(wTD['TimeDate']) + "' " + \
 								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 								" and id = '" + str( wObjectUserID ) + "' ;"
+###								"foldate = '" + wARR_ObjUser[wObjectUserID]['FolDate'] + "', " + \
 ###								" and id = '" + str(wROW['id']) + "' ;"
 				
 				###フォロー済み 前回フォロワー状態、フォロー日時を記録

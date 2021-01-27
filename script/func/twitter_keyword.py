@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/1/27
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -133,6 +133,9 @@ class CLS_TwitterKeyword():
 				###ユーザ名に除外文字が含まれている
 				if self.OBJ_Parent.CheckExcUserName( wLine['user']['name'] )==False :
 					continue
+				###ツイートの先頭が @文字=リプライ
+				if wLine['text'].find("@")==0 :
+					continue
 				###ツイートに除外文字が含まれている
 				if self.OBJ_Parent.CheckExcWord( wLine['text'] )==False :
 					continue
@@ -164,6 +167,9 @@ class CLS_TwitterKeyword():
 								continue
 					###ユーザ名に除外文字が含まれている
 					if self.OBJ_Parent.CheckExcUserName( wLine['retweeted_status']['user']['name'] )==False :
+						continue
+					###ツイートの先頭が @文字=リプライ
+					if wLine['retweeted_status']['text'].find("@")==0 :
 						continue
 					###ツイートに除外文字が含まれている
 					if self.OBJ_Parent.CheckExcWord( wLine['retweeted_status']['text'] )==False :
