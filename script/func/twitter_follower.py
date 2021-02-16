@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/1/27
+# ::Update= 2021/2/16
 #####################################################
 # Private Function:
 #   (none)
@@ -208,6 +208,10 @@ class CLS_TwitterFollower():
 								" and id = '" + str( wObjectUserID ) + "' ;"
 					gVal.STR_TrafficInfo['newfollower'] += 1
 					
+					###※新規フォロー
+					wRes['Reason'] = "既にフォローしているユーザ: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
+					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
+				
 				###記録上リムーブされたことがない かつ リムーブ =初リムーブ
 				elif wARR_RateFollowers[wIndex]['r_remove']==False and \
 				     wARR_RateFollowers[wIndex]['rc_follower']==True and \
@@ -223,6 +227,10 @@ class CLS_TwitterFollower():
 								" and id = '" + str( wObjectUserID ) + "' ;"
 								
 					gVal.STR_TrafficInfo['selremove'] += 1
+					
+					###※リムーブされた(新規)
+					wRes['Reason'] = "リムーブされたユーザ: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
+					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
 				
 				###前回のフォロー、フォロワー、カウント値が変わってるなら更新する
 				else:
@@ -241,8 +249,6 @@ class CLS_TwitterFollower():
 								"lastdate = '" + str(wTD['TimeDate']) + "' " + \
 								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 								" and id = '" + str( wObjectUserID ) + "' ;"
-###								"foldate = '" + wARR_ObjUser[wObjectUserID]['FolDate'] + "', " + \
-###								" and id = '" + str(wROW['id']) + "' ;"
 				
 				###フォロー済み 前回フォロワー状態、フォロー日時を記録
 				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -281,24 +287,6 @@ class CLS_TwitterFollower():
 							"'1900-01-01 00:00:00' " + \
 							") ;"
 				
-##					"twitterid   TEXT  NOT NULL," + \
-##					"regdate     TIMESTAMP," + \
-##					"r_myfollow  BOOL  DEFAULT false," + \
-##					"r_remove    BOOL  DEFAULT false," + \
-##					"rc_myfollow BOOL  DEFAULT false," + \
-##					"rc_follower BOOL  DEFAULT false," + \
-##					"foldate     TIMESTAMP," + \
-##					"limited     BOOL  DEFAULT false," + \
-##					"removed     BOOL  DEFAULT false," + \
-##					"id          TEXT  NOT NULL," + \
-##					"user_name   TEXT  NOT NULL," + \
-##					"screen_name TEXT  NOT NULL," + \
-##					"lastcount   INTEGER," + \
-##					"lastdate    TIMESTAMP," + \
-##					"reason      TEXT," + \
-##					"favoid      TEXT," + \
-##					"favodate     TIMESTAMP," + \
-				
 				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 				wResDB = gVal.OBJ_DB.GetQueryStat()
 				if wResDB['Result']!=True :
@@ -309,6 +297,11 @@ class CLS_TwitterFollower():
 				
 				gVal.STR_TrafficInfo['dbreq'] += 1
 				gVal.STR_TrafficInfo['dbins'] += 1
+				
+				###※フォローされた(新規)
+				if wARR_ObjUser[wObjectUserID]['Follower']==True :
+					wRes['Reason'] = "新規フォロワーのユーザ: @" + str(wARR_ObjUser[wObjectUserID]['screen_name'])
+					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
 		
 		#############################
 		# DBのフォロワー一覧 再取得
@@ -344,16 +337,6 @@ class CLS_TwitterFollower():
 			#############################
 			# トラヒックの計測
 			
-###			###新規フォロワー
-###			if wARR_RateFollowers[wIndex]['rc_follower']==False and \
-###			   wARR_RateFollowers[wIndex]['r_remove']==True and \
-###			   str(wARR_RateFollowers[wIndex]['id']) in self.OBJ_Parent.ARR_FollowerID :
-###				gVal.STR_TrafficInfo['newfollower'] += 1
-###			###リムーブされたか
-###			elif wARR_RateFollowers[wIndex]['rc_follower']==True and \
-###			     str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_FollowerID :
-###				gVal.STR_TrafficInfo['selremove'] += 1
-###			
 			###片フォローを計測
 			if wARR_RateFollowers[wIndex]['rc_myfollow']==True and \
 			   wARR_RateFollowers[wIndex]['rc_follower']==False :
@@ -405,12 +388,6 @@ class CLS_TwitterFollower():
 				gVal.STR_TrafficInfo['autofollowt'] += 1
 			
 			###自動リムーブ対象外 で 既にリムーブ済みだった
-###			elif wARR_ObjUser[wObjectUserID]['MyFollow']==False and \
-###			     wARR_RateFollowers[wIndex]['removed']==False :
-###				wQuery = "update tbl_follower_data set " + \
-###							"removed = True " + \
-###							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###							" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
 			else:
 				if wARR_RateFollowers[wIndex]['rc_myfollow']==False and \
 				   wARR_RateFollowers[wIndex]['removed']==False :
@@ -418,14 +395,15 @@ class CLS_TwitterFollower():
 								"removed = True " + \
 								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 								" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
+				
+				###※既にリムーブしているユーザを記録＆表示する
+				wRes['Reason'] = "既にリムーブ済みのユーザ: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
+				gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
+			
 			###その他 スキップ
 				else:
 					continue
 			
-###			###その他 スキップ
-###			else:
-###				continue
-###			
 			###フォロー済み 前回フォロワー状態、フォロー日時を記録
 			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 			wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -446,367 +424,6 @@ class CLS_TwitterFollower():
 
 
 
-###		#############################
-###		# Twitterのフォロワー一覧を取得
-###		#   DBに記録されていなければ、記録する
-###		#   DBに記録されていたら、フォロー状態を更新する
-###		self.OBJ_Parent.ARR_FollowerID = []
-###		for wROW in wFollowerRes['Responce'] :
-###			self.OBJ_Parent.ARR_FollowerID.append( str(wROW['id']) )	#フォロワーIDだけ記録
-###			
-###			###記録を探す
-###			wFLG_Ditect = False
-###			wKeylist = wARR_RateFollowers.keys()
-###			for wIndex in wKeylist :
-###				if str(wARR_RateFollowers[wIndex]['id'])==str(wROW['id']) :
-###					wFLG_Ditect = True	#DB記録あり
-###					break
-###			
-###			###フォロー状態
-###			wFLG_MyFollow = False
-###			wCHR_FolDate  = "1900-01-01 00:00:00"
-###			if str(wROW['id']) in self.OBJ_Parent.ARR_MyFollowID :
-###				###フォロー済み
-###				wFLG_MyFollow = True
-###				wCHR_FolDate  = str(wTD['TimeDate'])
-###			
-###			if wFLG_Ditect==True :
-###				###DBに記録されている
-###				
-###				###記録上フォローしたことある かつ 未フォローなら記録
-###				if wARR_RateFollowers[wIndex]['r_myfollow']==True and \
-###				   wFLG_MyFollow==False :
-###					wQuery = "update tbl_follower_data set " + \
-###								"r_myfollow = True, " + \
-###								"rc_follower = True, " + \
-###								"foldate = '" + str(wCHR_FolDate) + "' " + \
-###								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###								" and id = '" + str(wROW['id']) + "' ;"
-###				else:
-###					###前回もフォロワーならスキップ
-###					if wARR_RateFollowers[wIndex]['rc_follower']==True :
-###						continue
-###					###前回フォロワーではない かつ 今回フォロワーなら記録
-###					wQuery = "update tbl_follower_data set " + \
-###								"rc_follower = True " + \
-###								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###								" and id = '" + str(wROW['id']) + "' ;"
-###				
-###				###フォロー済み 前回フォロワー状態、フォロー日時を記録
-###				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-###				wResDB = gVal.OBJ_DB.GetQueryStat()
-###				if wResDB['Result']!=True :
-###					##失敗
-###					wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-###					gVal.OBJ_L.Log( "B", wRes )
-###					return wRes
-###				
-###				###  カウント
-####			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
-###				gVal.STR_TrafficInfo['dbreq'] += 1
-###				gVal.STR_TrafficInfo['dbup'] += 1
-###			
-###			else:
-###				###DBに記録されていない
-###				###  記録する
-###				wName = str(wROW['name']).replace( "'", "''" )
-###				wQuery = "insert into tbl_follower_data values (" + \
-###							"'" + gVal.STR_UserInfo['Account'] + "'," + \
-###							"'" + str(wTD['TimeDate']) + "'," + \
-###							str(wFLG_MyFollow) + "," + \
-###							"False," + \
-###							"True," + \
-###							"'" + str(wCHR_FolDate) + "'," + \
-###							"False," + \
-###							"False," + \
-###							"'" + str(wROW['id']) + "'," + \
-###							"'" + wName + "'," + \
-###							"'" + str(wROW['screen_name']) + "'," + \
-###							str(wROW['statuses_count']) + "," + \
-###							"'" + str(wTD['TimeDate']) + "'," + \
-###							"''" + \
-###							") ;"
-###							
-###					##"r_myfollow  1度フォローした= 状態で判定
-###					##"r_remove    1度リムーブした= 新規なのでFalse
-###					##"rc_follower 前回フォロワー=  少なくともフォローされている
-###					##"foldate     (フォロー日時)
-###					##"limited     リムーブ候補= 新規なのでFalse
-###					##"removed     リムーブ済み= 新規なのでFalse
-###				
-###				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-###				wResDB = gVal.OBJ_DB.GetQueryStat()
-###				if wResDB['Result']!=True :
-###					##失敗
-###					wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-###					gVal.OBJ_L.Log( "B", wRes )
-###					return wRes
-###				
-####			self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
-###				gVal.STR_TrafficInfo['dbreq'] += 1
-###				gVal.STR_TrafficInfo['dbins'] += 1
-###		
-####	#############################
-####	# フォロワー数のセット
-####	self.OBJ_Parent.STR_Cope['FollowerNum'] = len(self.OBJ_Parent.ARR_FollowerID)
-####	
-###		#############################
-###		# 片フォローをDBに記録する
-###		#   ・一度もフォローされたことがない(DBに記録がない)
-###		#   ・フォロー者
-###		#   ・normalリスト
-###		
-###		###フォロー一覧
-###		for wMyFollowID in self.OBJ_Parent.ARR_MyFollowID :
-###			### normalリスト以外ならば対象外
-###			if wMyFollowID not in self.OBJ_Parent.ARR_NormalListMenberID :
-###				continue
-###			### フォロワー(=相互フォロー)ならば対象外
-###			if wMyFollowID in self.OBJ_Parent.ARR_FollowerID :
-###				continue
-###			### DBに記録されていれば対象外
-###			wFLG_Ditect = False
-###			wKeylist = wARR_RateFollowers.keys()
-###			for wIndex in wKeylist :
-###				if str(wARR_RateFollowers[wIndex]['id'])==wMyFollowID :
-###					wFLG_Ditect = True
-###					break
-###			if wFLG_Ditect==True :
-###				continue
-###			
-###			# ※片フォロー確定
-###			
-###			#############################
-###			# Twitterフォロー情報から情報を抜き出す
-###			wFLG_Ditect = False
-###			wMyFollow_Key = 0
-###			for wROW in wMyFollowRes['Responce'] :
-###				if str(wROW['id'])==wMyFollowID :
-###					wFLG_Ditect = True
-###					break
-###				wMyFollow_Key += 1
-###			if wFLG_Ditect!=True :
-###				##フォロー一覧に id が見当たらない=失敗(ありえない)
-###				wRes['Reason'] = "Key ditect is not found: Follow ID=" + wMyFollowID
-###				gVal.OBJ_L.Log( "B", wRes )
-###				continue
-###			
-###			### 情報を抜く
-###			wName = str(wMyFollowRes['Responce'][wMyFollow_Key]['name']).replace( "'", "''" )
-###			wScreenName = str(wMyFollowRes['Responce'][wMyFollow_Key]['screen_name'])
-###			wStatusCount = str(wMyFollowRes['Responce'][wMyFollow_Key]['statuses_count'])
-###			
-###			### 記録する
-###			wQuery = "insert into tbl_follower_data values (" + \
-###						"'" + gVal.STR_UserInfo['Account'] + "'," + \
-###						"'" + str(wTD['TimeDate']) + "'," + \
-###						"True," + \
-###						"False," + \
-###						"False," + \
-###						"'" + str(wTD['TimeDate']) + "'," + \
-###						"False," + \
-###						"False," + \
-###						"'" + str(wROW['id']) + "'," + \
-###						"'" + wName + "'," + \
-###						"'" + wScreenName + "'," + \
-###						wStatusCount + "," + \
-###						"'" + str(wTD['TimeDate']) + "'," + \
-###						"''" + \
-###						") ;"
-###			
-###					##"r_myfollow  1度フォローした= 既にフォローしている
-###					##"r_remove    1度リムーブした= 新規なのでFalse
-###					##"rc_follower 前回フォロワー=  フォロワーではないのでFalse
-###					##"foldate     (フォロー日時)
-###					##"limited     リムーブ候補= 新規なのでFalse
-###					##"removed     リムーブ済み= 新規なのでFalse
-###			
-###			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-###			wResDB = gVal.OBJ_DB.GetQueryStat()
-###			if wResDB['Result']!=True :
-###				##失敗
-###				wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-###				gVal.OBJ_L.Log( "B", wRes )
-###				return wRes
-###			
-####		self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
-###			gVal.STR_TrafficInfo['dbreq'] += 1
-###			gVal.STR_TrafficInfo['dbins'] += 1
-###		
-###		#############################
-###		# DBのフォロワー一覧 再取得
-###		wQuery = "select * from tbl_follower_data where " + \
-###					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###					";"
-###		
-###		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-###		wResDB = gVal.OBJ_DB.GetQueryStat()
-###		if wResDB['Result']!=True :
-###			##失敗
-###			wRes['Reason'] = "Run Query is failed(5): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-###			gVal.OBJ_L.Log( "B", wRes )
-###			return wRes
-###		gVal.STR_TrafficInfo['dbreq'] += 1
-###		
-###		#############################
-###		# 辞書型に整形
-###		wARR_RateFollowers = {}
-###		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-####	self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFollowers)
-###		
-###		#############################
-###		# 自動リムーブ対象を設定する
-###		#   ・フォロー者 かつ アンフォロワー
-###		#   ・一度もリムーブしたことがない
-###		#   ・normalリスト
-###		#   ・フォローしてから一定期間過ぎた
-###		# 自動リムーブ対象で、既にアンフォロワーならリムーブ済みにする
-###		
-###		self.OBJ_Parent.ARR_OldUserID = []	#一度でもフォロー・リムーブしたことあるユーザID
-###		gVal.STR_TrafficInfo['piefollow'] = 0
-###		gVal.STR_TrafficInfo['autofollowt'] = 0
-###		
-###		wKeylist = wARR_RateFollowers.keys()
-###		for wIndex in wKeylist :
-###			wFLG_UnRemove = False	#自動リムーブ対象外か
-###			wFLG_UnFollow = False	#フォロー状態
-###			wFLG_Follower = False	#フォロワー状態
-###			wFLG_LastCount = False
-###			wFLG_Ditect = False
-###			wLast_Count = str(wARR_RateFollowers[wIndex]['lastcount'])
-###			wLast_Date  = wARR_RateFollowers[wIndex]['lastdate']
-###			
-###			### フォロワーなら 自動リムーブ対象外
-###			if str(wARR_RateFollowers[wIndex]['id']) in self.OBJ_Parent.ARR_FollowerID :
-###				wFLG_UnRemove = True
-###				wFLG_Follower = True	#フォロワー
-###				
-###				wF_Count = -1
-###				for wF_ROW in wFollowerRes['Responce'] :
-###					if wARR_RateFollowers[wIndex]['id']==str(wF_ROW['id']) :
-###						wF_Count = wF_ROW['statuses_count']
-###						wFLG_Ditect = True
-###						break
-###				
-###				if wFLG_Ditect==False :
-###					wRes['Reason'] = "key is not found"
-###					gVal.OBJ_L.Log( "C", wRes )
-###					return wRes
-###				###ツイート数変化 =更新あり
-###				if str(wF_Count)!=wLast_Count :
-###					wFLG_LastCount = True
-###					wLast_Count = str( wF_Count )
-###					wLast_Date  = wTD['TimeDate']
-###			
-###			###リムーブされたか
-###			if wARR_RateFollowers[wIndex]['rc_follower']==True and \
-###			   str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_FollowerID :
-###				gVal.STR_TrafficInfo['selremove'] += 1
-###			
-###			###※少なくともフォロワーではない
-###			
-###			###  フォローしてないなら 自動リムーブ対象外
-###			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_MyFollowID :
-###				wFLG_UnRemove = True
-###				wFLG_UnFollow = True	#未フォロー
-###			else :
-###				### フォロー かつ 非フォロワー = 片フォロー
-###				if wFLG_Follower==False :
-####				self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
-###					gVal.STR_TrafficInfo['piefollow'] += 1
-###			
-###			###  一度リムーブしたことあるなら 自動リムーブ対象外
-###			if wARR_RateFollowers[wIndex]['r_remove']==True :
-###				wFLG_UnRemove = True
-###				if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_OldUserID :
-###					self.OBJ_Parent.ARR_OldUserID.append( str(wARR_RateFollowers[wIndex]['id']) )
-###			
-###			###  一度フォローしたことある
-###			if wARR_RateFollowers[wIndex]['r_myfollow']==True :
-###				if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_OldUserID :
-###					self.OBJ_Parent.ARR_OldUserID.append( str(wARR_RateFollowers[wIndex]['id']) )
-###			
-###			###  normalリスト以外ならば  自動リムーブ対象外
-###			if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_NormalListMenberID :
-###				wFLG_UnRemove = True
-###			
-####		###  既にリムーブ済みorリムーブ対象ならばスキップ
-####		if wARR_RateFollowers[wIndex]['removed']==True or \
-####		   wARR_RateFollowers[wIndex]['limited']==True :
-####			wFLG_UnRemove = True
-###			
-###			###  既にリムーブ済みならばスキップ
-###			if wARR_RateFollowers[wIndex]['removed']==True :
-###				wFLG_UnRemove = True
-###			
-###			###  既にリムーブ対象ならばスキップ
-###			if wARR_RateFollowers[wIndex]['limited']==True :
-####			self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
-###				gVal.STR_TrafficInfo['autofollowt'] += 1
-###				wFLG_UnRemove = True
-###			
-###			###  ここまで自動リムーブ候補(False)で、フォローしてからの時間が範囲内なら  自動リムーブ対象外
-###			if wFLG_UnRemove==False :
-###				wRemoveLimmin = gVal.DEF_STR_TLNUM['removeLimmin'] * 60	#秒に変換
-###				wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['foldate']), inThreshold=wRemoveLimmin )
-###				if wGetLag['Result']!=True :
-###					wRes['Reason'] = "sTimeLag failed"
-###					gVal.OBJ_L.Log( "B", wRes )
-###					return wRes
-###				if wGetLag['Beyond']==False :
-###					###期間内 =自動リムーブ対象外
-###					wFLG_UnRemove = True
-###			
-###			###  ここまでで自動リムーブ対象(False)なら記録する
-###			if wFLG_UnRemove==False :
-###				wQuery = "update tbl_follower_data set " + \
-###							"limited = True, " + \
-###							"removed = False, " + \
-###							"rc_follower = False, " + \
-###							"lastcount = " + wLast_Count + ", " + \
-###							"lastdate = '" + str(wLast_Date) + "' " + \
-###							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###							" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
-###				
-####			self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
-###				gVal.STR_TrafficInfo['autofollowt'] += 1
-###			
-###			else:
-###				###前回もフォロワー かつ フォロー状態に変化がなければスキップ
-###				if wARR_RateFollowers[wIndex]['rc_follower']==wFLG_Follower and \
-###				   wARR_RateFollowers[wIndex]['removed']==wFLG_UnFollow and \
-###				   wFLG_LastCount==False :
-###					continue
-###				
-###				wQuery = "update tbl_follower_data set " + \
-###							"rc_follower = " + str(wFLG_Follower) + ", " + \
-###							"removed = " + str(wFLG_UnFollow) + ", " + \
-###							"lastcount = " + wLast_Count + ", " + \
-###							"lastdate = '" + str(wLast_Date) + "' " + \
-###							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###							" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
-###			
-###			###フォロー済み 前回フォロワー状態、フォロー日時を記録
-###			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-###			wResDB = gVal.OBJ_DB.GetQueryStat()
-###			if wResDB['Result']!=True :
-###				##失敗
-###				wRes['Reason'] = "Run Query is failed(6): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-###				gVal.OBJ_L.Log( "B", wRes )
-###				return wRes
-###			
-###			###  カウント
-####		self.OBJ_Parent.STR_Cope['DB_Update'] += 1
-###			gVal.STR_TrafficInfo['dbreq'] += 1
-###			gVal.STR_TrafficInfo['dbup'] += 1
-###		
-###		#############################
-###		# 正常終了
-###		wRes['Result'] = True
-###		return wRes
-###
-###
-
 #####################################################
 # フォロワー情報の表示
 #####################################################
@@ -818,17 +435,6 @@ class CLS_TwitterFollower():
 		wRes['Class'] = "CLS_TwitterFollower"
 		wRes['Func']  = "View"
 		
-###		#############################
-###		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['MyFollowNum'] = 0
-###		self.OBJ_Parent.STR_Cope['FollowerNum'] = 0
-###		self.OBJ_Parent.STR_Cope['PieceFollowNum'] = 0
-###		self.OBJ_Parent.STR_Cope['NewFollowerNum']  = 0
-###		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
-###		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Num']    = 0
-###		
 		#############################
 		# DBのフォロワー一覧取得
 		wQuery = "select * from tbl_follower_data where " + \
@@ -848,7 +454,6 @@ class CLS_TwitterFollower():
 		# 辞書型に整形
 		wARR_RateFollowers = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-###		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFollowers)
 		
 		#############################
 		# 画面クリア
@@ -877,19 +482,12 @@ class CLS_TwitterFollower():
 			
 			if wARR_RateFollowers[wIndex]['rc_follower']==False :
 				wStr = wStr + " [●非フォロワー]"
-###				if wARR_RateFollowers[wIndex]['removed']==False :
-###					# フォロー かつ 非フォロワー = 片フォロー
-###					self.OBJ_Parent.STR_Cope['PieceFollowNum'] += 1
 			
 			else:
 				wStr = wStr + " [〇フォロワー]  "
-###				self.OBJ_Parent.STR_Cope['FollowerNum'] += 1
-###				if wARR_RateFollowers[wIndex]['removed']==False :
-###					self.OBJ_Parent.STR_Cope['MyFollowNum'] += 1
 			
 			if wARR_RateFollowers[wIndex]['limited']==True :
 				wStr = wStr + " [★自動リムーブ対象]"
-###				self.OBJ_Parent.STR_Cope['tMyFollowRemove'] += 1
 			
 			wStr = wStr + '\n'
 			
@@ -900,12 +498,6 @@ class CLS_TwitterFollower():
 		#############################
 		# 統計
 		wStr = wStr + "--------------------" + '\n'
-###		wStr = wStr + "DB登録数         = " + str(self.OBJ_Parent.STR_Cope['DB_Num']) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "現フォロワー数   = " + str(self.OBJ_Parent.STR_Cope['FollowerNum']) + '\n'
-###		wStr = wStr + "相互フォロー数   = " + str(self.OBJ_Parent.STR_Cope['MyFollowNum']) + '\n'
-###		wStr = wStr + "片フォロー数     = " + str(self.OBJ_Parent.STR_Cope['PieceFollowNum']) + '\n'
-###		wStr = wStr + "自動リムーブ対象 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
 		wStr = wStr + "現フォロワー数   = " + str(gVal.STR_TrafficInfo['follower']) + '\n'
 		wStr = wStr + "片フォロー数     = " + str(gVal.STR_TrafficInfo['piefollow']) + '\n'
 		wStr = wStr + "自動リムーブ対象 = " + str(gVal.STR_TrafficInfo['autofollowt']) + '\n'
@@ -932,14 +524,6 @@ class CLS_TwitterFollower():
 		wRes['Class'] = "CLS_TwitterFollower"
 		wRes['Func']  = "Run"
 		
-###		#############################
-###		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['FollowerNum']     = 0
-###		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = 0
-###		self.OBJ_Parent.STR_Cope['MyFollowRemove']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
-###		
 		#############################
 		# DBのフォロワー一覧取得(自動リムーブ対象の抜き出し)
 		wQuery = "select * from tbl_follower_data where " + \
@@ -961,7 +545,6 @@ class CLS_TwitterFollower():
 		# 辞書型に整形
 		wARR_RateFollowers = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
-###		self.OBJ_Parent.STR_Cope['tMyFollowRemove'] = len(wARR_RateFollowers)
 		gVal.STR_TrafficInfo['autofollowt'] = len(wARR_RateFollowers)
 		
 		#############################
@@ -1025,7 +608,6 @@ class CLS_TwitterFollower():
 			wStr = "リムーブ成功" + '\n'
 			CLS_OSIF.sPrn( wStr )
 			
-###			self.OBJ_Parent.STR_Cope['MyFollowRemove'] += 1
 			gVal.STR_TrafficInfo['autofollow'] += 1
 			
 			###  limited をOFF、removed をONにする
@@ -1044,7 +626,6 @@ class CLS_TwitterFollower():
 				return wRes
 			
 			###  カウント
-###			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 			gVal.STR_TrafficInfo['dbreq'] += 1
 			gVal.STR_TrafficInfo['dbup'] += 1
 			
@@ -1057,7 +638,6 @@ class CLS_TwitterFollower():
 			
 			#############################
 			# 1回の解除数チェック
-###			if gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
 			elif gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
@@ -1071,16 +651,12 @@ class CLS_TwitterFollower():
 			
 			#############################
 			# 残り処理回数がまだある =5秒ウェイトする
-###			elif wVAL_ZanNum>0 :
 			else :
 				CLS_OSIF.sSleep( 5 )
 		
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-###		wStr = wStr + "DB更新数              = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
-###		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['tMyFollowRemove']) + '\n'
-###		wStr = wStr + "リムーブ済み ユーザ数 = " + str(self.OBJ_Parent.STR_Cope['MyFollowRemove']) + '\n'
 		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(gVal.STR_TrafficInfo['autofollowt']) + '\n'
 		wStr = wStr + "リムーブ済み ユーザ数 = " + str(gVal.STR_TrafficInfo['autofollow']) + '\n'
 		

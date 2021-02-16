@@ -88,7 +88,6 @@ class CLS_TwitterFavo():
 		# 辞書型に整形
 		wARR_RateFavo = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavo )
-###		self.OBJ_Parent.STR_Cope['DB_Num'] += len(wARR_RateFavo)
 		
 		#############################
 		# 取得
@@ -97,7 +96,6 @@ class CLS_TwitterFavo():
 			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
-###		self.OBJ_Parent.STR_Cope['FavoNum'] = len(wTwitterRes['Responce'])
 		gVal.STR_TrafficInfo['favo'] = len(wTwitterRes['Responce'])
 		
 		#############################
@@ -168,7 +166,6 @@ class CLS_TwitterFavo():
 						return wRes
 					
 					###  カウント
-###					self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 					gVal.STR_TrafficInfo['dbreq'] += 1
 					gVal.STR_TrafficInfo['dbup'] += 1
 			
@@ -199,7 +196,6 @@ class CLS_TwitterFavo():
 					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				
-###				self.OBJ_Parent.STR_Cope['DB_Insert'] += 1
 				gVal.STR_TrafficInfo['dbreq'] += 1
 				gVal.STR_TrafficInfo['dbins'] += 1
 		
@@ -222,7 +218,6 @@ class CLS_TwitterFavo():
 		# 辞書型に整形
 		wARR_RateFavo = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavo )
-###		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFavo)
 		
 		#############################
 		# DBに記録があるのに、Twitterのいいね一覧にない情報
@@ -249,8 +244,6 @@ class CLS_TwitterFavo():
 						gVal.OBJ_L.Log( "B", wRes )
 						return wRes
 					
-###					self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
-###					self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 					gVal.STR_TrafficInfo['favoremove'] += 1
 					gVal.STR_TrafficInfo['dbreq'] += 1
 					gVal.STR_TrafficInfo['dbup'] += 1
@@ -261,11 +254,9 @@ class CLS_TwitterFavo():
 			else:
 				###リムーブ済み
 				if wARR_RateFavo[wIndex]['removed']==True :
-###					self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
 					gVal.STR_TrafficInfo['favoremove'] += 1
 				###期間外
 				elif wARR_RateFavo[wIndex]['limited']==True :
-###					self.OBJ_Parent.STR_Cope['tFavoRemove'] += 1
 					gVal.STR_TrafficInfo['favoremovet'] += 1
 			
 			###保存期間外かを求める (変換＆差)
@@ -290,7 +281,6 @@ class CLS_TwitterFavo():
 					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				
-###				self.OBJ_Parent.STR_Cope['DB_Delete'] += 1
 				gVal.STR_TrafficInfo['dbreq'] += 1
 				gVal.STR_TrafficInfo['dbdel'] += 1
 		
@@ -312,14 +302,6 @@ class CLS_TwitterFavo():
 		wRes['Class'] = "CLS_TwitterFavo"
 		wRes['Func']  = "View"
 		
-###		#############################
-###		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['FavoNum'] = 0
-###		self.OBJ_Parent.STR_Cope['tFavoRemove'] = 0
-###		self.OBJ_Parent.STR_Cope['FavoRemove']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Num']    = 0
-###		
 		#############################
 		# DBのいいね一覧取得
 		wQuery = "select * from tbl_favo_data where " + \
@@ -339,7 +321,6 @@ class CLS_TwitterFavo():
 		# 辞書型に整形
 		wARR_RateFavoID = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavoID )
-###		self.OBJ_Parent.STR_Cope['DB_Num'] = len(wARR_RateFavoID)
 		
 		#############################
 		# 画面クリア
@@ -364,19 +345,14 @@ class CLS_TwitterFavo():
 			wStr = wStr + "登録日=" + str(wARR_RateFavoID[wIndex]['regdate'])
 			if wARR_RateFavoID[wIndex]['removed']==True :
 				wStr = wStr + " [☆いいね解除済み]"
-###				self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
 			elif wARR_RateFavoID[wIndex]['limited']==True :
 				wStr = wStr + " [★いいね解除対象]"
-###				self.OBJ_Parent.STR_Cope['tFavoRemove'] += 1
 			wStr = wStr + '\n'
 			wStr = wStr + "--------------------" + '\n'
 		
 		#############################
 		# 統計
 		wStr = wStr + "--------------------" + '\n'
-###		wStr = wStr + "DB登録数          = " + str(self.OBJ_Parent.STR_Cope['DB_Num']) + '\n'
-###		wStr = wStr + "解除対象 いいね数 = " + str(self.OBJ_Parent.STR_Cope['tFavoRemove']) + '\n'
-###		wStr = wStr + "解除済み いいね数 = " + str(self.OBJ_Parent.STR_Cope['FavoRemove']) + '\n'
 		wStr = wStr + "解除対象 いいね数 = " + str(gVal.STR_TrafficInfo['favoremovet']) + '\n'
 		wStr = wStr + "解除済み いいね数 = " + str(gVal.STR_TrafficInfo['favoremove']) + '\n'
 		
@@ -402,13 +378,6 @@ class CLS_TwitterFavo():
 		wRes['Class'] = "CLS_TwitterFavo"
 		wRes['Func']  = "Run"
 		
-###		#############################
-###		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['tFavoRemove'] = 0
-###		self.OBJ_Parent.STR_Cope['FavoRemove']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
-###		
 		#############################
 		# DBのいいね一覧取得 (いいね解除対象の抜き出し)
 		wQuery = "select * from tbl_favo_data where " + \
@@ -430,7 +399,6 @@ class CLS_TwitterFavo():
 		# 辞書型に整形
 		wARR_RateFavoID = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavoID )
-###		self.OBJ_Parent.STR_Cope['tFavoRemove'] = len(wARR_RateFavoID)
 		gVal.STR_TrafficInfo['favoremovet'] = len(wARR_RateFavoID)
 		
 		#############################
@@ -471,7 +439,6 @@ class CLS_TwitterFavo():
 			wStr = wStr + "--------------------" + '\n'
 			CLS_OSIF.sPrn( wStr )
 			
-###			self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
 			gVal.STR_TrafficInfo['favoremove'] += 1
 			
 			###  limited をOFF、removed をONにする
@@ -490,7 +457,6 @@ class CLS_TwitterFavo():
 				return wRes
 			
 			###  カウント
-###			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 			gVal.STR_TrafficInfo['dbreq'] += 1
 			gVal.STR_TrafficInfo['dbup'] += 1
 			
@@ -503,7 +469,6 @@ class CLS_TwitterFavo():
 			
 			#############################
 			# 1回の解除数チェック
-###			if gVal.DEF_STR_TLNUM['rFavoLimNum']<=wFavoLimNum :
 			elif gVal.DEF_STR_TLNUM['rFavoLimNum']<=wFavoLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
@@ -517,16 +482,12 @@ class CLS_TwitterFavo():
 			
 			#############################
 			# 残り処理回数がまだある =5秒ウェイトする
-###			elif wVAL_ZanNum>0 :
 			else :
 				CLS_OSIF.sSleep( 5 )
 		
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-###		wStr = wStr + "DB更新数          = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
-###		wStr = wStr + "解除対象 いいね数 = " + str(self.OBJ_Parent.STR_Cope['tFavoRemove']) + '\n'
-###		wStr = wStr + "解除済み いいね数 = " + str(self.OBJ_Parent.STR_Cope['FavoRemove']) + '\n'
 		wStr = wStr + "解除対象 いいね数 = " + str(gVal.STR_TrafficInfo['favoremovet']) + '\n'
 		wStr = wStr + "解除済み いいね数 = " + str(gVal.STR_TrafficInfo['favoremove']) + '\n'
 		
@@ -876,23 +837,11 @@ class CLS_TwitterFavo():
 		# 実行の確認
 		wStr = "--------------------" + '\n'
 		wStr = wStr + " 自動いいね 実行" + '\n'
-		wStr = wStr + "--------------------"
-#		wStr = wStr + "相互フォローユーザに対していいねを実行します。よろしいですか？"
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "いいねするユーザを抽出しています......" + '\n'
 		CLS_OSIF.sPrn( wStr )
-#		wResGet = CLS_OSIF.sInp( "(y=Yes / other=No)=> " )
-#		if wResGet!="y" :
-#			CLS_OSIF.sPrn( "処理を中止しました。" )
-#			wRes['Result'] = True
-#			return wRes
 		
-		CLS_OSIF.sPrn( "いいねするユーザを抽出しています......" + '\n' )
-###		#############################
-###		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['tAutoFavo'] = 0
-###		self.OBJ_Parent.STR_Cope['AutoFavo']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
-###		
+###		CLS_OSIF.sPrn( "いいねするユーザを抽出しています......" + '\n' )
 		#############################
 		# 時間を取得
 		wTD = CLS_OSIF.sGetTime()
@@ -905,12 +854,6 @@ class CLS_TwitterFavo():
 		
 		#############################
 		# DBのフォロワー情報取得
-###		wQuery = "select * from tbl_follower_data where " + \
-###					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
-###					"rc_follower = True and " + \
-###					"limited = False and " + \
-###					"removed = False " + \
-###					";"
 		wQuery = "select * from tbl_follower_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					";"
@@ -1005,7 +948,6 @@ class CLS_TwitterFavo():
 				if wGetLag['Result']!=True :
 					wRes['Reason'] = "sTimeLag failed"
 					gVal.OBJ_L.Log( "B", wRes )
-###					return wRes
 					continue
 				if wGetLag['Beyond']==False :
 					### 1日以内は除外
@@ -1084,7 +1026,6 @@ class CLS_TwitterFavo():
 				if wGetLag['Result']!=True :
 					wRes['Reason'] = "sTimeLag failed"
 					gVal.OBJ_L.Log( "B", wRes )
-###					return wRes
 					continue
 				if wGetLag['Beyond']==True :
 					### 1日超経過は除外
@@ -1106,7 +1047,6 @@ class CLS_TwitterFavo():
 			if wFavoRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error: " + wFavoRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
-###				return wRes
 				continue
 			
 			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
@@ -1127,7 +1067,6 @@ class CLS_TwitterFavo():
 				##失敗
 				wRes['Reason'] = "Run Query is failed(6): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 				gVal.OBJ_L.Log( "B", wRes )
-###				return wRes
 				continue
 			
 			###  カウント
@@ -1208,9 +1147,6 @@ class CLS_TwitterFavo():
 			
 			wResSearch = self.__run_AutoFavo( wWord )
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
-###			if wResSearch['Result']!=True :
-###				### 処理失敗
-###				continue
 		
 		wRes['Result'] = True
 		return wRes
