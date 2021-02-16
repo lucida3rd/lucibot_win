@@ -395,10 +395,10 @@ class CLS_TwitterFollower():
 								"removed = True " + \
 								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 								" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
-				
-				###※既にリムーブしているユーザを記録＆表示する
-				wRes['Reason'] = "既にリムーブ済みのユーザ: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
-				gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
+					
+					###※既にリムーブしているユーザを記録＆表示する
+					wRes['Reason'] = "既にリムーブ済みのユーザ: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
+					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
 			
 			###その他 スキップ
 				else:
