@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2021/1/15
+# ::Update= 2021/2/16
 #####################################################
 # Private Function:
 #   (none)
@@ -744,6 +744,10 @@ class CLS_TwitterFavo():
 				if gVal.STR_AutoFavo['Tag']==False :
 					if wTweet['text'].find("#")!=-1 :
 						continue
+				
+				###ツイートの先頭が @文字=リプライ
+				if wTweet['text'].find("@")==0 :
+					continue
 				
 				###ツイートに除外文字が含まれている場合は除外
 				if self.OBJ_Parent.CheckExcWord( wTweet['text'] )==False :
