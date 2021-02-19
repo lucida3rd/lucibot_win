@@ -1189,6 +1189,190 @@ class CLS_TwitterFavo():
 
 
 #####################################################
+# 無差別いいねの実行
+#####################################################
+	def CaoFavo(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFavo"
+		wRes['Func']  = "CaoFavo"
+		
+		#############################
+		# 画面クリア
+		CLS_OSIF.sDispClr()
+		
+		#############################
+		# 実行の確認
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 無差別いいね 実行" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "ツイートを抽出しています......" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		### wTD['TimeDate']
+		
+		#############################
+		# DBのフォロワー情報取得
+		wQuery = "select id from tbl_follower_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		
+		#############################
+		# リスト型に整形
+		wARR_RateUserID = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=wARR_RateUserID )
+		
+		#############################
+		# un_refollowl登録者 取得(idだけ)
+		wListsRes = gVal.OBJ_Twitter.GetLists()
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['UrfList'] )
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetListMember:UrfList): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_UnRefollowListMenberID = []
+		for wROW in wListsRes['Responce'] :
+			wARR_UnRefollowListMenberID.append( str(wROW['id']) )
+		
+		#############################
+		# Home TLの取得
+###		wHomeTL_Res = gVal.OBJ_Twitter.GetTL( inTLmode="home", inFLG_Rep=True, inFLG_Rts=False, inScreenName=STR_TWITTERdata['TwitterID'], gVal.inCount=DEF_STR_TLNUM['CaoFavoTL'] )
+		wHomeTL_Res = gVal.OBJ_Twitter.GetTL( inTLmode="home", inFLG_Rts=True, inCount=gVal.DEF_STR_TLNUM['CaoFavoTL'] )
+		if wHomeTL_Res['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wHomeTL_Res['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		self.VAL_ZanNum = len( wHomeTL_Res['Responce'] )
+		#############################
+		# ふぁぼっていく
+		wFavoUserID = []
+		for wTweet in wHomeTL_Res['Responce'] :
+			### リプライは除外
+			if wTweet['in_reply_to_status_id']!=None :
+				self.VAL_ZanNum -= 1
+				continue
+			
+			###リツイートの場合 =元ツイートをサルベージ
+			if "retweeted_status" in wTweet :
+				if wTweet['retweet_count']<10 :
+					self.VAL_ZanNum -= 1
+					continue
+				wTweet = wTweet['retweeted_status']
+				wKind = "リツイ"
+			
+			###引用リツイートの場合 =元ツイートをサルベージ
+			elif "quoted_status" in wTweet :
+				if wTweet['retweet_count']<10 and wTweet['favorite_count']<10 :
+					self.VAL_ZanNum -= 1
+					continue
+				wTweet = wTweet['quoted_status']
+				wKind = "引用　"
+			else :
+			###通常ツイート
+				if wTweet['retweet_count']==0 and wTweet['favorite_count']==0 :
+					self.VAL_ZanNum -= 1
+					continue
+				wKind = "通常　"
+			
+			### 既にふぁぼってるユーザなら除外する
+			if wTweet['user']['id'] in wFavoUserID :
+				self.VAL_ZanNum -= 1
+				continue
+			
+			### botで認識のあるユーザ、除外リストのユーザは除外する
+			wID = str(wTweet['user']['id'])
+			if wID in wARR_RateUserID :
+				self.VAL_ZanNum -= 1
+				continue
+			if wID in wARR_UnRefollowListMenberID :
+				self.VAL_ZanNum -= 1
+				continue
+			
+			### 文字数不足は除外
+			if len(wTweet['text'])<40 :
+				self.VAL_ZanNum -= 1
+				continue
+			
+#			### タグ付きは除外
+#			if wTweet['text'].find("#")!=-1 :
+#				self.VAL_ZanNum -= 1
+#				continue
+#			
+			###ツイートの先頭が @文字=リプライ
+			if wTweet['text'].find("@")==0 :
+				self.VAL_ZanNum -= 1
+				continue
+			
+			###ツイートに除外文字が含まれている場合は除外
+			if self.OBJ_Parent.CheckExcWord( wTweet['text'] )==False :
+				self.VAL_ZanNum -= 1
+				continue
+			
+			##※いいね確定
+			
+			#############################
+			# 対象ユーザの表示
+			wText = '\n' + "--------------------" + '\n'
+			wText = wText + "処理ユーザ: " + wTweet['user']['name']
+			wText = wText + " (@" + wTweet['user']['screen_name'] + ")"
+			CLS_OSIF.sPrn( wText )
+			
+			#############################
+			# いいねを実行する
+			wFavoRes = gVal.OBJ_Twitter.CreateFavo( wTweet['id'] )
+			if wFavoRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error: " + wFavoRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				self.VAL_ZanNum -= 1
+				continue
+			
+			wText = wKind + ": ◎いいねしました：" + '\n'
+			wText = wText + wTweet['text'] + '\n' + "【ツイート日時: " + str(wTweet['created_at']) + "】"
+			CLS_OSIF.sPrn( wText )
+			gVal.STR_TrafficInfo['autofavo'] += 1
+			
+			### ふぁぼったユーザIDをメモする
+			wFavoUserID.append( wTweet['user']['id'] )
+			
+			#############################
+			# 次へのウェイト
+			CLS_OSIF.sPrn("")
+			if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoWait'] )!=True :
+				break	#ウエイト中止
+		
+		#############################
+		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
 # 自動いいね設定
 #####################################################
 	def SetAutoFavo(self):

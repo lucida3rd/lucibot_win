@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2021/1/12
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   (none)
@@ -202,22 +202,17 @@ class CLS_Main_Console() :
 		wRes['Class'] = "CLS_Main_Console"
 		wRes['Func']  = "sRunCommand"
 		
-###		wCLS_work = ""
-###		wFlg = False
-###		
 	#####################################################
 		#############################
 		# 監視情報の取得
 		if inCommand=="\\g" :
 			cls.OBJ_TwitterMain.Run()
-###			wFlg = True
 		
 	#####################################################
 		#############################
 		# キーユーザフォロー(手動)
 		elif inCommand=="\\f" :
 			cls.OBJ_TwitterMain.KeyUserFollow()
-###			wFlg = True
 		
 		#############################
 		# 指定いいね
@@ -230,61 +225,57 @@ class CLS_Main_Console() :
 			cls.OBJ_TwitterMain.AutoFavo()
 		
 		#############################
+		# 無差別いいね
+		elif inCommand=="\\ics" :
+			cls.OBJ_TwitterMain.CaoFavo()
+		
+		#############################
 		# キーユーザCSV出力
 		elif inCommand=="\\k" :
 			cls.OBJ_TwitterMain.KeyUserCSV()
-###			wFlg = True
 		
 		#############################
 		# 荒らしユーザCSV出力
 		elif inCommand=="\\t" :
 			cls.OBJ_TwitterMain.ArashiCSV()
-###			wFlg = True
 		
 		#############################
 		# 荒らしユーザCSV出力(再実行)
 		elif inCommand=="\\tr" :
 			cls.OBJ_TwitterMain.ArashiCSV( inReSearch=True )
-###			wFlg = True
 		
 	#####################################################
 		#############################
 		# いいね情報の表示
 		elif inCommand=="\\vi" :
 			cls.OBJ_TwitterMain.ViewFavo()
-###			wFlg = True
 		
 		#############################
 		# いいね監視の実行
 		elif inCommand=="\\ri" :
 			cls.OBJ_TwitterMain.RunFavo()
-###			wFlg = True
 		
 		#############################
 		# フォロワー情報の表示
 		elif inCommand=="\\vf" :
 			cls.OBJ_TwitterMain.ViewFollower()
-###			wFlg = True
 		
 		#############################
 		# フォロワー監視の実行
 		elif inCommand=="\\rf" :
 			cls.OBJ_TwitterMain.RunFollower()
-###			wFlg = True
 		
 	#####################################################
 		#############################
 		# ユーザ管理
 		elif inCommand=="\\u" :
 			cls.OBJ_TwitterMain.UserAdmin()
-###			wFlg = True
 		
 	#####################################################
 		#############################
 		# キーユーザ検索の変更
 		elif inCommand=="\\cs" :
 			cls.OBJ_TwitterMain.SetKeyuser()
-###			wFlg = True
 		
 		#############################
 		# Twitterリストの変更
@@ -295,8 +286,6 @@ class CLS_Main_Console() :
 				###失敗
 				wRes['Reason'] = "Set Twitter List failed: " + wResList['Reason']
 				gVal.OBJ_L.Log( "D", wRes )
-			
-###			wFlg = True
 		
 		#############################
 		# Twitter APIの変更
@@ -306,65 +295,54 @@ class CLS_Main_Console() :
 			if wResAPI['Result']!=True :
 				wRes['Reason'] = "Set Twitter API failed: " + wResAPI['Reason']
 				gVal.OBJ_L.Log( "D", wRes )
-			
-###			wFlg = True
 		
 		#############################
 		# 荒らしユーザ設定
 		elif inCommand=="\\cu" :
 			cls.OBJ_TwitterMain.ArashiUser()
-###			wFlg = True
 		
 		#############################
 		# 自動いいね設定
 		elif inCommand=="\\ci" :
 			cls.OBJ_TwitterMain.SetAutoFavo()
-###			wFlg = True
 		
 	#####################################################
 		#############################
 		# ツイート検索
 		elif inCommand=="\\s" :
 			cls.OBJ_TwitterMain.TweetSearch()
-###			wFlg = True
 		
-		#############################
-		# 手動トゥートモード
+#		#############################
+#		# 手動トゥートモード
 #		elif inCommand=="\\t" :
 #			wCLS_work = CLS_Toot()
 #			wCLS_work.ManualToot()
-###			wFlg = True
 		
 	#####################################################
 		#############################
 		# ログの表示(異常ログ)
 		elif inCommand=="\\l" :
 			gVal.OBJ_L.View( inViewMode="E" )
-###			wFlg = True
 		
 		#############################
 		# ログの表示(運用ログ)
 		elif inCommand=="\\lr" :
 			gVal.OBJ_L.View( inViewMode="R" )
-###			wFlg = True
 		
 		#############################
 		# ログの表示(全ログ)
 		elif inCommand=="\\la" :
 			gVal.OBJ_L.View()
-###			wFlg = True
 		
 		#############################
 		# ログクリア
 		elif inCommand=="\\lc" :
 			gVal.OBJ_L.Clear()
-###			wFlg = True
 		
 		#############################
 		# システム情報の表示
 		elif inCommand=="\\v" :
 			cls().sView_Sysinfo()
-###			wFlg = True
 		
 		#############################
 		# トラヒック情報の表示
@@ -372,7 +350,6 @@ class CLS_Main_Console() :
 			wResTraffic = CLS_Traffic.sView()
 			if wResTraffic['Result']!=True :
 				gVal.OBJ_L.Log( "B", wResTraffic )
-###			wFlg = True
 		
 	#####################################################
 		#############################
@@ -396,13 +373,11 @@ class CLS_Main_Console() :
 	#####################################################
 		#############################
 		# ないコマンド
-###		if wFlg!=True :
 		else :
 			wRes['Reason'] = "存在しないコマンド :" + str(inCommand)
 			gVal.OBJ_L.Log( "D", wRes )
 			return False
 		
-###		return wFlg
 		return True
 
 

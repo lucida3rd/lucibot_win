@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/2/19
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -561,31 +561,87 @@ class CLS_Twitter_Use():
 			## exclude_replies  : リプライを除外する True=除外
 			## include_rts      : リツイートを含める True=含める
 		
-		#############################
-		# APIカウント
-		self.__set_APIcount( wAPIname )
-		
+###		#############################
+###		# APIカウント
+###		self.__set_APIcount( wAPIname )
+###		
 		#############################
 		# タイムライン読み込み
+		wNowID = -1
+		wARR_TL = []
 		try:
-			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+###			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+			while True :
+				#############################
+				# APIカウント
+				self.__set_APIcount( wAPIname )
+				
+				wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+				wTL = json.loads( wTweetRes.text )
+				
+				wFLG_Add = False
+				###情報抜き出し
+				if len(wTL)>0 :
+					for wLine in wTL :
+						wID = int( wLine['id'] )
+						if wNowID==wID :
+							continue
+						wARR_TL.append( wLine )
+						wNowID   = wID
+						wFLG_Add = True
+				
+				#############################
+				# API規制チェック
+				if self.__get_APIrect( wAPIname )!=True :
+					break
+				###ページング処理
+				if wFLG_Add==False :
+					break
+				wParams['max_id'] = wNowID
+				
+				#############################
+				# 遅延
+				time.sleep( self.DEF_VAL_SLEEP )
+		
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
-		#############################
-		# 遅延
-		time.sleep( self.DEF_VAL_SLEEP )
+###		#############################
+###		# 遅延
+###		time.sleep( self.DEF_VAL_SLEEP )
+###		
+###		#############################
+###		# 結果
+###		if wTweetRes.status_code != 200 :
+###			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+###			return wRes
+###		
+###		#############################
+###		# TLを取得
+###		wRes['Responce'] = json.loads( wTweetRes.text )
+###		
 		
 		#############################
 		# 結果
 		if wTweetRes.status_code != 200 :
-			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wTL :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wTL['errors'][0]['code']) + ":" + str(wTL['errors'][0]['message'])
+			
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
 		
 		#############################
 		# TLを取得
-		wRes['Responce'] = json.loads( wTweetRes.text )
+		wRes['Responce'] = wARR_TL
 		
 		#############################
 		# 正常
@@ -1012,7 +1068,7 @@ class CLS_Twitter_Use():
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-		wFLG_Limit = False
+###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1119,7 +1175,7 @@ class CLS_Twitter_Use():
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-		wFLG_Limit = False
+###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1324,7 +1380,7 @@ class CLS_Twitter_Use():
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-		wFLG_Limit = False
+###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1568,12 +1624,13 @@ class CLS_Twitter_Use():
 ###			"since_id"			: -1
 ###			"include_entities" : True
 		}
-		wNowID = -1
+###		wNowID = -1
 		
 		#############################
 		# タイムライン読み込み
+		wNowID = -1
 		wARR_TL = []
-		wFLG_Limit = False
+###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1621,8 +1678,8 @@ class CLS_Twitter_Use():
 				wCHR_StatusCode = "unknown code"
 			
 			###直前エラーならデコードする
-			if 'errors' in wUsers :
-				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			if 'errors' in wTL :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wTL['errors'][0]['code']) + ":" + str(wTL['errors'][0]['message'])
 			
 			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
@@ -1886,7 +1943,7 @@ class CLS_Twitter_Use():
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-		wFLG_Limit = False
+###		wFLG_Limit = False
 		try:
 			while True :
 				#############################

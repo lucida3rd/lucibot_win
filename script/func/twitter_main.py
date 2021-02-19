@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/1/15
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   (none)
@@ -489,6 +489,15 @@ class CLS_TwitterMain():
 #####################################################
 	def AutoFavo(self):
 		wRes = self.OBJ_TwitterFavo.AutoFavo()
+		return wRes
+
+
+
+#####################################################
+# 無差別いいね
+#####################################################
+	def CaoFavo(self):
+		wRes = self.OBJ_TwitterFavo.CaoFavo()
 		return wRes
 
 

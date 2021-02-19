@@ -180,6 +180,8 @@ class gVal() :
 		"AutoFavoRateHour"	: 12,						#自動いいね 前回のいいねからの経過時間(時間)
 		"AutoFavoFailCnt"	: 3,						#自動いいね 失敗判断しきい値
 
+		"CaoFavoTL"			: 2048,						#無差別いいね HOME TL取得数
+
 		"removeLimmin"		: 2880,						#自動リムーブ時間 2日 (60x24)x2=2880(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 100,						#自動リムーブ処理待ち(秒) 900秒/3回(createの場合)
