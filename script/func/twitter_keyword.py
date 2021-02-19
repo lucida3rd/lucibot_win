@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2021/1/27
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -1092,7 +1092,10 @@ class CLS_TwitterKeyword():
 							"'" + str(self.OBJ_Parent.STR_KeyUser[wKey]['screen_name']) + "'," + \
 							str(self.OBJ_Parent.STR_KeyUser[wKey]['statuses_count']) + "," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
-							"''" + \
+							"''," + \
+							"''," + \
+							"'1900-01-01 00:00:00'," + \
+							"0, 0, 0 " + \
 							") ;"
 				gVal.STR_TrafficInfo['dbins'] += 1
 			

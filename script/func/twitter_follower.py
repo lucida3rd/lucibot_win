@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/2/16
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   (none)
@@ -284,7 +284,8 @@ class CLS_TwitterFollower():
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"'', " + \
 							"'-1', " + \
-							"'1900-01-01 00:00:00' " + \
+							"'1900-01-01 00:00:00'," + \
+							"0, 0, 0 " + \
 							") ;"
 				
 				wResDB = gVal.OBJ_DB.RunQuery( wQuery )

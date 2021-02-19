@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2021/2/16
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   (none)
@@ -841,7 +841,6 @@ class CLS_TwitterFavo():
 		wStr = wStr + "いいねするユーザを抽出しています......" + '\n'
 		CLS_OSIF.sPrn( wStr )
 		
-###		CLS_OSIF.sPrn( "いいねするユーザを抽出しています......" + '\n' )
 		#############################
 		# 時間を取得
 		wTD = CLS_OSIF.sGetTime()
@@ -941,6 +940,36 @@ class CLS_TwitterFavo():
 			wText = wText + " (@" + wARR_RateFollowers[wIndex]['screen_name'] + ")"
 			CLS_OSIF.sPrn( wText )
 			
+			### 自動いいね失敗判定
+			if wARR_RateFollowers[wIndex]['favo_f_cnt']>=gVal.DEF_STR_TLNUM['AutoFavoFailCnt'] :
+				CLS_OSIF.sPrn( "▼自動いいね失敗判定のためスキップします: " + str(wARR_RateFollowers[wIndex]['favo_f_cnt']) + " 回目" )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
+				
+				###※仮で 10回失敗したら 失敗カウントをリセットするようにする
+				wFavo_f_cnt = wARR_RateFollowers[wIndex]['favo_f_cnt'] + 1
+				if wFavo_f_cnt>= 10 :
+					wQuery = "update tbl_follower_data set " + \
+								"favo_f_cnt = 0 " + \
+								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+								" and id = '" + str(wID) + "' ;"
+					
+					wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+					wResDB = gVal.OBJ_DB.GetQueryStat()
+					if wResDB['Result']!=True :
+						##失敗
+						wRes['Reason'] = "Run Query is failed(30): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+						gVal.OBJ_L.Log( "B", wRes )
+					
+					###  カウント
+					gVal.STR_TrafficInfo['dbreq'] += 1
+					gVal.STR_TrafficInfo['dbup'] += 1
+					CLS_OSIF.sPrn( "☆10回失敗したので、カウンタをリセットしました" )
+				
+				self.VAL_ZanNum -= 1
+				if self.VAL_ZanNum==0 :
+					break	#ウエイト中止
+				continue	#スキップ
+			
 			### 前のいいねから一定期間以上経ったか
 			if wARR_RateFollowers[wIndex]['favodate']!=None :
 				wLimmin = gVal.DEF_STR_TLNUM['AutoFavoRateHour'] * 60 * 60	#秒に変換
@@ -965,12 +994,14 @@ class CLS_TwitterFavo():
 				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
 				CLS_OSIF.sPrn( "▼ツイートの取得に失敗したためスキップします" + '\n' )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
 				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
 			
 			if len(wTweetRes['Responce'])==0 :
 				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
 				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
@@ -1041,6 +1072,8 @@ class CLS_TwitterFavo():
 			
 			if wFavoTweetID==None :
 				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
+				
 				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
@@ -1058,10 +1091,17 @@ class CLS_TwitterFavo():
 			gVal.STR_TrafficInfo['autofavo'] += 1
 			
 			#############################
+			# ふぁぼカウンタを設定
+			wARR_RateFollowers[wIndex]['favo_cnt'] += 1
+			wARR_RateFollowers[wIndex]['favo_f_cnt'] = 0	#ふぁぼできたのでリセットする
+			
+			#############################
 			# DBに記録する
 			wQuery = "update tbl_follower_data set " + \
 						"favoid = '" + str(wFavoTweetID) + "', " + \
-						"favodate = '" + str(wTD['TimeDate']) + "' " + \
+						"favodate = '" + str(wTD['TimeDate']) + "'," + \
+						"favo_cnt = " + str(wARR_RateFollowers[wIndex]['favo_cnt']) + ", " + \
+						"favo_f_cnt = 0 " + \
 						"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 						" and id = '" + str(wID) + "' ;"
 			
@@ -1115,6 +1155,34 @@ class CLS_TwitterFavo():
 			if wResStop==False :
 				CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
 				return False	#ウェイト中止
+		
+		return True
+
+	#####################################################
+	def __failRec_AutoFavo( self, inRes, inID, inFavo_f_cnt ):
+		
+		#############################
+		# カウンタ+
+		wCnt = inFavo_f_cnt + 1
+		
+		#############################
+		# DBに記録する (ふぁぼ失敗カウント)
+		wQuery = "update tbl_follower_data set " + \
+					"favo_f_cnt = " + str(wCnt) + " " + \
+					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+					" and id = '" + str(inID) + "' ;"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			inRes['Reason'] = "Run Query is failed(20): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", inRes )
+			return False
+		
+		###  カウント
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		gVal.STR_TrafficInfo['dbup'] += 1
 		
 		return True
 

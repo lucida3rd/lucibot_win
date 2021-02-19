@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 管理系
 # 
-# ::Update= 2021/1/12
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   (none)
@@ -351,7 +351,10 @@ class CLS_TwitterAdmin():
 						"'" + gVal.STR_UserAdminInfo['screen_name'] + "'," + \
 						gVal.STR_UserAdminInfo['statuses_count'] + "," + \
 						"'" + str(wTD['TimeDate']) + "'," + \
-						"''" + \
+						"''," + \
+						"''," + \
+						"'1900-01-01 00:00:00'," + \
+						"0, 0, 0 " + \
 						") ;"
 			gVal.STR_TrafficInfo['dbins'] += 1
 		
@@ -482,7 +485,10 @@ class CLS_TwitterAdmin():
 							"'" + gVal.STR_UserAdminInfo['screen_name'] + "'," + \
 							gVal.STR_UserAdminInfo['statuses_count'] + "," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
-							"''" + \
+							"''," + \
+							"''," + \
+							"'1900-01-01 00:00:00'," + \
+							"0, 0, 0 " + \
 							") ;"
 				gVal.STR_TrafficInfo['dbins'] += 1
 		

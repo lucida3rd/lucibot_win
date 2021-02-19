@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2021/2/19
+# ::Update= 2021/2/20
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -833,7 +833,10 @@ class CLS_Setup():
 					"lastdate    TIMESTAMP," + \
 					"reason      TEXT," + \
 					"favoid      TEXT," + \
-					"favodate     TIMESTAMP" + \
+					"favodate    TIMESTAMP," + \
+					"favo_cnt    INTEGER DEFAULT 0," + \
+					"favo_f_cnt  INTEGER DEFAULT 0," + \
+					"favo_r_cnt  INTEGER DEFAULT 0" + \
 					" ) ;"
 		
 ##					"twitterid   記録したユーザ(Twitter ID)
