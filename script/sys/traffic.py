@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : トラヒック
 # 
-# ::Update= 2021/1/15
+# ::Update= 2021/2/19
 #####################################################
 # Private Function:
 #   (none)
@@ -98,6 +98,7 @@ class CLS_Traffic():
 			gVal.STR_TrafficInfo['selremove']   = wARR_RateTraffic['selremove']
 			
 			gVal.STR_TrafficInfo['autofollow']  = wARR_RateTraffic['autofollow']
+			gVal.STR_TrafficInfo['muteremove']  = wARR_RateTraffic['muteremove']
 			gVal.STR_TrafficInfo['autofavo']  = wARR_RateTraffic['autofavo']
 			gVal.STR_TrafficInfo['dejifavo']  = wARR_RateTraffic['dejifavo']
 			
@@ -143,7 +144,7 @@ class CLS_Traffic():
 					"0," + \
 					"0, 0," + \
 					"0, 0, 0, 0, 0," + \
-					"0," + \
+					"0, 0," + \
 					"0, 0," + \
 					"0, 0, 0," + \
 					"0, 0, 0, 0," + \
@@ -173,6 +174,9 @@ class CLS_Traffic():
 		
 		gVal.STR_TrafficInfo['autofollowt'] = 0
 		gVal.STR_TrafficInfo['autofollow']  = 0
+		
+		gVal.STR_TrafficInfo['muteremovet'] = 0
+		gVal.STR_TrafficInfo['muteremove']  = 0
 		
 		gVal.STR_TrafficInfo['autofavot'] = 0
 		gVal.STR_TrafficInfo['autofavo']  = 0
@@ -232,6 +236,7 @@ class CLS_Traffic():
 					"newfollower = " + str( gVal.STR_TrafficInfo['newfollower'] ) + "," + \
 					"selremove = " + str( gVal.STR_TrafficInfo['selremove'] ) + "," + \
 					"autofollow = " + str( gVal.STR_TrafficInfo['autofollow'] ) + "," + \
+					"muteremove = " + str( gVal.STR_TrafficInfo['muteremove'] ) + "," + \
 					"autofavo = " + str( gVal.STR_TrafficInfo['autofavo'] ) + "," + \
 					"dejifavo = " + str( gVal.STR_TrafficInfo['dejifavo'] ) + "," + \
 					"arashi = " + str( gVal.STR_TrafficInfo['arashi'] ) + "," + \
@@ -424,6 +429,7 @@ class CLS_Traffic():
 		wStr = wStr + "被リムーブ数       : " + str( inTraffic['selremove'] ) + '\n'
 		wStr = wStr + '\n'
 		wStr = wStr + "自動リムーブ実行数 : " + str( inTraffic['autofollow'] ) + '\n'
+		wStr = wStr + "ミュート解除実行数 : " + str( inTraffic['muteremove'] ) + '\n'
 		wStr = wStr + "自動いいね実施数   : " + str( inTraffic['autofavo'] ) + '\n'
 		wStr = wStr + "指定いいね実施数   : " + str( inTraffic['dejifavo'] ) + '\n'
 		wStr = wStr + '\n'

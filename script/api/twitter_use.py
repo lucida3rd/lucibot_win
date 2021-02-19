@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/1/11
+# ::Update= 2021/2/19
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -1337,13 +1337,13 @@ class CLS_Twitter_Use():
 				###要素チェック
 				if 'next_cursor_str' not in wIDs :
 					break
-				if 'users' not in wIDs :
+				if 'ids' not in wIDs :
 					break
 				
 				###情報抜き出し
 				if len(wIDs['ids'])>0 :
 					for wLine in wIDs['ids'] :
-						wARR_TL.append( wLine )
+						wARR_TL.append( str(wLine) )
 				
 				#############################
 				# API規制チェック
@@ -1375,8 +1375,8 @@ class CLS_Twitter_Use():
 				wCHR_StatusCode = "unknown code"
 			
 			###直前エラーならデコードする
-			if 'errors' in wUsers :
-				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wUsers['errors'][0]['code']) + ":" + str(wUsers['errors'][0]['message'])
+			if 'errors' in wIDs :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wIDs['errors'][0]['code']) + ":" + str(wIDs['errors'][0]['message'])
 			
 			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
 			return wRes
@@ -1447,6 +1447,9 @@ class CLS_Twitter_Use():
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
 		
+		###ミュートしたIDを追加
+		self.ARR_MuteList.append( inID )
+		
 		#############################
 		# 遅延
 		time.sleep( self.DEF_VAL_SLEEP )
@@ -1510,6 +1513,9 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
+		
+		###削除したIDを消す
+		self.ARR_MuteList.remove( inID )
 		
 		#############################
 		# 遅延

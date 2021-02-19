@@ -655,10 +655,105 @@ class CLS_TwitterFollower():
 				CLS_OSIF.sSleep( 5 )
 		
 		#############################
+		# ミュート解除の実行
+		# 対象：
+		#   フォロー者ではない、かつ 一度フォローしている、かつ ミュート中
+		CLS_OSIF.sPrn( '\n' + "続いてミュート解除を実行します。対象ユーザを検索中......." + '\n' )
+		#############################
+		# ミュート解除対象のIDを抜き出し
+		wQuery = "select * from tbl_follower_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
+					"r_myfollow = True " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(2): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		
+		#############################
+		# リスト型に整形
+		wARR_RateMyFollows = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=wARR_RateMyFollows )
+		
+		#############################
+		# フォロー一覧 取得
+		wMyFollowRes = gVal.OBJ_Twitter.GetMyFollowList()
+		if wMyFollowRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		#############################
+		# ミュート一覧 取得
+		wMuteRes = gVal.OBJ_Twitter.GetMuteIDs()
+		if wMuteRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetMuteIDs): " + wMuteRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		#############################
+		# 対象の作成
+		wARR_MuteRemoveID = []
+		if len(wMuteRes['Responce'])>=1 :
+			wARR_MuteIDs = []
+			for wROW in wMuteRes['Responce']:
+				wROW_id = str(wROW)
+				wARR_MuteIDs.append( wROW_id )
+			
+			wARR_MyFollowID = []
+			for wROW in wMyFollowRes['Responce'] :
+				wROW_id = str(wROW['id'])
+				wARR_MyFollowID.append( wROW_id )
+			
+			### DBベースで検索
+			for wROW in wARR_RateMyFollows :
+				wROW_id = str(wROW)
+				
+				###現フォロー者なら対象外
+				if wROW_id in wARR_MyFollowID :
+					continue
+				###ミュート一覧になければ対象外
+				if wROW_id not in wARR_MuteIDs :
+					continue
+				
+				wARR_MuteRemoveID.append( wROW_id )
+			gVal.STR_TrafficInfo['muteremovet'] = len( wARR_MuteRemoveID )
+		
+		if len( wARR_MuteRemoveID )==0 :
+			CLS_OSIF.sPrn( "ミュート解除対象はありませんでした。" + '\n' )
+		else:
+			#############################
+			# ミュート解除していく
+			gVal.STR_TrafficInfo['muteremove'] = 0
+			wStr = "ミュート解除対象数: " + str(len( wARR_MuteRemoveID )) + '\n'
+			wStr = wStr + "ミュート解除中......." + '\n'
+			CLS_OSIF.sPrn( wStr )
+			
+			for wID in wARR_MuteRemoveID :
+				###  ミュート解除する
+				wRemoveRes = gVal.OBJ_Twitter.RemoveMute( wID )
+				if wRemoveRes['Result']!=True :
+					wRes['Reason'] = "Twitter API Error(RemoveMute): " + wRemoveRes['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				###  ミュート一覧にないID=ミュート解除してない 場合は待機スキップ
+				if wRemoveRes['Responce']==False :
+					continue
+				gVal.STR_TrafficInfo['muteremove'] += 1
+				CLS_OSIF.sSleep(5)
+		
+		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
 		wStr = wStr + "リムーブ対象 ユーザ数 = " + str(gVal.STR_TrafficInfo['autofollowt']) + '\n'
 		wStr = wStr + "リムーブ済み ユーザ数 = " + str(gVal.STR_TrafficInfo['autofollow']) + '\n'
+		wStr = wStr + "ミュート解除 対象数   = " + str(gVal.STR_TrafficInfo['muteremovet']) + '\n'
+		wStr = wStr + "ミュート解除 実行数   = " + str(gVal.STR_TrafficInfo['muteremove']) + '\n'
 		
 		#############################
 		# コンソールに表示

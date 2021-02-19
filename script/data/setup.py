@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : セットアップ
 # 
-# ::Update= 2021/1/15
+# ::Update= 2021/2/19
 #####################################################
 # Private Function:
 #   __initDB( self, inDBobj ):
@@ -1054,6 +1054,7 @@ class CLS_Setup():
 					"newfollower INTEGER DEFAULT 0," + \
 					"selremove   INTEGER DEFAULT 0," + \
 					"autofollow  INTEGER DEFAULT 0," + \
+					"muteremove  INTEGER DEFAULT 0," + \
 					"autofavo    INTEGER DEFAULT 0," + \
 					"dejifavo    INTEGER DEFAULT 0," + \
 					"arashi      INTEGER DEFAULT 0," + \
@@ -1079,6 +1080,7 @@ class CLS_Setup():
 ##					"selremove"			: 0,	#被リムーブ数
 ##					
 ##					"autofollow"		: 0,	#自動リムーブ 実行数
+##					"muteremove"		: 0,	#ミュート解除 実行数
 ##					"autofavo"			: 0,	#自動いいね 実施数
 ##					"dejifavo"			: 0,	#指定いいね 実施数
 ##					

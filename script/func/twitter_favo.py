@@ -1008,6 +1008,10 @@ class CLS_TwitterFavo():
 					if wTweet['text'].find("#")!=-1 :
 						continue
 				
+				###ツイートの先頭が @文字=リプライ
+				if wTweet['text'].find("@")==0 :
+					continue
+				
 				###ツイートに除外文字が含まれている場合は除外
 				if self.OBJ_Parent.CheckExcWord( wTweet['text'] )==False :
 					continue
