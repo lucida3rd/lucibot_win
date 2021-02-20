@@ -1271,6 +1271,7 @@ class CLS_TwitterFavo():
 		#############################
 		# ふぁぼっていく
 		wFavoUserID = []
+		wRetweetNum = 0
 		for wTweet in wHomeTL_Res['Responce'] :
 			### リプライは除外
 			if wTweet['in_reply_to_status_id']!=None :
@@ -1282,6 +1283,14 @@ class CLS_TwitterFavo():
 				if wTweet['retweet_count']<10 :
 					self.VAL_ZanNum -= 1
 					continue
+				
+				###リツイート制限中
+				if wRetweetNum >= gVal.DEF_STR_TLNUM['CaoFavoRetweet'] :
+					wRetweetNum = 0
+				elif wRetweetNum>0  :
+					wRetweetNum += 1
+					continue
+				
 				wTweet = wTweet['retweeted_status']
 				wKind = "リツイ"
 			
@@ -1298,6 +1307,11 @@ class CLS_TwitterFavo():
 					self.VAL_ZanNum -= 1
 					continue
 				wKind = "通常　"
+			
+			### 自分は除外する
+			if wTweet['user']['id']==int( gVal.STR_UserInfo['id'] ) :
+				self.VAL_ZanNum -= 1
+				continue
 			
 			### 既にふぁぼってるユーザなら除外する
 			if wTweet['user']['id'] in wFavoUserID :
@@ -1358,6 +1372,10 @@ class CLS_TwitterFavo():
 			
 			### ふぁぼったユーザIDをメモする
 			wFavoUserID.append( wTweet['user']['id'] )
+			
+			if wRetweetNum==0 :
+				###リツイ規制カウンタ進める
+				wRetweetNum += 1
 			
 			#############################
 			# 次へのウェイト
