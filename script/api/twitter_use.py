@@ -62,6 +62,7 @@
 #
 #####################################################
 import time
+import math
 import json
 import subprocess as sp
 from requests_oauthlib import OAuth1Session
@@ -542,10 +543,27 @@ class CLS_Twitter_Use():
 			return wRes
 		
 		#############################
+		# ループ数の計算
+		if inCount>200 :
+			###取得数 200超の場合
+			wZan = inCount + 1
+			wZan -= 1
+			wCount = 200
+			wLoop = inCount / 200
+			wLoop = math.floor( wLoop )
+		else :
+			###取得数 200未満の場合
+			wZan = inCount + 1
+			wZan -= 1
+			wCount = inCount + 1
+			wCount -= 1
+			wLoop = 1
+		
+		#############################
 		# パラメータの生成
 		if inTLmode=="list" :
 			wParams = {
-				"count"           : inCount,
+				"count"           : wCount,
 				"screen_name"     : inScreenName,
 				"exclude_replies" : inFLG_Rep,
 				"include_rts"     : inFLG_Rts,
@@ -553,7 +571,7 @@ class CLS_Twitter_Use():
 			}
 		else :
 			wParams = {
-				"count"           : inCount,
+				"count"           : wCount,
 				"screen_name"     : inScreenName,
 				"exclude_replies" : inFLG_Rep,
 				"include_rts"     : inFLG_Rts
@@ -583,7 +601,7 @@ class CLS_Twitter_Use():
 				###情報抜き出し
 				if len(wTL)>0 :
 					for wLine in wTL :
-						wID = int( wLine['id'] )
+						wID = wLine['id']
 						if wNowID==wID :
 							continue
 						wARR_TL.append( wLine )
@@ -597,6 +615,14 @@ class CLS_Twitter_Use():
 				###ページング処理
 				if wFLG_Add==False :
 					break
+				
+				wZan  -= 200
+				wLoop -= 1
+				if wZan<1 or wLoop<=0 :
+					###残り取得数=0以下 or ループ数=0以下
+					break
+				if wZan<200 :
+					wParams['count'] = wZan
 				wParams['max_id'] = wNowID
 				
 				#############################
