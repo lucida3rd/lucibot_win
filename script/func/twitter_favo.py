@@ -894,8 +894,19 @@ class CLS_TwitterFavo():
 			wARR_FollowerID.append( str(wROW['id']) )
 		
 		#############################
+		# フォロー除外リストのユーザはファボらない
+		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['UrfList'] )
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetListMember:UrfList): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_NoFavoUserID = []
+		for wROW in wListsRes['Responce'] :
+			wARR_NoFavoUserID.append( str(wROW['id']) )
+		
+		#############################
 		# 自動いいね候補IDの作成
-		# 現Twitter相互フォロー かつ 監視時フォロワーであること
+		# 現Twitter相互フォロー かつ 監視時フォロワー かつ フォロー除外ユーザ以外であること
 		wKeylist = list(wARR_RateFollowers)
 		wDstAutoFavoID = []
 		if gVal.STR_AutoFavo['PieF']==False :
@@ -904,10 +915,14 @@ class CLS_TwitterFavo():
 					continue
 				if wARR_RateFollowers[wKey]['id'] not in wARR_FollowerID :
 					continue
+				if wARR_RateFollowers[wKey]['id'] in wARR_NoFavoUserID :
+					continue
 				wDstAutoFavoID.append( wARR_RateFollowers[wKey]['id'] )
 		else:
 			for wKey in wKeylist :
 				if wARR_RateFollowers[wKey]['id'] not in wARR_MyFollowID :
+					continue
+				if wARR_RateFollowers[wKey]['id'] in wARR_NoFavoUserID :
 					continue
 				wDstAutoFavoID.append( wARR_RateFollowers[wKey]['id'] )
 		###トラヒック
@@ -1034,14 +1049,16 @@ class CLS_TwitterFavo():
 					if "retweeted_status" in wTweet :
 						if wARR_SetTweet['flg']==False :
 							if wTweet['user']['id']!=wTweet['retweeted_status']['user']['id'] :
-								### 自己リツイート以外
-								wARR_SetTweet['id']          = wTweet['retweeted_status']['user']['id']
-								wARR_SetTweet['name']        = wTweet['retweeted_status']['user']['name']
-								wARR_SetTweet['screen_name'] = wTweet['retweeted_status']['user']['screen_name']
-								wARR_SetTweet['tw_id']   = wTweet['retweeted_status']['id']
-								wARR_SetTweet['tw_text'] = wTweet['retweeted_status']['text']
-								wARR_SetTweet['created_at'] = wTweet['retweeted_status']['created_at']
-								wARR_SetTweet['flg'] = True
+								wTwID = str(wTweet['retweeted_status']['user']['id'])
+								if wTwID not in wARR_NoFavoUserID :
+									### 自己リツイート以外
+									wARR_SetTweet['id']          = wTweet['retweeted_status']['user']['id']
+									wARR_SetTweet['name']        = wTweet['retweeted_status']['user']['name']
+									wARR_SetTweet['screen_name'] = wTweet['retweeted_status']['user']['screen_name']
+									wARR_SetTweet['tw_id']   = wTweet['retweeted_status']['id']
+									wARR_SetTweet['tw_text'] = wTweet['retweeted_status']['text']
+									wARR_SetTweet['created_at'] = wTweet['retweeted_status']['created_at']
+									wARR_SetTweet['flg'] = True
 						continue
 				
 				### 引用リツイートは除外
@@ -1049,14 +1066,16 @@ class CLS_TwitterFavo():
 					if "quoted_status" in wTweet :
 						if wARR_SetTweet['flg']==False :
 							if wTweet['user']['id']!=wTweet['quoted_status']['user']['id'] :
-								### 自己引用リツイート以外
-								wARR_SetTweet['id']          = wTweet['quoted_status']['user']['id']
-								wARR_SetTweet['name']        = wTweet['quoted_status']['user']['name']
-								wARR_SetTweet['screen_name'] = wTweet['quoted_status']['user']['screen_name']
-								wARR_SetTweet['tw_id']   = wTweet['quoted_status']['id']
-								wARR_SetTweet['tw_text'] = wTweet['quoted_status']['text']
-								wARR_SetTweet['created_at'] = wTweet['quoted_status']['created_at']
-								wARR_SetTweet['flg'] = True
+								wTwID = str(wTweet['quoted_status']['user']['id'])
+								if wTwID not in wARR_NoFavoUserID :
+									### 自己引用リツイート以外
+									wARR_SetTweet['id']          = wTweet['quoted_status']['user']['id']
+									wARR_SetTweet['name']        = wTweet['quoted_status']['user']['name']
+									wARR_SetTweet['screen_name'] = wTweet['quoted_status']['user']['screen_name']
+									wARR_SetTweet['tw_id']   = wTweet['quoted_status']['id']
+									wARR_SetTweet['tw_text'] = wTweet['quoted_status']['text']
+									wARR_SetTweet['created_at'] = wTweet['quoted_status']['created_at']
+									wARR_SetTweet['flg'] = True
 						continue
 				
 				### 前回いいねしたIDは除外
@@ -1313,12 +1332,12 @@ class CLS_TwitterFavo():
 		
 		#############################
 		# un_refollowl登録者 取得(idだけ)
-		wListsRes = gVal.OBJ_Twitter.GetLists()
-		if wListsRes['Result']!=True :
-			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
-			gVal.OBJ_L.Log( "B", wRes )
-			return wRes
-		
+###		wListsRes = gVal.OBJ_Twitter.GetLists()
+###		if wListsRes['Result']!=True :
+###			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
+###			gVal.OBJ_L.Log( "B", wRes )
+###			return wRes
+###		
 		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['UrfList'] )
 		if wListsRes['Result']!=True :
 			wRes['Reason'] = "Twitter API Error(GetListMember:UrfList): " + wListsRes['Reason']
