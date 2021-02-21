@@ -1033,7 +1033,7 @@ class CLS_TwitterFavo():
 				if gVal.STR_AutoFavo['Ret']==False :
 					if "retweeted_status" in wTweet :
 						if wARR_SetTweet['flg']==False :
-							if wTweet['user']['id']!=wTweet['retweeted_status']['user']['id']
+							if wTweet['user']['id']!=wTweet['retweeted_status']['user']['id'] :
 								### 自己リツイート以外
 								wARR_SetTweet['id']          = wTweet['retweeted_status']['user']['id']
 								wARR_SetTweet['name']        = wTweet['retweeted_status']['user']['name']
@@ -1048,7 +1048,7 @@ class CLS_TwitterFavo():
 				if gVal.STR_AutoFavo['iRet']==False :
 					if "quoted_status" in wTweet :
 						if wARR_SetTweet['flg']==False :
-							if wTweet['user']['id']!=wTweet['quoted_status']['user']['id']
+							if wTweet['user']['id']!=wTweet['quoted_status']['user']['id'] :
 								### 自己引用リツイート以外
 								wARR_SetTweet['id']          = wTweet['quoted_status']['user']['id']
 								wARR_SetTweet['name']        = wTweet['quoted_status']['user']['name']
