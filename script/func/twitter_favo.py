@@ -913,10 +913,23 @@ class CLS_TwitterFavo():
 		###トラヒック
 		gVal.STR_TrafficInfo['autofavot'] = len( wDstAutoFavoID )
 		
+		###リツイートor引用リツイートメモ用
+		wARR_SetTweet = {
+			"flg"			: False,
+			"id"			: -1,
+			"name"			: None,
+			"screen_name"	: None,
+			"tw_id"			: -1,
+			"tw_text"		: None,
+			"created_at"	: None
+		}
+		
 		self.VAL_ZanNum = len( wDstAutoFavoID )
 		#############################
 		# 候補のツイートを取得し、いいねしていく
 		for wID in wDstAutoFavoID :
+			
+			wARR_SetTweet['flg'] = False
 			#############################
 			# キーを抽出
 			wIndex = -1
@@ -943,7 +956,7 @@ class CLS_TwitterFavo():
 			### 自動いいね失敗判定
 			if wARR_RateFollowers[wIndex]['favo_f_cnt']>=gVal.DEF_STR_TLNUM['AutoFavoFailCnt'] :
 				CLS_OSIF.sPrn( "▼自動いいね失敗判定のためスキップします: " + str(wARR_RateFollowers[wIndex]['favo_f_cnt']) + " 回目" )
-				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'], wTD['TimeDate'] )
 				
 				###※仮で 10回失敗したら 失敗カウントをリセットするようにする
 				wFavo_f_cnt = wARR_RateFollowers[wIndex]['favo_f_cnt'] + 1
@@ -994,14 +1007,14 @@ class CLS_TwitterFavo():
 				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
 				CLS_OSIF.sPrn( "▼ツイートの取得に失敗したためスキップします" + '\n' )
-				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'], wTD['TimeDate'] )
 				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
 			
 			if len(wTweetRes['Responce'])==0 :
 				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
-				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'], wTD['TimeDate'] )
 				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
 					break	#ウエイト中止
 				continue	#スキップ
@@ -1019,11 +1032,27 @@ class CLS_TwitterFavo():
 				### リツイートは除外
 				if gVal.STR_AutoFavo['Ret']==False :
 					if "retweeted_status" in wTweet :
+						if wARR_SetTweet['flg']==False :
+							wARR_SetTweet['id']          = wTweet['retweeted_status']['user']['id']
+							wARR_SetTweet['name']        = wTweet['retweeted_status']['user']['name']
+							wARR_SetTweet['screen_name'] = wTweet['retweeted_status']['user']['screen_name']
+							wARR_SetTweet['tw_id']   = wTweet['retweeted_status']['id']
+							wARR_SetTweet['tw_text'] = wTweet['retweeted_status']['text']
+							wARR_SetTweet['created_at'] = wTweet['retweeted_status']['created_at']
+							wARR_SetTweet['flg'] = True
 						continue
 				
 				### 引用リツイートは除外
 				if gVal.STR_AutoFavo['iRet']==False :
 					if "quoted_status" in wTweet :
+						if wARR_SetTweet['flg']==False :
+							wARR_SetTweet['id']          = wTweet['quoted_status']['user']['id']
+							wARR_SetTweet['name']        = wTweet['quoted_status']['user']['name']
+							wARR_SetTweet['screen_name'] = wTweet['quoted_status']['user']['screen_name']
+							wARR_SetTweet['tw_id']   = wTweet['quoted_status']['id']
+							wARR_SetTweet['tw_text'] = wTweet['quoted_status']['text']
+							wARR_SetTweet['created_at'] = wTweet['quoted_status']['created_at']
+							wARR_SetTweet['flg'] = True
 						continue
 				
 				### 前回いいねしたIDは除外
@@ -1068,15 +1097,36 @@ class CLS_TwitterFavo():
 				
 				### ID決定
 				wFavoTweetID = str(wTweet['id'])
+				
+				wARR_SetTweet['id']          = wTweet['user']['id']
+				wARR_SetTweet['name']        = wTweet['user']['name']
+				wARR_SetTweet['screen_name'] = wTweet['user']['screen_name']
+				wARR_SetTweet['tw_id']      = wTweet['id']
+				wARR_SetTweet['tw_text']    = wTweet['text']
+				wARR_SetTweet['created_at'] = wTweet['created_at']
+				wARR_SetTweet['flg'] = False	#通常ツイートなのでフラグを落とす
 				break
 			
 			if wFavoTweetID==None :
-				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
-				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
-				
-				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
-					break	#ウエイト中止
-				continue	#スキップ
+###				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
+###				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
+###				
+###				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+###					break	#ウエイト中止
+###				continue	#スキップ
+###				
+				### ID未決定
+				if wARR_SetTweet['flg']==False :
+					### リツイート＆引用リツイートもなし
+					CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
+					self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'], wTD['TimeDate'] )
+					
+					if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+						break	#ウエイト中止
+					continue	#スキップ
+				else:
+					### ID未決定だけどリツイートor引用リツイートは取得している
+					wFavoTweetID = wARR_SetTweet['tw_id']	#リツイートor引用リツイートのIDをセット
 			
 			#############################
 			# いいねを実行する
@@ -1086,36 +1136,51 @@ class CLS_TwitterFavo():
 				gVal.OBJ_L.Log( "B", wRes )
 				continue
 			
-			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
-			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "【ツイート日時: " + str(wTweet['created_at']) + "】" )
+###			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
+###			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "【ツイート日時: " + str(wTweet['created_at']) + "】" )
+			
+			if wARR_SetTweet['flg']==False :
+				wStr = "◎いいねしました：" + '\n'
+			else:
+				wStr = "●リツイートをいいねしました：" + '\n'
+			wStr = wStr + wARR_SetTweet['tw_text'] + '\n'
+			wStr = wStr + "　ツイート日時: " + wARR_SetTweet['created_at'] + '\n'
+			wStr = wStr + "  ユーザ　　　: " + wARR_SetTweet['name']
+			wStr = wStr + " (@" + wARR_SetTweet['screen_name'] + ")"
+			CLS_OSIF.sPrn( wStr )
 			gVal.STR_TrafficInfo['autofavo'] += 1
 			
+###			#############################
+###			# ふぁぼカウンタを設定
+###			wARR_RateFollowers[wIndex]['favo_cnt'] += 1
+###			wARR_RateFollowers[wIndex]['favo_f_cnt'] = 0	#ふぁぼできたのでリセットする
+###			
 			#############################
-			# ふぁぼカウンタを設定
-			wARR_RateFollowers[wIndex]['favo_cnt'] += 1
-			wARR_RateFollowers[wIndex]['favo_f_cnt'] = 0	#ふぁぼできたのでリセットする
-			
-			#############################
-			# DBに記録する
-			wQuery = "update tbl_follower_data set " + \
-						"favoid = '" + str(wFavoTweetID) + "', " + \
-						"favodate = '" + str(wTD['TimeDate']) + "'," + \
-						"favo_cnt = " + str(wARR_RateFollowers[wIndex]['favo_cnt']) + ", " + \
-						"favo_f_cnt = 0 " + \
-						"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-						" and id = '" + str(wID) + "' ;"
-			
-			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-			wResDB = gVal.OBJ_DB.GetQueryStat()
-			if wResDB['Result']!=True :
-				##失敗
-				wRes['Reason'] = "Run Query is failed(6): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-				gVal.OBJ_L.Log( "B", wRes )
-				continue
-			
-			###  カウント
-			gVal.STR_TrafficInfo['dbreq'] += 1
-			gVal.STR_TrafficInfo['dbup'] += 1
+			# DBに記録する(通常ツイートの場合)
+			if wARR_SetTweet['flg']==False :
+				#### ふぁぼカウンタを設定
+				wARR_RateFollowers[wIndex]['favo_cnt'] += 1
+				wARR_RateFollowers[wIndex]['favo_f_cnt'] = 0	#ふぁぼできたのでリセットする
+				
+				wQuery = "update tbl_follower_data set " + \
+							"favoid = '" + str(wFavoTweetID) + "', " + \
+							"favodate = '" + str(wTD['TimeDate']) + "'," + \
+							"favo_cnt = " + str(wARR_RateFollowers[wIndex]['favo_cnt']) + ", " + \
+							"favo_f_cnt = 0 " + \
+							"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+							" and id = '" + str(wID) + "' ;"
+				
+				wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+				wResDB = gVal.OBJ_DB.GetQueryStat()
+				if wResDB['Result']!=True :
+					##失敗
+					wRes['Reason'] = "Run Query is failed(6): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				
+				###  カウント
+				gVal.STR_TrafficInfo['dbreq'] += 1
+				gVal.STR_TrafficInfo['dbup'] += 1
 			
 			#############################
 			# 次へのウェイト
@@ -1159,7 +1224,7 @@ class CLS_TwitterFavo():
 		return True
 
 	#####################################################
-	def __failRec_AutoFavo( self, inRes, inID, inFavo_f_cnt ):
+	def __failRec_AutoFavo( self, inRes, inID, inFavo_f_cnt, inDate ):
 		
 		#############################
 		# カウンタ+
@@ -1168,6 +1233,7 @@ class CLS_TwitterFavo():
 		#############################
 		# DBに記録する (ふぁぼ失敗カウント)
 		wQuery = "update tbl_follower_data set " + \
+					"favodate = '" + str(inDate) + "', " + \
 					"favo_f_cnt = " + str(wCnt) + " " + \
 					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					" and id = '" + str(inID) + "' ;"
