@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/2/20
+# ::Update= 2021/2/21
 #####################################################
 # Private Function:
 #   __initTwStatus(self):

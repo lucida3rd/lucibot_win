@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 いいね監視系
 # 
-# ::Update= 2021/2/20
+# ::Update= 2021/2/21
 #####################################################
 # Private Function:
 #   (none)
@@ -1259,6 +1259,17 @@ class CLS_TwitterFavo():
 			wARR_UnRefollowListMenberID.append( str(wROW['id']) )
 		
 		#############################
+		# いいね一覧取得
+		wFavoListID = []
+		wTwitterRes = gVal.OBJ_Twitter.GetFavolist()
+		if wTwitterRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		for wLine in wTwitterRes['Responce'] :
+			wFavoListID.append( wLine['id'] )
+		
+		#############################
 		# Home TLの取得
 ###		wHomeTL_Res = gVal.OBJ_Twitter.GetTL( inTLmode="home", inFLG_Rep=True, inFLG_Rts=False, inScreenName=STR_TWITTERdata['TwitterID'], gVal.inCount=DEF_STR_TLNUM['CaoFavoTL'] )
 		wHomeTL_Res = gVal.OBJ_Twitter.GetTL( inTLmode="home", inFLG_Rts=True, inCount=gVal.DEF_STR_TLNUM['CaoFavoTL'] )
@@ -1266,6 +1277,9 @@ class CLS_TwitterFavo():
 			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wHomeTL_Res['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
+		
+		###トラヒック
+		gVal.STR_TrafficInfo['autofavot'] = len( wHomeTL_Res['Responce'] )
 		
 		self.VAL_ZanNum = len( wHomeTL_Res['Responce'] )
 		#############################
@@ -1307,6 +1321,11 @@ class CLS_TwitterFavo():
 					self.VAL_ZanNum -= 1
 					continue
 				wKind = "通常　"
+			
+			### 既にふぁぼったツイートは除外
+			if wTweet['id'] in wFavoListID :
+				self.VAL_ZanNum -= 1
+				continue
 			
 			### 自分は除外する
 			if wTweet['user']['id']==int( gVal.STR_UserInfo['id'] ) :
@@ -1382,6 +1401,16 @@ class CLS_TwitterFavo():
 			CLS_OSIF.sPrn("")
 			if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoWait'] )!=True :
 				break	#ウエイト中止
+		
+		#############################
+		# 統計
+		wStr = "--------------------" + '\n'
+		wStr = wStr + "自動いいね対象数 = " + str(gVal.STR_TrafficInfo['autofavot']) + '\n'
+		wStr = wStr + "自動いいね実行数 = " + str(gVal.STR_TrafficInfo['autofavo']) + '\n'
+		
+		#############################
+		# コンソールに表示
+		CLS_OSIF.sPrn( wStr )
 		
 		#############################
 		# 完了
