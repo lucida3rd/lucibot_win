@@ -1033,26 +1033,30 @@ class CLS_TwitterFavo():
 				if gVal.STR_AutoFavo['Ret']==False :
 					if "retweeted_status" in wTweet :
 						if wARR_SetTweet['flg']==False :
-							wARR_SetTweet['id']          = wTweet['retweeted_status']['user']['id']
-							wARR_SetTweet['name']        = wTweet['retweeted_status']['user']['name']
-							wARR_SetTweet['screen_name'] = wTweet['retweeted_status']['user']['screen_name']
-							wARR_SetTweet['tw_id']   = wTweet['retweeted_status']['id']
-							wARR_SetTweet['tw_text'] = wTweet['retweeted_status']['text']
-							wARR_SetTweet['created_at'] = wTweet['retweeted_status']['created_at']
-							wARR_SetTweet['flg'] = True
+							if wTweet['user']['id']!=wTweet['retweeted_status']['user']['id']
+								### 自己リツイート以外
+								wARR_SetTweet['id']          = wTweet['retweeted_status']['user']['id']
+								wARR_SetTweet['name']        = wTweet['retweeted_status']['user']['name']
+								wARR_SetTweet['screen_name'] = wTweet['retweeted_status']['user']['screen_name']
+								wARR_SetTweet['tw_id']   = wTweet['retweeted_status']['id']
+								wARR_SetTweet['tw_text'] = wTweet['retweeted_status']['text']
+								wARR_SetTweet['created_at'] = wTweet['retweeted_status']['created_at']
+								wARR_SetTweet['flg'] = True
 						continue
 				
 				### 引用リツイートは除外
 				if gVal.STR_AutoFavo['iRet']==False :
 					if "quoted_status" in wTweet :
 						if wARR_SetTweet['flg']==False :
-							wARR_SetTweet['id']          = wTweet['quoted_status']['user']['id']
-							wARR_SetTweet['name']        = wTweet['quoted_status']['user']['name']
-							wARR_SetTweet['screen_name'] = wTweet['quoted_status']['user']['screen_name']
-							wARR_SetTweet['tw_id']   = wTweet['quoted_status']['id']
-							wARR_SetTweet['tw_text'] = wTweet['quoted_status']['text']
-							wARR_SetTweet['created_at'] = wTweet['quoted_status']['created_at']
-							wARR_SetTweet['flg'] = True
+							if wTweet['user']['id']!=wTweet['quoted_status']['user']['id']
+								### 自己引用リツイート以外
+								wARR_SetTweet['id']          = wTweet['quoted_status']['user']['id']
+								wARR_SetTweet['name']        = wTweet['quoted_status']['user']['name']
+								wARR_SetTweet['screen_name'] = wTweet['quoted_status']['user']['screen_name']
+								wARR_SetTweet['tw_id']   = wTweet['quoted_status']['id']
+								wARR_SetTweet['tw_text'] = wTweet['quoted_status']['text']
+								wARR_SetTweet['created_at'] = wTweet['quoted_status']['created_at']
+								wARR_SetTweet['flg'] = True
 						continue
 				
 				### 前回いいねしたIDは除外

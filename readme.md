@@ -5,7 +5,7 @@
 ::TwitterURL= https://twitter.com/lucida3hai
 
 ::Update= 2021/2/21
-::Version= 2.2.4.0
+::Version= 2.2.4.1
 
 
 <a id="iSystemSummary"></a>
