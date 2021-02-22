@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/2/20
+# ::Update= 2021/2/22
 #####################################################
 # Private Function:
 #   (none)
@@ -471,6 +471,15 @@ class CLS_TwitterMain():
 #####################################################
 	def KeyUserFollow(self):
 		wRes = self.OBJ_TwitterKeyword.KeyUserFollow()
+		return wRes
+
+
+
+#####################################################
+# 自動選出フォロー(手動)
+#####################################################
+	def AutoChoiceFollow(self):
+		wRes = self.OBJ_TwitterFollower.AutoChoiceFollow()
 		return wRes
 
 

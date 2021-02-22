@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/2/20
+# ::Update= 2021/2/22
 #####################################################
 # Private Function:
 #   (none)
@@ -23,6 +23,7 @@
 #
 #####################################################
 
+from htmlif import CLS_HTMLIF
 from osif import CLS_OSIF
 from gval import gVal
 #####################################################
@@ -762,6 +763,314 @@ class CLS_TwitterFollower():
 		
 		#############################
 		# 完了
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 自動選出フォロー(手動)
+#####################################################
+	def AutoChoiceFollow(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFollower"
+		wRes['Func']  = "AutoChoiceFollow"
+		
+		CLS_OSIF.sPrn( "処理中......" )
+		#############################
+		# DBのフォロワー一覧取得(一度でもフォローしたことがある)
+		wQuery = "select id from tbl_follower_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		
+		#############################
+		# リスト型に整形
+		wARR_Followers = []
+		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=wARR_Followers )
+		
+		#############################
+		# 登録者がいなければ処理しない
+		if len(wARR_Followers)==0 :
+			##失敗
+			wRes['Reason'] = "DB登録にユーザが登録されていません。"
+			gVal.OBJ_L.Log( "D", wRes )
+			return wRes
+		
+		#############################
+		# un_refollowl登録者のIDを取得する
+		wARR_unReFollow = []
+		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['UrfList'] )
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetListMember:UrfList): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		for wROW in wListsRes['Responce'] :
+			if str(wROW['id']) not in wARR_Followers :
+				wARR_unReFollow.append( str(wROW['id']) )
+		
+		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		### wTD['TimeDate']
+		
+		wKeyUserNum = len( wARR_Followers )
+		#############################
+		# 画面クリア(=通常モード時)
+		if gVal.FLG_Test_Mode==False :
+			CLS_OSIF.sDispClr()
+		
+		#############################
+		# ヘッダ表示
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 自動選出フォロー(手動)" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + '\n'
+		wStr = wStr + "選出された " + str(wKeyUserNum) + " 人のキーユーザのうち 1 人フォローできます。"
+		wStr = wStr + "なおAPIが規制されやすいので、次回の実行までは 15分以上 時間をあけてください。"
+		CLS_OSIF.sPrn( wStr )
+		
+		CLS_OSIF.sPrn( "ユーザを選出中......" )
+		#############################
+		# DB登録ユーザからランダムに選出する
+		wARR_ChoicedID = []
+		wARR_Rand   = []
+		wCount      = -1
+		while True:
+			wRandID = None
+			wCount += 1
+			#############################
+			# DBユーザの情報がない =処理終わり
+			if wKeyUserNum<wCount :
+				break
+			
+			#############################
+			# DB登録ユーザからランダムにID選出
+			wRand = CLS_OSIF.sGetRand( wKeyUserNum )
+			if wRand in wARR_Rand :
+				###既に選出されたランダム値(ID) =やり直し
+				continue
+			wARR_Rand.append( wRand )
+			wRandID = str(wARR_Followers[wRand])
+			
+			CLS_OSIF.sPrn( "元フォロー情報取得中......" )
+			#############################
+			# フォロー者が1人以上か
+			wUserInfoRes = gVal.OBJ_Twitter.GetUserinfo( inID=wRandID )
+			if wUserInfoRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetUserinfo:1): " + wUserInfoRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				continue
+			
+			### フォロー者0人はやり直し
+			if wUserInfoRes['Responce']['friends_count']==0 :
+				continue
+			
+			wScreenName = wUserInfoRes['Responce']['screen_name']
+			CLS_OSIF.sPrn( "元フォロー者ID一覧取得中......: 情報元ユーザ @" + wScreenName )
+			#############################
+			# 選出ユーザのフォロー者ID一覧を取得する
+			wFollowIDListRes = gVal.OBJ_Twitter.GetFollowIDList( wRandID )
+			if wFollowIDListRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetFollowIDList): " + wFollowIDListRes['Reason'] + ": " + wScreenName
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			###フォロー者がいない？(ありえなくね？) =対象外
+			if len(wFollowIDListRes['Responce'])==0 :
+				continue
+			
+			#############################
+			# ユーザIDを選出する
+			wARR_RandFollow   = []
+			wFollowIDList_Num = len(wFollowIDListRes['Responce'])
+			wFollowIDList_Cnt = -1
+			while True:
+				wFollowIDList_Cnt += 1
+				if wFollowIDList_Num<wFollowIDList_Cnt :
+					wRandID = None
+					break
+				
+				#############################
+				# フォロー者からユーザIDをランダム選出する
+				wRand_2 = CLS_OSIF.sGetRand( wFollowIDList_Num )
+				if wRand_2 in wARR_RandFollow :
+					###既に選出されたランダム値(ID) =やり直し
+					continue
+				wARR_RandFollow.append( wRand_2 )
+				wRandID = str(wFollowIDListRes['Responce'][wRand_2])
+				if wRandID in wARR_ChoicedID :
+					###既に選出されたID =やり直し
+					continue
+				wARR_ChoicedID.append( wRandID )
+				
+				###既にフォロー者ならやり直し
+				if wRandID in wARR_Followers :
+					continue
+				###除外リストユーザならやり直し
+				if wRandID in wARR_unReFollow :
+					continue
+				###候補から除外されていたらやり直し
+				if wRandID in gVal.STR_ExcFollowID :
+					continue
+				
+				CLS_OSIF.sPrn( "候補フォロー情報取得中......: 情報元ユーザ @" + wScreenName )
+				#############################
+				# ユーザ情報を取得する
+				wUserInfoRes = gVal.OBJ_Twitter.GetUserinfo( inID=wRandID )
+				if wUserInfoRes['Result']!=True :
+					wRes['Reason'] = "Twitter API Error(GetUserinfo:2): " + wUserInfoRes['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				
+				###この機能では鍵垢は除外する仕様とする
+				if wUserInfoRes['Responce']['protected']==True :
+					continue
+				
+###				#############################
+###				#※候補確定
+###				break
+###			
+###			if wRandID==None :
+###				###候補が確定してなければ、やり直し
+###				continue
+###			
+				wUserInfo = wUserInfoRes['Responce']
+				#※候補あり
+				#############################
+				# 候補の表示
+				wStr = '\n' + "--------------------" + '\n'
+				wStr = wStr + "フォロー候補= " + str(wUserInfo['name']) + "(@" + str(wUserInfo['screen_name']) + ")" + '\n'
+				wStr = wStr + '\n' + str(wUserInfo['description']) + '\n'
+				wStr = wStr + '\n' + "対処コマンド：" + '\n'
+				wStr = wStr + "    y=フォロー / q=選定中止 / v=ブラウザで表示" + '\n'
+				CLS_OSIF.sPrn( wStr )
+				
+				while True:
+					wStr = "対処コマンドを指定してください=> "
+					wSelect = CLS_OSIF.sInp( wStr )
+					if wSelect=="y" :
+						### フォローする =確定 ループ抜ける
+						break
+					
+					elif wSelect=="q" :
+						###選出中止
+						CLS_OSIF.sPrn( "選出を終了しました。" + '\n' )
+						wRes['Result'] = True
+						return wRes
+					
+					elif wSelect=="v" :
+						###ブラウザで表示
+						wURL = "https://twitter.com/" + str(wUserInfo['screen_name'])
+						CLS_HTMLIF.sOpenURL( wURL )
+						continue
+					
+					elif wSelect=="n" :
+						###次から候補から外す
+						wQuery = "insert into tbl_exc_followid values (" + \
+									"'" + str(wTD['TimeDate']) + "'," + \
+									"" + str( wRandID ) + " " + \
+									") ;"
+						
+						wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+						wResDB = gVal.OBJ_DB.GetQueryStat()
+						if wResDB['Result']!=True :
+							##失敗
+							wRes['Reason'] = "Run Query is failed(3): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+							gVal.OBJ_L.Log( "B", wRes )
+							return wRes
+						gVal.STR_TrafficInfo['dbreq'] += 1
+						gVal.STR_TrafficInfo['dbins'] += 1
+						
+						gVal.STR_ExcFollowID.append( wRandID )
+						wRandID = None
+						break
+					
+					else :
+						wRandID = None
+						break
+				
+				if wRandID!=None :
+					break
+			
+			if wRandID!=None :
+				## ※フォロー確定
+				break
+		
+		#############################
+		# 候補がいなければ処理しない
+		if wRandID==None :
+			CLS_OSIF.sPrn( "ユーザが選出されませんでした。" )
+			wRes['Result'] = True
+			return wRes
+		
+		CLS_OSIF.sPrn( "フォロー処理中......" )
+		#############################
+		# 候補をフォローする
+		wTwitterRes = gVal.OBJ_Twitter.CreateFollow( wRandID )
+		if wTwitterRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(CreateFollow): " + wTwitterRes['Reason']
+			return wRes
+		
+		#############################
+		# normalリストへ追加
+		wTwitterRes = gVal.OBJ_Twitter.AddUserList( gVal.STR_UserInfo['NorList'], wRandID )
+		if wTwitterRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(AddUserList): " + wTwitterRes['Reason']
+			return wRes
+		
+		#############################
+		# DBに記録する(新規)
+		wName = str(wUserInfo['name']).replace( "'", "''" )
+		wQuery = "insert into tbl_follower_data values (" + \
+					"'" + gVal.STR_UserInfo['Account'] + "'," + \
+					"'" + str(wTD['TimeDate']) + "'," + \
+					"True," + \
+					"False," + \
+					"True," + \
+					"False," + \
+					"'" + str(wTD['TimeDate']) + "'," + \
+					"False," + \
+					"False," + \
+					"'" + str( wRandID ) + "'," + \
+					"'" + wName + "'," + \
+					"'" + str(wUserInfo['screen_name']) + "'," + \
+					str(wUserInfo['statuses_count']) + "," + \
+					"'" + str(wTD['TimeDate']) + "'," + \
+					"''," + \
+					"''," + \
+					"'1900-01-01 00:00:00'," + \
+					"0, 0, 0 " + \
+					") ;"
+		gVal.STR_TrafficInfo['dbins'] += 1
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(4): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		
+		#############################
+		# 正常終了
+		CLS_OSIF.sPrn( '\n' + "フォローが正常に完了しました。" )
 		wRes['Result'] = True
 		return wRes
 
