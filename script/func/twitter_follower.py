@@ -878,8 +878,11 @@ class CLS_TwitterFollower():
 				gVal.OBJ_L.Log( "B", wRes )
 				continue
 			
-			### フォロー者0人はやり直し
-			if wUserInfoRes['Responce']['friends_count']==0 :
+			### フォロー者20人未満はやり直し
+			if wUserInfoRes['Responce']['friends_count']<=20 :
+				continue
+			### 公式マークは除外する仕様とする（有名人の知り合いは有名人が多い）
+			if wUserInfoRes['Responce']['verified']==True :
 				continue
 			
 			wScreenName = wUserInfoRes['Responce']['screen_name']
@@ -940,6 +943,59 @@ class CLS_TwitterFollower():
 				
 				###この機能では鍵垢は除外する仕様とする
 				if wUserInfoRes['Responce']['protected']==True :
+					continue
+				
+				###この機能では公式マークは除外する仕様とする
+				if wUserInfoRes['Responce']['verified']==True :
+					continue
+				
+				#############################
+				# ユーザの直近のツイートが期間内か（アクティブに活動中か）
+				#   リツイートのみは除外
+				wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False,
+					 inScreenName=wUserInfoRes['Responce']['screen_name'], inCount=gVal.DEF_STR_TLNUM['AutoFavoCount'] )
+				if wTweetRes['Result']!=True :
+					wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				if len(wTweetRes['Responce'])==0 :
+					continue
+				gVal.STR_TrafficInfo['timeline'] += len(wTweetRes['Responce'])
+				
+				wFLG_Active = False
+				for wTweet in wTweetRes['Responce'] :
+					### リツイートは除外
+					if "retweeted_status" in wTweet :
+						continue
+					### 引用リツイートは除外
+					elif "quoted_status" in wTweet :
+						continue
+					
+					###日時の変換
+					wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+					if wTime['Result']!=True :
+						wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wTweet['created_at'])
+						gVal.OBJ_L.Log( "B", wRes )
+						continue
+					wTweet['created_at'] = wTime['TimeDate']
+					
+					### 範囲時間内のツイートか
+					wLimmin = gVal.STR_AutoFavo['Len'] * 60 * 60
+					wGetLag = CLS_OSIF.sTimeLag( str(wTweet['created_at']), inThreshold=wLimmin )
+					if wGetLag['Result']!=True :
+						wRes['Reason'] = "sTimeLag failed"
+						gVal.OBJ_L.Log( "B", wRes )
+						continue
+					if wGetLag['Beyond']==True :
+						### 1日超経過は除外
+						continue
+					
+					### アクティブツイート検出
+					wFLG_Active = True
+					break
+				
+				###アクティブでないので除外
+				if wFLG_Active==False :
 					continue
 				
 ###				#############################
