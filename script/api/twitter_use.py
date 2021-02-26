@@ -1829,6 +1829,101 @@ class CLS_Twitter_Use():
 
 
 #####################################################
+# いいね一覧読み込み処理
+#####################################################
+	def GetUserFavolist( self, inUserID ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = self.__Get_Resp()
+		wRes['Func'] = "GetUserFavolist"
+		
+		#############################
+		# Twitter状態のチェック
+		wResIni = self.GetTwStatus()
+		if wResIni['Init']!=True :
+			wRes['Reason'] = "Twitter connect error: " + wResIni['Reason']
+			return wRes
+		
+		#############################
+		# APIの指定
+		wAPI = "https://api.twitter.com/1.1/favorites/list.json"
+		
+		#############################
+		# API規制チェック
+		if self.__get_APIrect( "favorites_list" )!=True :
+			wRes['Reason'] = "Twitter規制中(アプリ内)"
+			return wRes
+		
+		#############################
+		# パラメータの生成
+		wParams = {
+			"user_id"		: inUserID,
+			"count"			: self.VAL_TwitNum
+		}
+		
+		#############################
+		# タイムライン読み込み
+		# ※ページングはしない
+		wARR_TL = []
+		try:
+			#############################
+			# APIカウント
+			self.__set_APIcount( "favorites_list" )
+			
+			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
+			wTL = json.loads( wTweetRes.text )
+			
+			###情報抜き出し
+			if len(wTL)>0 :
+				if "errors" not in wTL :
+					for wLine in wTL :
+						if wNowID==wLine['id'] :
+							continue
+						wARR_TL.append( wLine )
+			
+			#############################
+			# API規制チェック
+			if self.__get_APIrect( "favorites_list" )!=True :
+				break
+			
+			#############################
+			# 遅延
+			time.sleep( self.DEF_VAL_SLEEP )
+			
+		except ValueError as err :
+			wRes['Reason'] = "Twitter error: " + err
+			return wRes
+		
+		#############################
+		# 結果
+		if wTweetRes.status_code != 200 :
+			wCHR_StatusCode = str(wTweetRes.status_code)
+			if wCHR_StatusCode in self.STR_TWITTER_STATUS_CODE :
+				###定義コードがあるなら文字出力する
+				wCHR_StatusCode = self.STR_TWITTER_STATUS_CODE[wCHR_StatusCode]
+			else :
+				wCHR_StatusCode = "unknown code"
+			
+			###直前エラーならデコードする
+			if 'errors' in wTL :
+				wCHR_StatusCode = wCHR_StatusCode + ": Error Code=" + str(wTL['errors'][0]['code']) + ":" + str(wTL['errors'][0]['message'])
+			
+			wRes['Reason'] = "Twitter responce failed: Status Code=" + str(wTweetRes.status_code) + ":" + wCHR_StatusCode
+			return wRes
+		
+		#############################
+		# TLを取得
+		wRes['Responce'] = wARR_TL
+		
+		#############################
+		# 正常
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
 # いいね処理
 #####################################################
 	def CreateFavo( self, inID ):
