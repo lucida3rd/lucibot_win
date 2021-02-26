@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/2/22
+# ::Update= 2021/2/27
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -601,13 +601,13 @@ class CLS_Twitter_Use():
 				wFLG_Add = False
 				###情報抜き出し
 				if len(wTL)>0 :
-					for wLine in wTL :
-						wID = wLine['id']
-						if wNowID==wID :
-							continue
-						wARR_TL.append( wLine )
-						wNowID   = wID
-						wFLG_Add = True
+					if "errors" not in wTL :
+						for wLine in wTL :
+							if wNowID==wLine['id'] :
+								continue
+							wARR_TL.append( wLine )
+							wNowID   = wLine['id']
+							wFLG_Add = True
 				
 				#############################
 				# API規制チェック
@@ -1775,12 +1775,13 @@ class CLS_Twitter_Use():
 				wFLG_Add = False
 				###情報抜き出し
 				if len(wTL)>0 :
-					for wLine in wTL :
-						if wNowID==wLine['id'] :
-							continue
-						wARR_TL.append( wLine )
-						wNowID   = wLine['id']
-						wFLG_Add = True
+					if "errors" not in wTL :
+						for wLine in wTL :
+							if wNowID==wLine['id'] :
+								continue
+							wARR_TL.append( wLine )
+							wNowID   = wLine['id']
+							wFLG_Add = True
 				
 				#############################
 				# API規制チェック

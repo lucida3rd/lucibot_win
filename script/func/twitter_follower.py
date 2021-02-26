@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/2/22
+# ::Update= 2021/2/27
 #####################################################
 # Private Function:
 #   (none)
@@ -880,6 +880,9 @@ class CLS_TwitterFollower():
 			
 			### フォロー者20人未満はやり直し
 			if wUserInfoRes['Responce']['friends_count']<=20 :
+				continue
+			### フォロー者よりフォロワーのが多ければやり直し
+			if wUserInfoRes['Responce']['friends_count']<wUserInfoRes['Responce']['followers_count'] :
 				continue
 			### 公式マークは除外する仕様とする（有名人の知り合いは有名人が多い）
 			if wUserInfoRes['Responce']['verified']==True :
