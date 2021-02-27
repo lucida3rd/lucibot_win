@@ -287,6 +287,22 @@ class CLS_MyDisp():
 				wStr = "  いいえ"
 			pRes['Responce'] = "    被ブロック                  : " + wStr
 		
+		###インプリ：ファボった日
+		elif "[@USERADMIN-FAVO_DATE@]"==inLine :
+			if gVal.STR_UserAdminInfo['DB_favo_cnt']>0 :
+				wStr = str(gVal.STR_UserAdminInfo['DB_favo_date'])
+			else:
+				wStr = "  なし"
+			pRes['Responce'] = "    ファボった日                : " + wStr
+		
+		###インプリ：ファボられた日
+		elif "[@USERADMIN-FAVO_R_DATE@]"==inLine :
+			if gVal.STR_UserAdminInfo['DB_favo_r_cnt']>0 :
+				wStr = str(gVal.STR_UserAdminInfo['DB_favo_r_date'])
+			else:
+				wStr = "  なし"
+			pRes['Responce'] = "    ファボられた日              : " + wStr
+		
 		###インプリ：DB情報あり
 		elif "[@USERADMIN-EXIST@]"==inLine :
 			if gVal.STR_UserAdminInfo['DB_exist']==True :

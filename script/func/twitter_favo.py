@@ -1131,13 +1131,6 @@ class CLS_TwitterFavo():
 				break
 			
 			if wFavoTweetID==None :
-###				CLS_OSIF.sPrn( "▼いいねするツイートがないためスキップします" + '\n')
-###				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'] )
-###				
-###				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
-###					break	#ウエイト中止
-###				continue	#スキップ
-###				
 				### ID未決定
 				if wARR_SetTweet['flg']==False :
 					### リツイート＆引用リツイートもなし
@@ -1152,15 +1145,21 @@ class CLS_TwitterFavo():
 					wFavoTweetID = wARR_SetTweet['tw_id']	#リツイートor引用リツイートのIDをセット
 			
 			#############################
+			# わたしをふぁぼったかチェック
+			wReciveFavoRes = self.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
+			if wReciveFavoRes['Result']!=True :
+				##失敗
+				continue
+			if wReciveFavoRes['Responce']==True :
+				CLS_OSIF.sPrn( "〇ファボされていました: @" + wARR_RateFollowers[wIndex]['screen_name'] + '\n')
+			
+			#############################
 			# いいねを実行する
 			wFavoRes = gVal.OBJ_Twitter.CreateFavo( wFavoTweetID )
 			if wFavoRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error: " + wFavoRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
 				continue
-			
-###			CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
-###			CLS_OSIF.sPrn( wTweet['text'] + '\n' + "【ツイート日時: " + str(wTweet['created_at']) + "】" )
 			
 			if wARR_SetTweet['flg']==False :
 				wStr = "◎いいねしました：" + '\n'
@@ -1173,11 +1172,6 @@ class CLS_TwitterFavo():
 			CLS_OSIF.sPrn( wStr )
 			gVal.STR_TrafficInfo['autofavo'] += 1
 			
-###			#############################
-###			# ふぁぼカウンタを設定
-###			wARR_RateFollowers[wIndex]['favo_cnt'] += 1
-###			wARR_RateFollowers[wIndex]['favo_f_cnt'] = 0	#ふぁぼできたのでリセットする
-###			
 			#############################
 			# DBに記録する(通常ツイートの場合)
 			if wARR_SetTweet['flg']==False :
@@ -1274,6 +1268,127 @@ class CLS_TwitterFavo():
 		gVal.STR_TrafficInfo['dbup'] += 1
 		
 		return True
+
+
+
+#####################################################
+# ふぁぼチェック
+#####################################################
+	def ReciveFavo( self, inID, inARR_FollowerData, inARR_Tweets ):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFavo"
+		wRes['Func']  = "ReciveFavo"
+		
+		wARR_Update = {
+			"flg"		: False,
+			"id"		: -1,
+			"cnt"		: 0,
+			"date"		: None
+			}
+		
+		#############################
+		# 該当ユーザのふぁぼ一覧を取得
+		wFavoRes = gVal.OBJ_Twitter.GetUserFavolist( inID )
+		if wFavoRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetUserFavolist): " + wFavoRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+###		wFLG_Update = False
+		#############################
+		# 更新された自分に対するふぁぼがあるか
+		for wROW in wFavoRes['Responce'] :
+			###自分以外のファボならスルー
+			if gVal.STR_UserInfo['id']!=str(wROW['user']['id']) :
+				continue
+			###最新のファボでないならスルー
+			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
+				continue
+			
+			###最新ファボみつけた
+###			wFLG_Update = True
+			wARR_Update['id']   = str( wROW['id'] )
+			wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+			wARR_Update['date'] = str( wROW['created_at'] )
+			wARR_Update['flg'] = True
+			break
+		
+		### ふぁぼがない場合、リプライ、リツイート、引用リツイートされているかで見る
+		if wARR_Update['flg']==False :
+			for wTweet in inARR_Tweets :
+				### リプライ
+				if wTweet['in_reply_to_status_id']!=None :
+					if gVal.STR_UserInfo['id']==str( wTweet['in_reply_to_user_id'] ) :
+						wARR_Update['id']   = str( wTweet['id'] )
+						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+						wARR_Update['date'] = str( wTweet['created_at'] )
+						wARR_Update['flg'] = True
+						break
+				
+				### リツイート
+				if "retweeted_status" in wTweet :
+					if gVal.STR_UserInfo['id']==wTweet['retweeted_status']['user']['id'] :
+						wARR_Update['id']   = str( wTweet['id'] )
+						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+						wARR_Update['date'] = str( wTweet['created_at'] )
+						wARR_Update['flg'] = True
+						break
+				
+				### 引用リツイート
+				if "quoted_status" in wTweet :
+					if gVal.STR_UserInfo['id']==wTweet['quoted_status']['user']['id'] :
+						wARR_Update['id']   = str( wTweet['id'] )
+						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+						wARR_Update['date'] = str( wTweet['created_at'] )
+						wARR_Update['flg'] = True
+						break
+		
+		###更新されてないなら終わり
+###		if wFLG_Update==False :
+		if wARR_Update['flg']==False :
+			wRes['Responce'] = False
+			wRes['Result'] = True
+			return wRes
+		
+###		#############################
+###		# カウンタ更新
+###		wID   = str( wROW['id'] )
+###		wCnt  = inARR_FollowerData['favo_r_cnt'] + 1
+###		wDate = str( wROW['created_at'] )
+###		
+		#############################
+		# DB更新
+###		wQuery = "update tbl_follower_data set " + \
+###					"favo_r_cnt = " + str(wCnt) + ", " + \
+###					"favo_r_id = '" + str(wID) + "', " + \
+###					"favo_r_date = '" + str(wDate) + "' " + \
+###					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+###					" and id = '" + str(inID) + "' ;"
+		wQuery = "update tbl_follower_data set " + \
+					"favo_r_cnt = " + str( wARR_Update['cnt'] ) + ", " + \
+					"favo_r_id = '" + str( wARR_Update['id'] ) + "', " + \
+					"favo_r_date = '" + str( wARR_Update['date'] ) + "' " + \
+					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+					" and id = '" + str(inID) + "' ;"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(20): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		###  カウント
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		gVal.STR_TrafficInfo['dbup'] += 1
+		
+		wRes['Responce'] = True
+		wRes['Result'] = True
+		return wRes
 
 
 

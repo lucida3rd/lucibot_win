@@ -1878,15 +1878,15 @@ class CLS_Twitter_Use():
 			if len(wTL)>0 :
 				if "errors" not in wTL :
 					for wLine in wTL :
-						if wNowID==wLine['id'] :
-							continue
+###						if wNowID==wLine['id'] :
+###							continue
 						wARR_TL.append( wLine )
 			
-			#############################
-			# API規制チェック
-			if self.__get_APIrect( "favorites_list" )!=True :
-				break
-			
+###			#############################
+###			# API規制チェック
+###			if self.__get_APIrect( "favorites_list" )!=True :
+###				break
+###			
 			#############################
 			# 遅延
 			time.sleep( self.DEF_VAL_SLEEP )

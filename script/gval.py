@@ -90,6 +90,11 @@ class gVal() :
 		"DB_r_remove"	: False,
 		"DB_limited"	: False,
 		
+		"DB_favo_date"		: None,
+		"DB_favo_cnt"		: 0,
+		"DB_favo_r_date"	: None,
+		"DB_favo_r_cnt"		: 0,
+		
 		"Protect"	: False,
 		"MyFollow"	: False,
 		"Follower"	: False,
@@ -186,6 +191,8 @@ class gVal() :
 		"removeLimmin"		: 2880,						#自動リムーブ時間 2日 (60x24)x2=2880(分)
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 100,						#自動リムーブ処理待ち(秒) 900秒/3回(createの場合)
+
+		"removeNofavoMin"	: 129600,					#自動リムーブ ファボされない期間 90日 (60x24)x90=129600(分)
 
 		"searchRoundNum"	: 7,						#1検索の回数(ページング)
 		"maxKeywordNum"		: 6,						#最大キーワード数

@@ -896,9 +896,9 @@ class CLS_TwitterKeyword():
 		wQuery = "select id from tbl_follower_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
 					"r_myfollow = True or " + \
-					"r_remove = True or " + \
 					"rc_follower = True " + \
 					";"
+###					"r_remove = True or " + \
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 		wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -1095,7 +1095,9 @@ class CLS_TwitterKeyword():
 							"''," + \
 							"''," + \
 							"'1900-01-01 00:00:00'," + \
-							"0, 0, 0 " + \
+							"0, 0, 0," + \
+							"''," + \
+							"'1900-01-01 00:00:00' " + \
 							") ;"
 				gVal.STR_TrafficInfo['dbins'] += 1
 			

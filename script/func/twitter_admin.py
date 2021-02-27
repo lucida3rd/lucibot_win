@@ -125,6 +125,11 @@ class CLS_TwitterAdmin():
 			gVal.STR_UserAdminInfo['DB_r_remove']   = wUserinfoRes['Responce']['DB_r_remove']
 			gVal.STR_UserAdminInfo['DB_limited']    = wUserinfoRes['Responce']['DB_limited']
 			
+			gVal.STR_UserAdminInfo['DB_favo_date']   = wUserinfoRes['Responce']['DB_favo_date']
+			gVal.STR_UserAdminInfo['DB_favo_cnt']    = wUserinfoRes['Responce']['DB_favo_cnt']
+			gVal.STR_UserAdminInfo['DB_favo_r_date'] = wUserinfoRes['Responce']['DB_favo_r_date']
+			gVal.STR_UserAdminInfo['DB_favo_r_cnt']  = wUserinfoRes['Responce']['DB_favo_r_cnt']
+			
 			gVal.STR_UserAdminInfo['Protect']  = wUserinfoRes['Responce']['Protect']
 			gVal.STR_UserAdminInfo['MyFollow'] = wUserinfoRes['Responce']['MyFollow']
 			gVal.STR_UserAdminInfo['Follower'] = wUserinfoRes['Responce']['Follower']
@@ -259,7 +264,7 @@ class CLS_TwitterAdmin():
 				wResGet = CLS_OSIF.sInp( "(y=Yes / other=No)=> " )
 				if wResGet!="y" :
 					return wRes
-				wFLG_r_remove = True
+###				wFLG_r_remove = True
 			
 			#############################
 			# 過去にリムーブされたことがある
@@ -333,9 +338,9 @@ class CLS_TwitterAdmin():
 		
 		else:
 			###DBに記録なし
-			wFLG_r_remove = False
-			if gVal.STR_UserAdminInfo['Follower']==True :
-				wFLG_r_remove = True
+###			wFLG_r_remove = False
+###			if gVal.STR_UserAdminInfo['Follower']==True :
+###				wFLG_r_remove = True
 			wQuery = "insert into tbl_follower_data values (" + \
 						"'" + gVal.STR_UserInfo['Account'] + "'," + \
 						"'" + str(wTD['TimeDate']) + "'," + \
@@ -354,7 +359,9 @@ class CLS_TwitterAdmin():
 						"''," + \
 						"''," + \
 						"'1900-01-01 00:00:00'," + \
-						"0, 0, 0 " + \
+						"0, 0, 0," + \
+						"''," + \
+						"'1900-01-01 00:00:00' " + \
 						") ;"
 			gVal.STR_TrafficInfo['dbins'] += 1
 		
@@ -467,14 +474,14 @@ class CLS_TwitterAdmin():
 			
 			else:
 				###DBに記録なし
-				wFLG_r_remove = False
-				if gVal.STR_UserAdminInfo['Follower']==True :
-					wFLG_r_remove = True
+###				wFLG_r_remove = False
+###				if gVal.STR_UserAdminInfo['Follower']==True :
+###					wFLG_r_remove = True
 				wQuery = "insert into tbl_follower_data values (" + \
 							"'" + gVal.STR_UserInfo['Account'] + "'," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
 							"False," + \
-							str( wFLG_r_remove ) + "," + \
+							"False," + \
 							"False," + \
 							str(gVal.STR_UserAdminInfo['Follower']) + "," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
@@ -488,8 +495,11 @@ class CLS_TwitterAdmin():
 							"''," + \
 							"''," + \
 							"'1900-01-01 00:00:00'," + \
-							"0, 0, 0 " + \
+							"0, 0, 0," + \
+							"''," + \
+							"'1900-01-01 00:00:00' " + \
 							") ;"
+###							str( wFLG_r_remove ) + "," + \
 				gVal.STR_TrafficInfo['dbins'] += 1
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -574,6 +584,10 @@ class CLS_TwitterAdmin():
 				"DB_r_myfollow"	: False,
 				"DB_r_remove"	: False,
 				"DB_limited"	: False,
+				"DB_favo_date"	: None,
+				"DB_favo_cnt"	: 0,
+				"DB_favo_r_date"	: None,
+				"DB_favo_r_cnt"		: 0,
 				"DB_exist"		: False,
 				
 				"Protect"	: False,
@@ -613,11 +627,30 @@ class CLS_TwitterAdmin():
 			wRelation['DB_r_myfollow'] = wARR_RateFollowers[0]['r_myfollow']
 			wRelation['DB_r_remove']   = wARR_RateFollowers[0]['r_remove']
 			wRelation['DB_limited']    = wARR_RateFollowers[0]['limited']
+			
+			if wARR_RateFollowers[0]['favoid']!=None :
+				wRelation['DB_favo_date']    = wARR_RateFollowers[0]['favodate']
+				wRelation['DB_favo_cnt']     = wARR_RateFollowers[0]['favo_cnt']
+			else:
+				wRelation['DB_favo_date']    = None
+				wRelation['DB_favo_cnt']     = 0
+			
+			if wARR_RateFollowers[0]['favo_r_id']!=None :
+				wRelation['DB_favo_r_date']  = wARR_RateFollowers[0]['favo_r_date']
+				wRelation['DB_favo_r_cnt']   = wARR_RateFollowers[0]['favo_r_cnt']
+			else:
+				wRelation['DB_favo_r_date']  = None
+				wRelation['DB_favo_r_cnt']   = 0
+			
 			wRelation['DB_exist']      = True
 		else :
 			wRelation['DB_r_myfollow'] = False
 			wRelation['DB_r_remove']   = False
 			wRelation['DB_limited']    = False
+			wRelation['DB_favo_date']    = None
+			wRelation['DB_favo_cnt']     = 0
+			wRelation['DB_favo_r_date']  = None
+			wRelation['DB_favo_r_cnt']   = 0
 			wRelation['DB_exist']      = False
 		
 		#############################
