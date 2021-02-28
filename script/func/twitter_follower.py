@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/2/27
+# ::Update= 2021/3/1
 #####################################################
 # Private Function:
 #   (none)
@@ -408,7 +408,9 @@ class CLS_TwitterFollower():
 					# 以下の条件に全てあてはまる場合
 					# ・フォロー者
 					# ・Normalリストユーザ
+					# ・フォローしてから 90日超え
 					# ・ファボったことがある場合
+					#   ・前回のファボから 90日以内
 					#   ・ふぁぼられたことがある場合、前回から 90日超えている
 					#   ・ふぁぼられたことがない場合は自動リムーブ
 					
@@ -423,16 +425,26 @@ class CLS_TwitterFollower():
 						continue
 					
 					wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
-##					###ファボってからの時間が範囲内
-##					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wRemoveNofavoMin )
-##					if wGetLag['Result']!=True :
-##						wRes['Reason'] = "sTimeLag failed"
-##						gVal.OBJ_L.Log( "B", wRes )
-##						return wRes
-##					if wGetLag['Beyond']==False :
-##						###期間内 =自動リムーブ対象外
-##						continue
-##					
+					###フォローしてからの時間が範囲内
+					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['foldate']), inThreshold=wRemoveNofavoMin )
+					if wGetLag['Result']!=True :
+						wRes['Reason'] = "sTimeLag failed"
+						gVal.OBJ_L.Log( "B", wRes )
+						return wRes
+					if wGetLag['Beyond']==False :
+						###期間内 =自動リムーブ対象外
+						continue
+					
+					###ファボってからの時間が範囲外
+					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wRemoveNofavoMin )
+					if wGetLag['Result']!=True :
+						wRes['Reason'] = "sTimeLag failed"
+						gVal.OBJ_L.Log( "B", wRes )
+						return wRes
+					if wGetLag['Beyond']==True :
+						###期間外 =自動リムーブ対象外
+						continue
+					
 					###ファボられたことがある
 					if wARR_RateFollowers[wIndex]['favo_r_id']!=None and wARR_RateFollowers[wIndex]['favo_r_date']!=None :
 						###前回のファボからの時間が範囲内

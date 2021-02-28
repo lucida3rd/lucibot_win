@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : ログ処理
 # 
-# ::Update= 2020/10/10
+# ::Update= 2021/3/1
 #####################################################
 # Private Function:
 #   __write( self, inLogFile, inDate, inMsg ):
@@ -200,8 +200,9 @@ class CLS_Mylog():
 		#############################
 		# コンソールに表示する
 		# = システムログに出る
-		if inViewConsole==True and \
-		   wLevel!="R" :
+###		if inViewConsole==True and \
+###		   wLevel!="R" :
+		if inViewConsole==True :
 			CLS_OSIF.sPrn( wOutLog )
 			for wLineData in wData :
 				CLS_OSIF.sPrn( wLineData )
