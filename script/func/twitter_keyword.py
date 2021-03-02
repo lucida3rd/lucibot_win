@@ -189,15 +189,11 @@ class CLS_TwitterKeyword():
 		
 		#############################
 		# キーユーザ数
-###		self.OBJ_Parent.STR_Cope['KeyUserNum'] += len( self.OBJ_Parent.STR_KeyUser )
-###		
-###		self.OBJ_Parent.STR_Cope['ArashiNum'] = len( self.OBJ_Parent.ARR_newExcUser )
 		wArashiOnNum = 0
 		wKeylist = list( self.OBJ_Parent.ARR_newExcUser )
 		for wIndex in wKeylist :
 			if self.OBJ_Parent.ARR_newExcUser[wIndex]['count']>=gVal.DEF_STR_TLNUM['excTwitterID'] :
 				wArashiOnNum += 1
-###		self.OBJ_Parent.STR_Cope['ArashiOnNum'] = wArashiOnNum
 		gVal.STR_TrafficInfo['arashii'] += wArashiOnNum
 		
 		#############################
@@ -212,7 +208,7 @@ class CLS_TwitterKeyword():
 			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			return wRes
 		
-		wARR_ArashiID = {}
+		wARR_ArashiID = []
 		gVal.OBJ_DB.ChgList( wResDB['Responce']['Data'], outList=wARR_ArashiID )
 		gVal.STR_TrafficInfo['arashi'] = len( wARR_ArashiID )
 		gVal.STR_TrafficInfo['dbreq'] += 1

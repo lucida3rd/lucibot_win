@@ -192,6 +192,7 @@ class gVal() :
 		"rRemoveLimNum"		: 5,						# 1回のリムーブ解除数
 		"removeLimWait"		: 100,						#自動リムーブ処理待ち(秒) 900秒/3回(createの場合)
 
+		"rRemoveNofavoNum"	: 10,						# 1回のリムーブ ファボチェック数
 		"removeNofavoMin"	: 129600,					#自動リムーブ ファボされない期間 90日 (60x24)x90=129600(分)
 
 		"searchRoundNum"	: 7,						#1検索の回数(ページング)

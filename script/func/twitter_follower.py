@@ -634,7 +634,12 @@ class CLS_TwitterFollower():
 			wARR_NormalListMenberID.append( str(wROW['id']) )
 		
 		#############################
-		# ノーリアクション リムーブチェック
+		# ヘッダ表示
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " フォロワー監視 実行" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "ノーリアクション リムーブチェック実行中......" + '\n'
+		CLS_OSIF.sPrn( wStr )
 		
 		#############################
 		# DBのフォロワー一覧取得(自動リムーブでない情報を抽出)
@@ -768,10 +773,11 @@ class CLS_TwitterFollower():
 ###		
 		#############################
 		# ヘッダ表示
-		wStr = "--------------------" + '\n'
-		wStr = wStr + " フォロワー監視 実行" + '\n'
-		wStr = wStr + "--------------------" + '\n'
-		wStr = wStr + "以下のリムーブ対象ユーザをリムーブします......" + '\n'
+###		wStr = "--------------------" + '\n'
+###		wStr = wStr + " フォロワー監視 実行" + '\n'
+###		wStr = wStr + "--------------------" + '\n'
+###		wStr = wStr + "以下のリムーブ対象ユーザをリムーブします......" + '\n'
+		wStr = '\n' + "以下のリムーブ対象ユーザをリムーブします......" + '\n'
 		CLS_OSIF.sPrn( wStr )
 		
 		wVAL_ZanNum = len(wARR_RateFollowers)
@@ -853,7 +859,7 @@ class CLS_TwitterFollower():
 			
 			#############################
 			# 1回の解除数チェック
-			elif gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
+			elif gVal.DEF_STR_TLNUM['rRemoveNofavoNum']<=wRemoveLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
 				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )

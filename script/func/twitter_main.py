@@ -473,7 +473,7 @@ class CLS_TwitterMain():
 		#############################
 		# 荒らしユーザCSV出力
 ###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
-		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV()
+		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=True )
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "OBJ_TwitterKeyword.OutArashiCSV failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes
@@ -885,52 +885,53 @@ class CLS_TwitterMain():
 		if wARR_Update['flg']==False :
 			wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
 			
-			###ファボってからの時間が範囲外
-			wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favodate']), inThreshold=wRemoveNofavoMin )
+			### フォローしてから一定期間内なら、何もしない
+			wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['foldate']), inThreshold=wRemoveNofavoMin )
 			if wGetLag['Result']!=True :
-				wRes['Reason'] = "sTimeLag failed"
+				wRes['Reason'] = "sTimeLag failed(1)"
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
-			if wGetLag['Beyond']==True :
-				###期間外 =自動リムーブ対象外
-					wRes['Responce'] = False
-					wRes['Result'] = True
-					return wRes
+			if wGetLag['Beyond']==False :
+				###期間内 =対象外
+				wRes['Result'] = True
+				return wRes
 			
-			###ファボったことがない場合、
-			###フォローしてからの時間が範囲内か
+			###ファボったことがない場合、何もしない
 			if inARR_FollowerData['favoid']==None or inARR_FollowerData['favodate']==None :
-				wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['foldate']), inThreshold=wRemoveNofavoMin )
-				if wGetLag['Result']!=True :
-					wRes['Reason'] = "sTimeLag failed"
-					gVal.OBJ_L.Log( "B", wRes )
-					return wRes
-				if wGetLag['Beyond']==False :
-					###期間内 =自動リムーブ対象外
-					wRes['Responce'] = False
-					wRes['Result'] = True
-					return wRes
+				wRes['Result'] = True
+				return wRes
+			
+			###前回のファボから一定期間内なら、何もしない
+			wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favodate']), inThreshold=wRemoveNofavoMin )
+			if wGetLag['Result']!=True :
+				wRes['Reason'] = "sTimeLag failed(2)"
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			if wGetLag['Beyond']==False :
+				###期間内 =対象外
+				wRes['Result'] = True
+				return wRes
+			
+			###ファボられたことがない場合、自動リムーブ対象
+			if inARR_FollowerData['favo_r_id']==None or inARR_FollowerData['favo_r_date']==None :
+				wARR_Update['remove'] = True
+			
+			###ファボられたことがある場合
+			###  前回から 一定期間外なら自動リムーブ対象
 			else:
-			###ファボられたことがある場合、
-			###前回のファボからの時間が範囲内
 				wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favo_r_date']), inThreshold=wRemoveNofavoMin )
 				if wGetLag['Result']!=True :
-					wRes['Reason'] = "sTimeLag failed"
+					wRes['Reason'] = "sTimeLag failed(3)"
 					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
-				if wGetLag['Beyond']==False :
-					###期間内 =自動リムーブ対象外
-					wRes['Responce'] = False
-					wRes['Result'] = True
-					return wRes
-			
-			###自動リムーブ対象
-			wARR_Update['remove'] = True
+				if wGetLag['Beyond']==True :
+					###期間外 =自動リムーブ対象外
+					wARR_Update['remove'] = True
 		
 		#############################
 		# DB更新
-		###更新されてる かつ 自動リムーブ対象外
-		if wARR_Update['remove']==False :
+		###更新されてる
+		if wARR_Update['flg']==True :
 			wQuery = "update tbl_follower_data set " + \
 						"favo_r_cnt = " + str( wARR_Update['cnt'] ) + ", " + \
 						"favo_r_id = '" + str( wARR_Update['id'] ) + "', " + \
@@ -941,7 +942,7 @@ class CLS_TwitterMain():
 			CLS_OSIF.sPrn( "〇ファボ検出: @" + inARR_FollowerData['screen_name'] + '\n')
 		
 		###更新されてない かつ 自動リムーブ候補に設定
-		else :
+		elif wARR_Update['remove']==True :
 			wQuery = "update tbl_follower_data set " + \
 						"limited = True, " + \
 						"removed = False " + \
@@ -952,17 +953,18 @@ class CLS_TwitterMain():
 			wRes['Reason'] = "ノーアクションのためリムーブ候補に設定: @" + str(inARR_FollowerData['screen_name'])
 			gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
 		
-		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
-		wResDB = gVal.OBJ_DB.GetQueryStat()
-		if wResDB['Result']!=True :
-			##失敗
-			wRes['Reason'] = "Run Query is failed(20): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
-			gVal.OBJ_L.Log( "B", wRes )
-			return wRes
-		
-		###  カウント
-		gVal.STR_TrafficInfo['dbreq'] += 1
-		gVal.STR_TrafficInfo['dbup'] += 1
+		if wARR_Update['flg']==True or wARR_Update['remove']==True :
+			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+			wResDB = gVal.OBJ_DB.GetQueryStat()
+			if wResDB['Result']!=True :
+				##失敗
+				wRes['Reason'] = "Run Query is failed(20): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			
+			###  カウント
+			gVal.STR_TrafficInfo['dbreq'] += 1
+			gVal.STR_TrafficInfo['dbup'] += 1
 		
 		wRes['Result'] = True
 		return wRes
