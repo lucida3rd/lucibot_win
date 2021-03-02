@@ -85,14 +85,12 @@ class CLS_BotCtrl():
 		wResDBconn = gVal.OBJ_DB.Create( gVal.DEF_BD_HOST, gVal.DEF_BD_NAME, gVal.DEF_BD_USER, wPassword )
 		wResDB = gVal.OBJ_DB.GetDbStatus()
 		if wResDBconn!=True :
-###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: DBの接続に失敗しました: 理由=" + wResDB['Reason'] )
 			wRes['Reason'] = "DBの接続に失敗しました: reason=" + wResDB['Reason']
 			CLS_OSIF.sErr( wRes )
 			return False
 		
 		###結果の確認
 		if wResDB['Init']!=True :
-###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: DBが初期化できてません" )
 			wRes['Reason'] = "DBが初期化できてません"
 			CLS_OSIF.sErr( wRes )
 			return False
@@ -104,14 +102,12 @@ class CLS_BotCtrl():
 		wResDB = gVal.OBJ_DB.GetQueryStat()
 		if wResDB['Result']!=True :
 			##クエリ失敗
-###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: DBの状態チェック失敗: " + wResDB['Reason'] )
 			wRes['Reason'] = "DBの状態チェック失敗: RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			CLS_OSIF.sErr( wRes )
 			gVal.OBJ_DB.Close()
 			return False
 		if wResDB['Responce']!=True :
 			##テーブルがない= 初期化してない
-###			CLS_OSIF.sPrn( "CLS_BotCtrl: sBotTest: 初期化されていません" )
 			wRes['Reason'] = "初期化されていません"
 			CLS_OSIF.sErr( wRes )
 			gVal.OBJ_DB.Close()
@@ -131,7 +127,6 @@ class CLS_BotCtrl():
 		wResDB = gVal.OBJ_DB.GetQueryStat()
 		if wResDB['Result']!=True :
 			##失敗
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Run Query is failed(1): " + wResDB['Reason'] + " query=" + wResDB['Query'] )
 			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
 			gVal.OBJ_L.Log( "B", wRes )
 			gVal.OBJ_DB.Close()
@@ -140,7 +135,6 @@ class CLS_BotCtrl():
 		#############################
 		# ユーザ登録の確認
 		if len(wResDB['Responce']['Data'])==0 :
-###			gVal.OBJ_L.Log( "D", "CLS_BotCtrl", "sBotTest", "ユーザが登録されていません =" + gVal.STR_UserInfo['Account'] )
 			wRes['Reason'] = "ユーザが登録されていません =" + gVal.STR_UserInfo['Account']
 			gVal.OBJ_L.Log( "D", wRes )
 			gVal.OBJ_DB.Close()
@@ -173,15 +167,10 @@ class CLS_BotCtrl():
 			gVal.OBJ_L.Log( "B", wRes )
 			gVal.OBJ_DB.Close()
 			return
-###		elif wLock['Responce']==True :
 		elif wLock['Responce']!=None :
 			wRes['Reason'] = "排他中"
 			gVal.OBJ_L.Log( "R", wRes )
 			
-###			CLS_OSIF.sPrn( "処理中です。しばらくお待ちください。" )
-###			CLS_OSIF.sPrn( wLock['Reason'] )
-###			gVal.OBJ_DB.Close()
-###			return
 			CLS_OSIF.sPrn( "処理待機中です。CTRL+Cで中止することもできます。" )
 			CLS_OSIF.sPrn( wLock['Reason'] + '\n' )
 			
@@ -198,7 +187,6 @@ class CLS_BotCtrl():
 		wResTwitter_Create = gVal.OBJ_Twitter.Create( gVal.STR_UserInfo['Account'], wAPIkey, wAPIsecret, wACCtoken, wACCsecret )
 		wResTwitter = gVal.OBJ_Twitter.GetTwStatus()
 		if wResTwitter_Create!=True :
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Twitterの接続失敗: reason=" + wResTwitter['Reason'] )
 			wRes['Reason'] = "Twitterの接続失敗: reason=" + wResTwitter['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 			cls.sBotEnd()	#bot終了
@@ -206,7 +194,6 @@ class CLS_BotCtrl():
 		
 		###結果の確認
 		if wResTwitter['Init']!=True :
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Twitter初期化失敗" )
 			wRes['Reason'] = "Twitter初期化失敗"
 			gVal.OBJ_L.Log( "B", wRes )
 			cls.sBotEnd()	#bot終了
@@ -217,7 +204,6 @@ class CLS_BotCtrl():
 		wTD = CLS_OSIF.sGetTime()
 		if wTD['Result']!=True :
 			###時間取得失敗  時計壊れた？
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "PC時間取得失敗" )
 			wRes['Reason'] = "PC時間取得失敗"
 			gVal.OBJ_L.Log( "B", wRes )
 			cls.sBotEnd()	#bot終了
@@ -229,14 +215,12 @@ class CLS_BotCtrl():
 		# るしぼっとVersion
 		wReadme = []
 		if CLS_File.sReadFile( gVal.DEF_STR_FILE['Readme'], outLine=wReadme )!=True :
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Readme.mdファイルが見つかりません: path=" + gVal.DEF_STR_FILE['Readme'] )
 			wRes['Reason'] = "Readme.mdファイルが見つかりません: path=" + gVal.DEF_STR_FILE['Readme']
 			gVal.OBJ_L.Log( "D", wRes )
 			cls.sBotEnd()	#bot終了
 			return False
 		
 		if len(wReadme)<=1 :
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotTest", "Readme.mdファイルが空です: path=" + gVal.DEF_STR_FILE['Readme'] )
 			wRes['Reason'] = "Readme.mdファイルが空です: path=" + gVal.DEF_STR_FILE['Readme']
 			gVal.OBJ_L.Log( "D", wRes )
 			cls.sBotEnd()	#bot終了
@@ -268,7 +252,6 @@ class CLS_BotCtrl():
 		
 		#############################
 		# ログに記録する
-###		gVal.OBJ_L.Log( "R", "CLS_BotCtrl", "sBotTest", "実行" )
 		wRes['Reason'] = "実行"
 		gVal.OBJ_L.Log( "R", wRes )
 		
@@ -294,7 +277,6 @@ class CLS_BotCtrl():
 		# 排他解除
 		wRes = cls.sUnlock()
 		if wRes['Result']!=True :
-###			gVal.OBJ_L.Log( "B", "CLS_BotCtrl", "sBotEnd", "排他取得失敗: " + wRes['Reason'] )
 			wRes['Reason'] = "排他取得失敗: " + wRes['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
 		
@@ -360,7 +342,6 @@ class CLS_BotCtrl():
 				cls.sUnlock()	#一度解除する
 				
 				#ログに記録する
-###				gVal.OBJ_L.Log( "R", "CLS_BotCtrl", "sLock", "排他解除" )
 				wRes['Reason'] = "排他解除"
 				gVal.OBJ_L.Log( "R", wRes )
 				wRes['Reason'] = None
@@ -369,7 +350,6 @@ class CLS_BotCtrl():
 				wAtSec = wReaRIPmin - wGetLag['RateSec']
 				wAtSec = CLS_OSIF.sGetFloor( wAtSec )	#小数点切り捨て
 				wRes['Reason'] = "処理終了まであと " + str(wAtSec) + " 秒です"
-###				wRes['Responce'] = True
 				wRes['Responce'] = wAtSec
 				wRes['Result']   = True
 				return wRes

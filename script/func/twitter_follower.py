@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/3/1
+# ::Update= 2021/3/2
 #####################################################
 # Private Function:
 #   (none)
@@ -391,9 +391,11 @@ class CLS_TwitterFollower():
 							" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
 				gVal.STR_TrafficInfo['autofollowt'] += 1
 			
-			###自動リムーブ対象外 で 既にリムーブ済みだった
+			###自動リムーブ対象外 で フォローしてたけど既にリムーブ済みだった
 			else:
-				if wARR_RateFollowers[wIndex]['rc_myfollow']==False and \
+###				if wARR_RateFollowers[wIndex]['rc_myfollow']==False and \
+				if wARR_RateFollowers[wIndex]['r_myfollow']==True and \
+				   wARR_RateFollowers[wIndex]['rc_myfollow']==False and \
 				   wARR_RateFollowers[wIndex]['removed']==False :
 					wQuery = "update tbl_follower_data set " + \
 								"removed = True " + \
@@ -403,75 +405,75 @@ class CLS_TwitterFollower():
 					###※既にリムーブしているユーザを記録＆表示する
 					wRes['Reason'] = "既にリムーブ済みのユーザ: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
 					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
-				else:
-					###ふぁぼったのに一定期間ノーリアクションなら自動リムーブする
-					# 以下の条件に全てあてはまる場合
-					# ・フォロー者
-					# ・Normalリストユーザ
-					# ・フォローしてから 90日超え
-					# ・ファボったことがある場合
-					#   ・前回のファボから 90日以内
-					#   ・ふぁぼられたことがある場合、前回から 90日超えている
-					#   ・ふぁぼられたことがない場合は自動リムーブ
-					
-					###フォローしてない場合、対象外
-					if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_MyFollowID :
-						continue
-					###normalリスト以外は対象外
-					if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_NormalListMenberID :
-						continue
-					###ファボったことがない
-					if wARR_RateFollowers[wIndex]['favoid']==None or wARR_RateFollowers[wIndex]['favodate']==None :
-						continue
-					
-					wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
-					###フォローしてからの時間が範囲内
-					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['foldate']), inThreshold=wRemoveNofavoMin )
-					if wGetLag['Result']!=True :
-						wRes['Reason'] = "sTimeLag failed"
-						gVal.OBJ_L.Log( "B", wRes )
-						return wRes
-					if wGetLag['Beyond']==False :
-						###期間内 =自動リムーブ対象外
-						continue
-					
-					###ファボってからの時間が範囲外
-					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wRemoveNofavoMin )
-					if wGetLag['Result']!=True :
-						wRes['Reason'] = "sTimeLag failed"
-						gVal.OBJ_L.Log( "B", wRes )
-						return wRes
-					if wGetLag['Beyond']==True :
-						###期間外 =自動リムーブ対象外
-						continue
-					
-					###ファボられたことがある
-					if wARR_RateFollowers[wIndex]['favo_r_id']!=None and wARR_RateFollowers[wIndex]['favo_r_date']!=None :
-						###前回のファボからの時間が範囲内
-						wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favo_r_date']), inThreshold=wRemoveNofavoMin )
-						if wGetLag['Result']!=True :
-							wRes['Reason'] = "sTimeLag failed"
-							gVal.OBJ_L.Log( "B", wRes )
-							return wRes
-						if wGetLag['Beyond']==False :
-							###期間内 =自動リムーブ対象外
-							continue
-					
-					### ここまでで自動リムーブ確定
-					wQuery = "update tbl_follower_data set " + \
-								"limited = True, " + \
-								"removed = False " + \
-								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-								" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
-					gVal.STR_TrafficInfo['autofollowt'] += 1
-					
-					###※既にリムーブしているユーザを記録＆表示する
-					wRes['Reason'] = "ノーアクションのためリムーブ候補に設定: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
-					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
-			
-###			###その他 スキップ
 ###				else:
-###					continue
+###					###ふぁぼったのに一定期間ノーリアクションなら自動リムーブする
+###					# 以下の条件に全てあてはまる場合
+###					# ・フォロー者
+###					# ・Normalリストユーザ
+###					# ・フォローしてから 90日超え
+###					# ・ファボったことがある場合
+###					#   ・前回のファボから 90日以内
+###					#   ・ふぁぼられたことがある場合、前回から 90日超えている
+###					#   ・ふぁぼられたことがない場合は自動リムーブ
+###					
+###					###フォローしてない場合、対象外
+###					if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_MyFollowID :
+###						continue
+###					###normalリスト以外は対象外
+###					if str(wARR_RateFollowers[wIndex]['id']) not in self.OBJ_Parent.ARR_NormalListMenberID :
+###						continue
+###					###ファボったことがない
+###					if wARR_RateFollowers[wIndex]['favoid']==None or wARR_RateFollowers[wIndex]['favodate']==None :
+###						continue
+###					
+###					wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
+###					###フォローしてからの時間が範囲内
+###					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['foldate']), inThreshold=wRemoveNofavoMin )
+###					if wGetLag['Result']!=True :
+###						wRes['Reason'] = "sTimeLag failed"
+###						gVal.OBJ_L.Log( "B", wRes )
+###						return wRes
+###					if wGetLag['Beyond']==False :
+###						###期間内 =自動リムーブ対象外
+###						continue
+###					
+###					###ファボってからの時間が範囲外
+###					wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favodate']), inThreshold=wRemoveNofavoMin )
+###					if wGetLag['Result']!=True :
+###						wRes['Reason'] = "sTimeLag failed"
+###						gVal.OBJ_L.Log( "B", wRes )
+###						return wRes
+###					if wGetLag['Beyond']==True :
+###						###期間外 =自動リムーブ対象外
+###						continue
+###					
+###					###ファボられたことがある
+###					if wARR_RateFollowers[wIndex]['favo_r_id']!=None and wARR_RateFollowers[wIndex]['favo_r_date']!=None :
+###						###前回のファボからの時間が範囲内
+###						wGetLag = CLS_OSIF.sTimeLag( str(wARR_RateFollowers[wIndex]['favo_r_date']), inThreshold=wRemoveNofavoMin )
+###						if wGetLag['Result']!=True :
+###							wRes['Reason'] = "sTimeLag failed"
+###							gVal.OBJ_L.Log( "B", wRes )
+###							return wRes
+###						if wGetLag['Beyond']==False :
+###							###期間内 =自動リムーブ対象外
+###							continue
+###					
+###					### ここまでで自動リムーブ確定
+###					wQuery = "update tbl_follower_data set " + \
+###								"limited = True, " + \
+###								"removed = False " + \
+###								"where twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
+###								" and id = '" + str(wARR_RateFollowers[wIndex]['id']) + "' ;"
+###					gVal.STR_TrafficInfo['autofollowt'] += 1
+###					
+###					###※既にリムーブしているユーザを記録＆表示する
+###					wRes['Reason'] = "ノーアクションのためリムーブ候補に設定: @" + str(wARR_RateFollowers[wIndex]['screen_name'])
+###					gVal.OBJ_L.Log( "R", wRes, "", inViewConsole=True )
+###			
+			###その他 スキップ
+				else:
+					continue
 			
 			###フォロー済み 前回フォロワー状態、フォロー日時を記録
 			wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -594,6 +596,150 @@ class CLS_TwitterFollower():
 		wRes['Func']  = "Run"
 		
 		#############################
+		# 時間を取得
+		wTD = CLS_OSIF.sGetTime()
+		if wTD['Result']!=True :
+			###時間取得失敗  時計壊れた？
+			wRes['Reason'] = "PC時間の取得に失敗しました"
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		### wTD['TimeDate']
+		
+		#############################
+		# フォロー一覧 取得
+		wMyFollowRes = gVal.OBJ_Twitter.GetMyFollowList()
+		if wMyFollowRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetMyFollowList): " + wMyFollowRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_MyFollowID = []
+		for wROW in wMyFollowRes['Responce'] :
+			wARR_MyFollowID.append( str(wROW['id']) )
+		
+		#############################
+		# normal登録者 取得(idだけ)
+		wListsRes = gVal.OBJ_Twitter.GetLists()
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['NorList'] )
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetListMember:NorList): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_NormalListMenberID = []
+		for wROW in wListsRes['Responce'] :
+			wARR_NormalListMenberID.append( str(wROW['id']) )
+		
+		#############################
+		# ノーリアクション リムーブチェック
+		
+		#############################
+		# DBのフォロワー一覧取得(自動リムーブでない情報を抽出)
+		wQuery = "select * from tbl_follower_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
+					"limited = False " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		
+		#############################
+		# 辞書型に整形
+		wARR_RateFollowers = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
+		
+		wVAL_ZanNum = len(wARR_RateFollowers)
+		wRemoveLimNum = 0
+		wResStop = False
+		wKeylist = wARR_RateFollowers.keys()
+		#############################
+		# ノーリアクションチェック
+		for wIndex in wKeylist :
+			###カウント
+			wRemoveLimNum += 1
+			wVAL_ZanNum -= 1
+			
+			###ユーザIDを抽出
+			wID = str( wARR_RateFollowers[wIndex]['id'] )
+			
+			###フォロー者でないならスキップ
+			if wID not in wARR_MyFollowID :
+				continue
+			###normalリストでないならスキップ
+			if wID not in wARR_NormalListMenberID :
+				continue
+			
+			###ユーザの直近のツイートを取得
+			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False,
+				 inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=gVal.DEF_STR_TLNUM['AutoFavoCount'] )
+			if wTweetRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				CLS_OSIF.sPrn( "▼ツイートの取得に失敗したためスキップします" + '\n' )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'], wTD['TimeDate'] )
+				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+					break	#ウエイト中止
+				continue	#スキップ
+			
+			if len(wTweetRes['Responce'])==0 :
+				CLS_OSIF.sPrn( "▼取得ツイートがないためスキップします" + '\n' )
+				self.__failRec_AutoFavo( wRes, wID, wARR_RateFollowers[wIndex]['favo_f_cnt'], wTD['TimeDate'] )
+				if self.__wait_AutoFavo( gVal.DEF_STR_TLNUM['AutoFavoSkipWait'] )!=True :
+					break	#ウエイト中止
+				continue	#スキップ
+			gVal.STR_TrafficInfo['timeline'] += len(wTweetRes['Responce'])
+			
+			#############################
+			# わたしをふぁぼったかチェック
+			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
+			if wReciveFavoRes['Result']!=True :
+				##失敗
+				continue
+			
+			#############################
+			# 処理全て終わり
+			if wVAL_ZanNum==0 :
+				break
+			
+			#############################
+			# 1回の解除数チェック
+			elif gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
+				###解除数限界ならウェイトする
+				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
+				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )
+				
+				wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['removeLimWait'] )
+				if wResStop==False :
+					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
+					break	#ウェイト中止
+				
+				#############################
+				# 15分周期処理
+				w15Res = self.OBJ_Parent.Circle15min()
+				if w15Res['Result']!=True :
+					wRes['Reason'] = "Circle15min is failed reason=" + w15Res['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				
+				wRemoveLimNum = 0
+			
+			#############################
+			# 残り処理回数がまだある =5秒ウェイトする
+			else :
+				CLS_OSIF.sSleep( 5 )
+		
+		#############################
+		
+		#############################
 		# DBのフォロワー一覧取得(自動リムーブ対象の抜き出し)
 		wQuery = "select * from tbl_follower_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
@@ -616,10 +762,10 @@ class CLS_TwitterFollower():
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 		gVal.STR_TrafficInfo['autofollowt'] = len(wARR_RateFollowers)
 		
-		#############################
-		# 画面クリア
-		CLS_OSIF.sDispClr()
-		
+###		#############################
+###		# 画面クリア
+###		CLS_OSIF.sDispClr()
+###		
 		#############################
 		# ヘッダ表示
 		wStr = "--------------------" + '\n'
@@ -716,6 +862,15 @@ class CLS_TwitterFollower():
 				if wResStop==False :
 					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
 					break	#ウェイト中止
+				
+				#############################
+				# 15分周期処理
+				w15Res = self.OBJ_Parent.Circle15min()
+				if w15Res['Result']!=True :
+					wRes['Reason'] = "Circle15min is failed reason=" + w15Res['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				
 				wRemoveLimNum = 0
 			
 			#############################

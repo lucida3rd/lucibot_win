@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2021/2/22
+# ::Update= 2021/3/2
 #####################################################
 # Private Function:
 #   (none)
@@ -104,6 +104,7 @@ class CLS_Main_Console() :
 		if wResIni['Result']!=True :
 			wRes['Reason'] = "Init is failed reason=" + wResIni['Reason']
 			gVal.OBJ_L.Log( "B", wRes )
+			CLS_BotCtrl.sBotEnd()	#bot停止
 			return
 		
 		#############################
@@ -116,16 +117,18 @@ class CLS_Main_Console() :
 				continue
 			
 			if wCommand.find("\\q")>=0 or wCommand=="exit" :
-				###終了
-				wResEnd = cls.OBJ_TwitterMain.End()	#終了処理
-				if wResEnd['Result']!=True :
-					wRes['Reason'] = "End is failed reason=" + wResEnd['Reason']
-					gVal.OBJ_L.Log( "B", wRes )
-				
+				#############################
+				# 終了
+###				wResEnd = cls.OBJ_TwitterMain.End()	#終了処理
+###				if wResEnd['Result']!=True :
+###					wRes['Reason'] = "End is failed reason=" + wResEnd['Reason']
+###					gVal.OBJ_L.Log( "B", wRes )
+###				
 				wRes['Reason'] = "コンソール停止"
 				gVal.OBJ_L.Log( "R", wRes )
 				CLS_BotCtrl.sBotEnd()	#bot停止
 				break
+				#############################
 			
 			wResCmd = cls().sRunCommand( wCommand )
 			gVal.STR_TrafficInfo['run'] += 1	#Bot実行
@@ -136,9 +139,11 @@ class CLS_Main_Console() :
 			if wResTraffic['Result']!=True :
 				wRes['Reason'] = "Set Traffic failed: reason" + CLS_OSIF.sCatErr( wResTraffic )
 				gVal.OBJ_L.Log( "B", wRes )
+				CLS_BotCtrl.sBotEnd()	#bot停止
 				return wRes
 			if wResTraffic['Responce']==True :
-				CLS_OSIF.sInp( "トラヒック情報が翌日分に切り替わりました。" )
+###				CLS_OSIF.sInp( "トラヒック情報が翌日分に切り替わりました。" )
+				CLS_OSIF.sPrn( "トラヒック情報が翌日分に切り替わりました。" )
 			
 			wResTraffic = CLS_Traffic.sReport()
 			if wResTraffic['Result']!=True :
@@ -152,22 +157,37 @@ class CLS_Main_Console() :
 			
 			#############################
 			# 開始or前回チェックから15分経ったか
-			wFLG_Err = False
-			wResetAPImin = gVal.DEF_STR_TLNUM['resetAPImin'] * 60	#秒に変換
-			wGetLag = CLS_OSIF.sTimeLag( gVal.STR_SystemInfo['APIrect'], inThreshold=wResetAPImin )
-			if wGetLag['Result']!=True :
-				wRes['Reason'] = "sTimeLag failed"
+###			wFLG_Err = False
+###			wResetAPImin = gVal.DEF_STR_TLNUM['resetAPImin'] * 60	#秒に変換
+###			wGetLag = CLS_OSIF.sTimeLag( gVal.STR_SystemInfo['APIrect'], inThreshold=wResetAPImin )
+###			if wGetLag['Result']!=True :
+###				wRes['Reason'] = "sTimeLag failed"
+###				gVal.OBJ_L.Log( "B", wRes )
+###				wFLG_Err = True
+###			
+###			if wGetLag['Beyond']==True or \
+###			   wFLG_Err==True :
+###				###前回から15分経ってるので更新
+###				gVal.OBJ_Twitter.ResetAPI()
+###				gVal.STR_SystemInfo['APIrect'] = str(wGetLag['NowTime'])
+###				wRes['Reason'] = "TwitterAPI規制解除"
+###				gVal.OBJ_L.Log( "R", wRes )
+			w15Res = cls.OBJ_TwitterMain.Circle15min()
+			if w15Res['Result']!=True :
+				wRes['Reason'] = "Circle15min is failed reason=" + w15Res['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
-				wFLG_Err = True
+				CLS_BotCtrl.sBotEnd()	#bot停止
+				return wRes
 			
-			if wGetLag['Beyond']==True or \
-			   wFLG_Err==True :
-				###前回から15分経ってるので更新
-				gVal.OBJ_Twitter.ResetAPI()
-				gVal.STR_SystemInfo['APIrect'] = str(wGetLag['NowTime'])
-				wRes['Reason'] = "TwitterAPI規制解除"
-				gVal.OBJ_L.Log( "R", wRes )
-			
+			#############################
+			# 保存処理
+			wSaveRes = cls.OBJ_TwitterMain.CircleSave()
+			if wSaveRes['Result']!=True :
+				wRes['Reason'] = "CircleSave is failed reason=" + wSaveRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				CLS_BotCtrl.sBotEnd()	#bot停止
+				return wRes
+		
 		return
 
 
@@ -234,42 +254,42 @@ class CLS_Main_Console() :
 		elif inCommand=="\\ics" :
 			cls.OBJ_TwitterMain.CaoFavo()
 		
-		#############################
-		# キーユーザCSV出力
-		elif inCommand=="\\k" :
-			cls.OBJ_TwitterMain.KeyUserCSV()
-		
-		#############################
-		# 荒らしユーザCSV出力
-		elif inCommand=="\\t" :
-			cls.OBJ_TwitterMain.ArashiCSV()
-		
-		#############################
-		# 荒らしユーザCSV出力(再実行)
-		elif inCommand=="\\tr" :
-			cls.OBJ_TwitterMain.ArashiCSV( inReSearch=True )
-		
+###		#############################
+###		# キーユーザCSV出力
+###		elif inCommand=="\\k" :
+###			cls.OBJ_TwitterMain.KeyUserCSV()
+###		
+###		#############################
+###		# 荒らしユーザCSV出力
+###		elif inCommand=="\\t" :
+###			cls.OBJ_TwitterMain.ArashiCSV()
+###		
+###		#############################
+###		# 荒らしユーザCSV出力(再実行)
+###		elif inCommand=="\\tr" :
+###			cls.OBJ_TwitterMain.ArashiCSV( inReSearch=True )
+###		
 	#####################################################
 		#############################
 		# いいね情報の表示
 		elif inCommand=="\\vi" :
 			cls.OBJ_TwitterMain.ViewFavo()
 		
-		#############################
-		# いいね監視の実行
-		elif inCommand=="\\ri" :
-			cls.OBJ_TwitterMain.RunFavo()
-		
+###		#############################
+###		# いいね監視の実行
+###		elif inCommand=="\\ri" :
+###			cls.OBJ_TwitterMain.RunFavo()
+###		
 		#############################
 		# フォロワー情報の表示
 		elif inCommand=="\\vf" :
 			cls.OBJ_TwitterMain.ViewFollower()
 		
-		#############################
-		# フォロワー監視の実行
-		elif inCommand=="\\rf" :
-			cls.OBJ_TwitterMain.RunFollower()
-		
+###		#############################
+###		# フォロワー監視の実行
+###		elif inCommand=="\\rf" :
+###			cls.OBJ_TwitterMain.RunFollower()
+###		
 	#####################################################
 		#############################
 		# ユーザ管理
