@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/3/2
+# ::Update= 2021/3/5
 #####################################################
 # Private Function:
 #   (none)
@@ -473,7 +473,8 @@ class CLS_TwitterMain():
 		#############################
 		# 荒らしユーザCSV出力
 ###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
-		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=True )
+###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=True )
+		wResSub = self.OBJ_TwitterKeyword.AlloutArashi()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "OBJ_TwitterKeyword.OutArashiCSV failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes

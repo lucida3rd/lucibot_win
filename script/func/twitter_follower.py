@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/3/2
+# ::Update= 2021/3/5
 #####################################################
 # Private Function:
 #   (none)
@@ -717,7 +717,7 @@ class CLS_TwitterFollower():
 			
 			#############################
 			# 1回の解除数チェック
-			elif gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
+			elif gVal.DEF_STR_TLNUM['rRemoveNofavoNum']<=wRemoveLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
 				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )
@@ -859,7 +859,7 @@ class CLS_TwitterFollower():
 			
 			#############################
 			# 1回の解除数チェック
-			elif gVal.DEF_STR_TLNUM['rRemoveNofavoNum']<=wRemoveLimNum :
+			elif gVal.DEF_STR_TLNUM['rRemoveLimNum']<=wRemoveLimNum :
 				###解除数限界ならウェイトする
 				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
 				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )

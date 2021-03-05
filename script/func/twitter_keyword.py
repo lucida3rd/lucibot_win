@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 キーワード抽出
 # 
-# ::Update= 2021/2/20
+# ::Update= 2021/3/5
 #####################################################
 # Private Function:
 #   __out_CSV( self, inPath, inARR_List ):
@@ -1759,6 +1759,131 @@ class CLS_TwitterKeyword():
 			return False	#失敗
 		
 		return True
+
+
+
+#####################################################
+# 荒らし全出力
+#####################################################
+	def AlloutArashi(self) :
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterKeyword"
+		wRes['Func']  = "AlloutArashi"
+		
+		#############################
+		# 処理開始
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 荒らし全出力" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		wVAL_AllCount = 0
+		wVAL_Count    = 0
+		wVAL_ArashiCount = 0
+		wKeylist = list( gVal.STR_SearchMode )
+###		###検索ワードで、荒らし設定ONのもの全てを検索する
+		###ワード設定有無、荒らし設定有無
+		###  にかかわらず全検索ワードを検索する
+		for wIndex in wKeylist :
+			wWord = gVal.STR_SearchMode[wIndex]['Keyword']
+			if wWord=="" :
+				###キーワードが設定されてない：スキップ
+				continue
+#			if gVal.STR_SearchMode[wIndex]['Choice']!=True :
+#				###選択されていない：スキップ
+#				continue
+#			if gVal.STR_SearchMode[wIndex]['Arashi']!=True :
+#				###荒らし設定されていない：スキップ
+#				continue
+			
+			#############################
+			# 検索ワードの表示
+			CLS_OSIF.sPrn( "タイムライン取得中... 検索語=" + wWord )
+			
+			#############################
+			# Twitterで検索 取得
+			wTwitterRes = gVal.OBJ_Twitter.GetSearch( inKeyword=wWord, inRoundNum=gVal.DEF_STR_TLNUM['searchRoundNum'] )
+			if wTwitterRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			###トラヒックに計上する
+			gVal.STR_TrafficInfo['timeline'] += len(wTwitterRes['Responce'])
+			
+			wVAL_AllCount += len(wTwitterRes['Responce'])
+			#############################
+			# 結果の表示
+			for wLine in wTwitterRes['Responce'] :
+				###リプライ、リツイート、引用リツイートは
+				###  本人のツイートか判定するのめんどくさいのでスキップする
+				if wLine['in_reply_to_status_id']!=None :
+					continue
+				if "retweeted_status" in wLine :
+					continue
+				if "quoted_status" in wLine :
+					continue
+				
+				###日時の変換
+				wTime = CLS_OSIF.sGetTimeformat_Twitter( wLine['created_at'] )
+				if wTime['Result']!=True :
+					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wLine['created_at'])
+					gVal.OBJ_L.Log( "B", wRes )
+					continue
+				wLine['created_at'] = wTime['TimeDate']
+				
+				###荒らしチェック
+				if self.OBJ_Parent.CheckTrolls( wLine )==False :
+					###荒らし判定	
+					wVAL_ArashiCount += 1
+				
+				wVAL_Count += 1
+				
+				#############################
+				# 検索ワードを保存する
+				gVal.STR_SearchMode[wIndex]['Keyword'] = wWord
+				gVal.STR_SearchMode[wIndex]['Update']  = True
+		
+		#############################
+		# 統計
+		wStr = "--------------------" + '\n'
+		wStr = wStr + "結果ツイート数 = " + str( wVAL_AllCount ) + '\n'
+		wStr = wStr + "ツイート合計数 = " + str( wVAL_Count ) + '\n'
+		wStr = wStr + "荒らし検出合計 = " + str( wVAL_ArashiCount ) + '\n'
+		wStr = wStr + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# ヘッダ表示
+		wStr = "出力するキーユーザを選出しています。しばらくお待ちください......" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		if len(self.OBJ_Parent.ARR_newExcUser)==0 :
+			###登録者なし
+			CLS_OSIF.sPrn( "荒らし登録者がないため、CSVは出力していません。" )
+			wRes['Result'] = True
+			return wRes
+		
+		# ファイル名の設定
+		wCHR_ArashiFile_path = self.__get_ArashiCSVpath()
+		
+		#############################
+		# 書き込み
+		if self.__out_ArashiCSV( wCHR_ArashiFile_path )!=True :
+			###失敗
+			wRes['Reason'] = "sWriteFile is failed: " + wCHR_ArashiFile_path
+			return wRes
+		
+		#############################
+		# 取得開始の表示
+		CLS_OSIF.sPrn( "荒らし一覧をCSVに出力しました: " + wCHR_ArashiFile_path + '\n' )
+		
+		#############################
+		# 正常終了
+		wRes['Result'] = True
+		return wRes
 
 
 
