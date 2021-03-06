@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 フォロワー監視系
 # 
-# ::Update= 2021/3/5
+# ::Update= 2021/3/6
 #####################################################
 # Private Function:
 #   (none)
@@ -1293,6 +1293,188 @@ class CLS_TwitterFollower():
 		#############################
 		# 正常終了
 		CLS_OSIF.sPrn( '\n' + "フォローが正常に完了しました。" )
+		wRes['Result'] = True
+		return wRes
+
+
+
+#####################################################
+# 個別いいねチェック
+#####################################################
+	def PointFavoCheck(self):
+		#############################
+		# 応答形式の取得
+		#   "Result" : False, "Reason" : None, "Responce" : None
+		wRes = CLS_OSIF.sGet_Resp()
+		wRes['Class'] = "CLS_TwitterFollower"
+		wRes['Func']  = "PointFavoCheck"
+		
+		#############################
+		# 画面クリア
+		CLS_OSIF.sDispClr()
+		
+		#############################
+		# ヘッダ表示
+		wStr = "--------------------" + '\n'
+		wStr = wStr + " 個別いいねチェック" + '\n'
+		wStr = wStr + "--------------------" + '\n'
+		wStr = wStr + "個別にいいねされたかチェックをおこないます。" + '\n'
+		wStr = wStr + "チェックをおこなうユーザのTwitter ID(@は含めない)を入力して、エンターキーを押してください。" + '\n'
+		wStr = wStr + "なおIDは連続して複数入力できます。" + '\n' + '\n'
+		wStr = wStr + "入力が終わったら \\q を入力して、エンターキーを押してください。" + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# 入力の受け付け
+		wARR_Commnand = []
+		while True:
+			### 入力
+			wCommand = CLS_OSIF.sInp( "=> " )
+			
+			### \qが含まれたら終わる
+			if wCommand.find("\\q")>=0 :
+				break
+			
+			### 受け付け
+			wARR_Commnand.append( wCommand )
+		
+		#############################
+		# 受け付けのチェック
+		wARR_Users = []
+		if len(wARR_Commnand)==0 :
+			wStr = "入力がありませんでした。処理を中止します。" + '\n'
+			CLS_OSIF.sPrn( wStr )
+			wRes['Result'] = True
+			return wRes
+		
+		for wLine in wARR_Commnand :
+			if wLine=="" :
+				###空白扱いはスキップ
+				continue
+			wARR_Users.append( wLine )
+		
+		wUserNum = len( wARR_Users )
+		if wUserNum==0 :
+			wStr = "有効な入力ユーザがありませんでした。処理を中止します。" + '\n'
+			CLS_OSIF.sPrn( wStr )
+			wRes['Result'] = True
+			return wRes
+		
+		wStr = str(wUserNum) + " 件のユーザを処理します。" + '\n'
+		for wLine in wARR_Users :
+			wStr = wStr + "  " + wLine + '\n'
+		CLS_OSIF.sPrn( wStr )
+		
+		#############################
+		# DBのフォロワー一覧取得(自動リムーブでない情報を抽出)
+		wQuery = "select * from tbl_follower_data where " + \
+					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' and " + \
+					"limited = False " + \
+					";"
+		
+		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
+		wResDB = gVal.OBJ_DB.GetQueryStat()
+		if wResDB['Result']!=True :
+			##失敗
+			wRes['Reason'] = "Run Query is failed(1): RunFunc=" + wResDB['RunFunc'] + " reason=" + wResDB['Reason'] + " query=" + wResDB['Query']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		gVal.STR_TrafficInfo['dbreq'] += 1
+		
+		#############################
+		# 辞書型に整形
+		wARR_RateFollowers = {}
+		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
+		
+		wVAL_ZanNum = len(wARR_Users)
+		wRemoveLimNum = 0
+		wResStop = False
+		wKeylist = list(wARR_RateFollowers)
+		#############################
+		# いいねチェック
+		for wLine in wARR_Users :
+			###カウント
+			wRemoveLimNum += 1
+			wVAL_ZanNum -= 1
+			if wVAL_ZanNum<0 :
+				break
+			
+			#############################
+			# ユーザIDを取得する
+			wUserInfoRes = gVal.OBJ_Twitter.GetUserinfo( inScreenName=wLine )
+			if wUserInfoRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetUserinfo): " + wUserInfoRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				CLS_OSIF.sPrn( wLine + " の処理がスキップされました" )
+				continue
+			
+			###ユーザIDを抽出
+			wID = str( wUserInfoRes['Responce']['id'] )
+			
+			###DB登録者でないならスキップ
+			wFLG_Detect = False
+			for wIndex in wKeylist :
+				if str(wARR_RateFollowers[wIndex]['id'])==wID :
+					wFLG_Detect = True
+					break
+			if wFLG_Detect!=True :
+				CLS_OSIF.sPrn( wLine + " の処理がスキップされました" )
+				continue
+			
+			###ユーザの直近のツイートを取得
+			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False,
+				 inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=gVal.DEF_STR_TLNUM['AutoFavoCount'] )
+			if wTweetRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				CLS_OSIF.sPrn( wLine + " のツイートの取得に失敗したためスキップします" + '\n' )
+				continue	#スキップ
+			
+			if len(wTweetRes['Responce'])==0 :
+				CLS_OSIF.sPrn( wLine + " の取得ツイートがないためスキップします" + '\n' )
+				continue	#スキップ
+			gVal.STR_TrafficInfo['timeline'] += len(wTweetRes['Responce'])
+			
+			#############################
+			# わたしをふぁぼったかチェック
+			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
+			if wReciveFavoRes['Result']!=True :
+				##失敗
+				continue
+			
+			#############################
+			# 処理全て終わり
+			if wVAL_ZanNum==0 :
+				break
+			
+			#############################
+			# 1回の解除数チェック
+			elif gVal.DEF_STR_TLNUM['rRemoveNofavoNum']<=wRemoveLimNum :
+				###解除数限界ならウェイトする
+				CLS_OSIF.sPrn( "Twitter規制回避のため、待機します。" )
+				CLS_OSIF.sPrn( "CTRL+Cで中止することもできます。残り処理数= " + str(wVAL_ZanNum) + " 個" )
+				
+				wResStop = CLS_OSIF.sPrnWAIT( gVal.DEF_STR_TLNUM['removeLimWait'] )
+				if wResStop==False :
+					CLS_OSIF.sPrn( "処理を中止しました。" + '\n' )
+					break	#ウェイト中止
+				
+				#############################
+				# 15分周期処理
+				w15Res = self.OBJ_Parent.Circle15min()
+				if w15Res['Result']!=True :
+					wRes['Reason'] = "Circle15min is failed reason=" + w15Res['Reason']
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				
+				wRemoveLimNum = 0
+			
+			#############################
+			# 残り処理回数がまだある =5秒ウェイトする
+			else :
+				CLS_OSIF.sSleep( 5 )
+		
+		CLS_OSIF.sPrn( "処理が完了しました。" + '\n' )
 		wRes['Result'] = True
 		return wRes
 

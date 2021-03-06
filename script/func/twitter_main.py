@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/3/5
+# ::Update= 2021/3/6
 #####################################################
 # Private Function:
 #   (none)
@@ -586,6 +586,15 @@ class CLS_TwitterMain():
 ###
 
 #####################################################
+# 個別いいねチェック
+#####################################################
+	def PointFavoCheck(self):
+		wRes = self.OBJ_TwitterFollower.PointFavoCheck()
+		return wRes
+
+
+
+#####################################################
 # ユーザ管理
 #####################################################
 	def UserAdmin(self):
@@ -833,20 +842,38 @@ class CLS_TwitterMain():
 			gVal.OBJ_L.Log( "B", wRes )
 			return wRes
 		
+		wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
 		#############################
 		# 更新された自分に対するふぁぼがあるか
 		for wROW in wFavoRes['Responce'] :
 			###自分以外のファボならスルー
-			if gVal.STR_UserInfo['id']!=str(wROW['user']['id']) :
+			if str(gVal.STR_UserInfo['id'])!=str(wROW['user']['id']) :
 				continue
-			###最新のファボでないならスルー
+			###最新のファボ＝更新されていない
+			###  一定期間内なら既ファボとして処理終わり
 			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
-				continue
+				wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favo_r_date']), inThreshold=wRemoveNofavoMin )
+				if wGetLag['Result']!=True :
+					wRes['Reason'] = "sTimeLag failed(3)"
+					gVal.OBJ_L.Log( "B", wRes )
+					return wRes
+				if wGetLag['Beyond']==False :
+					###期間内 =処理終わる
+					CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
+					wRes['Result'] = True
+					return wRes
 			
 			###最新ファボみつけた
+			###  日時の変換
+			wTime = CLS_OSIF.sGetTimeformat_Twitter( wROW['created_at'] )
+			if wTime['Result']!=True :
+				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wROW['created_at'])
+				gVal.OBJ_L.Log( "B", wRes )
+				continue
+			
 			wARR_Update['id']   = str( wROW['id'] )
 			wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-			wARR_Update['date'] = str( wROW['created_at'] )
+			wARR_Update['date'] = wTime['TimeDate']
 			wARR_Update['flg'] = True
 			break
 		
@@ -856,27 +883,48 @@ class CLS_TwitterMain():
 				### リプライ
 				if wTweet['in_reply_to_status_id']!=None :
 					if gVal.STR_UserInfo['id']==str( wTweet['in_reply_to_user_id'] ) :
+						###  日時の変換
+						wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+						if wTime['Result']!=True :
+							wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
+							gVal.OBJ_L.Log( "B", wRes )
+							continue
+						
 						wARR_Update['id']   = str( wTweet['id'] )
 						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-						wARR_Update['date'] = str( wTweet['created_at'] )
+						wARR_Update['date'] = wTime['TimeDate']
 						wARR_Update['flg'] = True
 						break
 				
 				### リツイート
 				if "retweeted_status" in wTweet :
 					if gVal.STR_UserInfo['id']==wTweet['retweeted_status']['user']['id'] :
+						###  日時の変換
+						wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+						if wTime['Result']!=True :
+							wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
+							gVal.OBJ_L.Log( "B", wRes )
+							continue
+						
 						wARR_Update['id']   = str( wTweet['id'] )
 						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-						wARR_Update['date'] = str( wTweet['created_at'] )
+						wARR_Update['date'] = wTime['TimeDate']
 						wARR_Update['flg'] = True
 						break
 				
 				### 引用リツイート
 				if "quoted_status" in wTweet :
 					if gVal.STR_UserInfo['id']==wTweet['quoted_status']['user']['id'] :
+						###  日時の変換
+						wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+						if wTime['Result']!=True :
+							wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
+							gVal.OBJ_L.Log( "B", wRes )
+							continue
+						
 						wARR_Update['id']   = str( wTweet['id'] )
 						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-						wARR_Update['date'] = str( wTweet['created_at'] )
+						wARR_Update['date'] = wTime['TimeDate']
 						wARR_Update['flg'] = True
 						break
 		
@@ -884,8 +932,8 @@ class CLS_TwitterMain():
 		# 更新されてない場合、
 		# 自動リムーブ対象外かをチェック
 		if wARR_Update['flg']==False :
-			wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
-			
+###			wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
+###			
 			### フォローしてから一定期間内なら、何もしない
 			wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['foldate']), inThreshold=wRemoveNofavoMin )
 			if wGetLag['Result']!=True :

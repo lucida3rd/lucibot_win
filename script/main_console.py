@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : メイン処理(コンソール)
 # 
-# ::Update= 2021/3/2
+# ::Update= 2021/3/6
 #####################################################
 # Private Function:
 #   (none)
@@ -284,6 +284,11 @@ class CLS_Main_Console() :
 		# フォロワー情報の表示
 		elif inCommand=="\\vf" :
 			cls.OBJ_TwitterMain.ViewFollower()
+		
+		#############################
+		# 個別いいねチェック
+		elif inCommand=="\\ri" :
+			cls.OBJ_TwitterMain.PointFavoCheck()
 		
 ###		#############################
 ###		# フォロワー監視の実行
