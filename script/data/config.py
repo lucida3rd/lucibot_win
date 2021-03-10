@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : 環境設定変更
 # 
-# ::Update= 2021/1/15
+# ::Update= 2021/3/11
 #####################################################
 # Private Function:
 #   (none)
@@ -677,7 +677,6 @@ class CLS_Config() :
 		for wIndex in wKeylist :
 			#############################
 			# DBになければinsertする
-###			if inNewList[wIndex]['screen_name'] not in gVal.STR_RateExcTwitterID :
 			if inNewList[wIndex]['id'] not in gVal.STR_RateExcTwitterID :
 				wQuery = "insert into tbl_exc_twitterid values (" + \
 							"'" + str(wTD['TimeDate']) + "'," + \
@@ -688,10 +687,15 @@ class CLS_Config() :
 							str( inNewList[wIndex]['arashi'] ) + "," + \
 							str( inNewList[wIndex]['reason_id'] ) + " " + \
 							") ;"
+				inNewList[wIndex]['update'] = False
 			
 			#############################
 			# DBにあれば更新する
 			else:
+				if inNewList[wIndex]['update']!=True :
+					###情報が更新されてなければスキップ
+					continue
+				
 				wQuery = "update tbl_exc_twitterid set " + \
 							"id = '" + str( inNewList[wIndex]['id'] ) + "', " + \
 							"screen_name = '" + str( inNewList[wIndex]['screen_name'] ) + "', " + \
@@ -700,7 +704,9 @@ class CLS_Config() :
 							"arashi = " + str( inNewList[wIndex]['arashi'] ) + ", " + \
 							"reason_id = " + str( inNewList[wIndex]['reason_id'] ) + " " + \
 							"where screen_name = '" + inNewList[wIndex]['screen_name'] + "' ;"
-			
+				
+				inNewList[wIndex]['update'] = False
+				
 			#############################
 			# Query実行
 			wResDB = gVal.OBJ_DB.RunQuery( wQuery )

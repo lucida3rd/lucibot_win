@@ -119,11 +119,6 @@ class CLS_Main_Console() :
 			if wCommand.find("\\q")>=0 or wCommand=="exit" :
 				#############################
 				# 終了
-###				wResEnd = cls.OBJ_TwitterMain.End()	#終了処理
-###				if wResEnd['Result']!=True :
-###					wRes['Reason'] = "End is failed reason=" + wResEnd['Reason']
-###					gVal.OBJ_L.Log( "B", wRes )
-###				
 				wRes['Reason'] = "コンソール停止"
 				gVal.OBJ_L.Log( "R", wRes )
 				CLS_BotCtrl.sBotEnd()	#bot停止
@@ -142,7 +137,6 @@ class CLS_Main_Console() :
 				CLS_BotCtrl.sBotEnd()	#bot停止
 				return wRes
 			if wResTraffic['Responce']==True :
-###				CLS_OSIF.sInp( "トラヒック情報が翌日分に切り替わりました。" )
 				CLS_OSIF.sPrn( "トラヒック情報が翌日分に切り替わりました。" )
 			
 			wResTraffic = CLS_Traffic.sReport()
@@ -157,21 +151,6 @@ class CLS_Main_Console() :
 			
 			#############################
 			# 開始or前回チェックから15分経ったか
-###			wFLG_Err = False
-###			wResetAPImin = gVal.DEF_STR_TLNUM['resetAPImin'] * 60	#秒に変換
-###			wGetLag = CLS_OSIF.sTimeLag( gVal.STR_SystemInfo['APIrect'], inThreshold=wResetAPImin )
-###			if wGetLag['Result']!=True :
-###				wRes['Reason'] = "sTimeLag failed"
-###				gVal.OBJ_L.Log( "B", wRes )
-###				wFLG_Err = True
-###			
-###			if wGetLag['Beyond']==True or \
-###			   wFLG_Err==True :
-###				###前回から15分経ってるので更新
-###				gVal.OBJ_Twitter.ResetAPI()
-###				gVal.STR_SystemInfo['APIrect'] = str(wGetLag['NowTime'])
-###				wRes['Reason'] = "TwitterAPI規制解除"
-###				gVal.OBJ_L.Log( "R", wRes )
 			w15Res = cls.OBJ_TwitterMain.Circle15min()
 			if w15Res['Result']!=True :
 				wRes['Reason'] = "Circle15min is failed reason=" + w15Res['Reason']

@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 管理系
 # 
-# ::Update= 2021/2/20
+# ::Update= 2021/3/11
 #####################################################
 # Private Function:
 #   (none)
@@ -893,6 +893,7 @@ class CLS_TwitterAdmin():
 					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = 0
 					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = 0
 					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = False
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['update'] = True
 				#############################
 				# 設定変更の場合
 				else :
@@ -903,6 +904,7 @@ class CLS_TwitterAdmin():
 					
 					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['lastdate'] = wTD['TimeDate']
 					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = wSelect
+					self.OBJ_Parent.ARR_newExcUser[wTwitterID]['update'] = True
 			
 			#############################
 			# 荒らしではない→荒らし設定
@@ -916,6 +918,7 @@ class CLS_TwitterAdmin():
 				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['count']     = gVal.DEF_STR_TLNUM['excTwitterID']	#最低値を設定
 				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['reason_id'] = wSelect
 				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['arashi'] = True
+				self.OBJ_Parent.ARR_newExcUser[wTwitterID]['update'] = True
 		
 		#############################
 		# DBに保存する

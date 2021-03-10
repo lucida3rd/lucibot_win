@@ -7,7 +7,7 @@
 # ::TwitterURL  : https://twitter.com/lucida3hai
 # ::Class       : Twitter監視 メインモジュール
 # 
-# ::Update= 2021/3/6
+# ::Update= 2021/3/11
 #####################################################
 # Private Function:
 #   (none)
@@ -245,7 +245,6 @@ class CLS_TwitterMain():
 		#############################
 		# 除外Twitter ID 書き込み
 		wResSub = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
-###		wResSub = self.SaveExcTwitterID()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
@@ -317,17 +316,17 @@ class CLS_TwitterMain():
 #####################################################
 # 除外Twitter ID保存
 #####################################################
-###	def SaveExcTwitterID(self):
-###		wOBJ_Config = CLS_Config()
-###		wRes = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
-###		if wRes['Result']!=True :
-###			return wRes
-###		
-###		###再ロード(念のため)
-###		wRes = wOBJ_Config.GetExcTwitterID()
-###		return wRes
-###
-###
+	def SaveExcTwitterID(self):
+		wOBJ_Config = CLS_Config()
+		wRes = wOBJ_Config.SetExcTwitterID( self.ARR_newExcUser )
+		if wRes['Result']!=True :
+			return wRes
+		
+		###再ロード(念のため)
+		wRes = wOBJ_Config.GetExcTwitterID()
+		return wRes
+
+
 
 #####################################################
 # 自動いいね保存
@@ -344,6 +343,8 @@ class CLS_TwitterMain():
 #####################################################
 	def SetnewExcUser( self, inID, inScreenName, inCount=0, inLastDate="1901-01-01 00:00:00", inArashi=False, inReasonID=0 ):
 		wCell = {
+			"update"      : False,
+			
 			"id"          : str(inID),
 			"screen_name" : inScreenName,
 			"count"       : inCount,
@@ -388,10 +389,96 @@ class CLS_TwitterMain():
 			wRes['Reason'] = "OBJ_TwitterKeyword.Get failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
+###		#############################
+###		# 画面クリア(=通常モード時)
+###		if gVal.FLG_Test_Mode==False :
+###			CLS_OSIF.sDispClr()
+###		
+###		#############################
+###		# ヘッダ表示
+###		wStr = "--------------------" + '\n'
+###		wStr = wStr + " 監視情報 結果" + '\n'
+###		wStr = wStr + "--------------------" + '\n'
+###		wStr = wStr + str(gVal.STR_TrafficInfo['update']) + '\n'
+###		wStr = wStr + '\n'
+###		
+###		#############################
+###		# 情報組み立て
+###		wStr = wStr + "Bot実行回数        : " + str( gVal.STR_TrafficInfo['run'] ) + '\n'
+###		wStr = wStr + "取得タイムライン数 : " + str( gVal.STR_TrafficInfo['timeline'] ) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "現いいね数         : " + str( gVal.STR_TrafficInfo['favo'] ) + '\n'
+###		wStr = wStr + "解除対象 いいね数  : " + str( gVal.STR_TrafficInfo['favoremovet'] ) + '\n'
+###		wStr = wStr + "解除実行 いいね数  : " + str( gVal.STR_TrafficInfo['favoremove'] ) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "現フォロー数       : " + str( gVal.STR_TrafficInfo['myfollow'] ) + '\n'
+###		wStr = wStr + "現フォロワー数     : " + str( gVal.STR_TrafficInfo['follower'] ) + '\n'
+###		wStr = wStr + "片フォロワー数     : " + str( gVal.STR_TrafficInfo['piefollow'] ) + '\n'
+####	wStr = wStr + "新規フォロワー数   : " + str( gVal.STR_TrafficInfo['newfollower'] ) + '\n'
+###		wStr = wStr + "被リムーブ数       : " + str( gVal.STR_TrafficInfo['selremove'] ) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "自動リムーブ対象数 : " + str( gVal.STR_TrafficInfo['autofollowt'] ) + '\n'
+###		wStr = wStr + "自動リムーブ実行数 : " + str( gVal.STR_TrafficInfo['autofollow'] ) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "自動いいね対象数   : " + str( gVal.STR_TrafficInfo['autofavot'] ) + '\n'
+###		wStr = wStr + "自動いいね実施数   : " + str( gVal.STR_TrafficInfo['autofavo'] ) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "荒らし登録者数     : " + str( gVal.STR_TrafficInfo['arashi'] ) + '\n'
+###		wStr = wStr + "荒らし検出回数     : " + str( gVal.STR_TrafficInfo['arashii'] ) + '\n'
+###		wStr = wStr + "荒らし解除者数     : " + str( gVal.STR_TrafficInfo['arashir'] ) + '\n'
+###		wStr = wStr + '\n'
+###		wStr = wStr + "クエリ要求回数     : " + str( gVal.STR_TrafficInfo['dbreq'] ) + '\n'
+###		wStr = wStr + "DB挿入回数         : " + str( gVal.STR_TrafficInfo['dbins'] ) + '\n'
+###		wStr = wStr + "DB更新回数         : " + str( gVal.STR_TrafficInfo['dbup'] ) + '\n'
+###		wStr = wStr + "DB削除回数         : " + str( gVal.STR_TrafficInfo['dbdel'] ) + '\n'
+###		wStr = wStr + '\n'
+###		
+###		###コンソールに表示
+###		CLS_OSIF.sPrn( wStr )
+###		
+###		#############################
+###		# キーワードの表示
+###		wRange = len(gVal.STR_SearchMode)
+###		if wRange>1 :
+###			wStr = '\n'
+###			wStr = wStr + " キーワードごとのヒット数" + '\n'
+###			wStr = wStr + "--------------------" + '\n'
+###			wRange = len(gVal.STR_SearchMode)
+###			for wIndex in range( wRange ) :
+###				if gVal.STR_SearchMode[wIndex]['id']==0 :
+###					continue	#id=0は手動用
+###				
+###				###前方に半角スペース埋め
+###				wLen = 10 - len( str(gVal.STR_SearchMode[wIndex]['Count']) )
+###				wBlank = " " * wLen
+###				wStr = wStr + wBlank + str(gVal.STR_SearchMode[wIndex]['Count']) + "  " + gVal.STR_SearchMode[wIndex]['Keyword'] + '\n'
+###			
+###			###コンソールに表示
+###			CLS_OSIF.sPrn( wStr )
+###		
+###		
 		#############################
-		# 画面クリア(=通常モード時)
-		if gVal.FLG_Test_Mode==False :
-			CLS_OSIF.sDispClr()
+		# いいね情報の実行
+		wResSub = self.OBJ_TwitterFavo.Run()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "OBJ_TwitterFavo.Run failed: " + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# フォロワー監視の実行
+		wResSub = self.OBJ_TwitterFollower.Run()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "OBJ_TwitterFollower.Run failed: " + CLS_OSIF.sCatErr( wResSub )
+			return wRes
+		
+		#############################
+		# 荒らしユーザCSV出力
+###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
+###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=True )
+		wResSub = self.OBJ_TwitterKeyword.AlloutArashi()
+		if wResSub['Result']!=True :
+			wRes['Reason'] = "OBJ_TwitterKeyword.OutArashiCSV failed: " + CLS_OSIF.sCatErr( wResSub )
+			return wRes
 		
 		#############################
 		# ヘッダ表示
@@ -454,30 +541,6 @@ class CLS_TwitterMain():
 			
 			###コンソールに表示
 			CLS_OSIF.sPrn( wStr )
-		
-
-		#############################
-		# いいね情報の実行
-		wResSub = self.OBJ_TwitterFavo.Run()
-		if wResSub['Result']!=True :
-			wRes['Reason'] = "OBJ_TwitterFavo.Run failed: " + CLS_OSIF.sCatErr( wResSub )
-			return wRes
-		
-		#############################
-		# フォロワー監視の実行
-		wResSub = self.OBJ_TwitterFollower.Run()
-		if wResSub['Result']!=True :
-			wRes['Reason'] = "OBJ_TwitterFollower.Run failed: " + CLS_OSIF.sCatErr( wResSub )
-			return wRes
-		
-		#############################
-		# 荒らしユーザCSV出力
-###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
-###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=True )
-		wResSub = self.OBJ_TwitterKeyword.AlloutArashi()
-		if wResSub['Result']!=True :
-			wRes['Reason'] = "OBJ_TwitterKeyword.OutArashiCSV failed: " + CLS_OSIF.sCatErr( wResSub )
-			return wRes
 		
 		#############################
 		# 完了
@@ -715,6 +778,7 @@ class CLS_TwitterMain():
 		else:
 			### screen_nameが変わってる場合への対策
 			self.ARR_newExcUser[wIndex]['screen_name'] = inLine['user']['screen_name']
+			self.ARR_newExcUser[wIndex]['update'] = True
 		
 		#############################
 		# 同じツイートか
@@ -724,6 +788,7 @@ class CLS_TwitterMain():
 		###新しい更新日として記録
 		if self.ARR_newExcUser[wIndex]['lastdate']<inLine['created_at'] :
 			self.ARR_newExcUser[wIndex]['lastdate'] = str(inLine['created_at'])
+			self.ARR_newExcUser[wIndex]['update'] = True
 		
 		gVal.STR_ExcTweetID.append( wTweetID )
 		
@@ -733,6 +798,7 @@ class CLS_TwitterMain():
 		if wIndex in gVal.STR_ExcTwitterID :
 			###どうせまた荒らしてるんでしょ？のカウンタ
 			self.ARR_newExcUser[wIndex]['count'] += 1
+			self.ARR_newExcUser[wIndex]['update'] = True
 			return False	#除外、さよなら
 		
 		#############################
@@ -779,14 +845,15 @@ class CLS_TwitterMain():
 				self.ARR_newExcUser[wIndex]['reason_id'] = wReasonID
 				
 				###除外リスト入り
-###				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['screen_name'] )
 				gVal.STR_ExcTwitterID.append( self.ARR_newExcUser[wIndex]['id'] )
+			self.ARR_newExcUser[wIndex]['update'] = True
 			
 			return False	#さよなら
 		
 		#############################
 		# 連続じゃないのでカウントリセット
 		self.ARR_newExcUser[wIndex]['count'] = 0
+		self.ARR_newExcUser[wIndex]['update'] = True
 		
 		return True
 

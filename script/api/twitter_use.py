@@ -7,7 +7,7 @@
 # ::TwitterURL : https://twitter.com/lucida3hai
 # ::Class       : ついったーユーズ
 # 
-# ::Update= 2021/2/27
+# ::Update= 2021/3/11
 #####################################################
 # Private Function:
 #   __initTwStatus(self):
@@ -318,9 +318,9 @@ class CLS_Twitter_Use():
 		if self.__twConnect()!=True :
 			return False
 		
-		#############################
-		# 遅延
-		time.sleep( self.DEF_VAL_SLEEP )
+###		#############################
+###		# 遅延
+###		time.sleep( self.DEF_VAL_SLEEP )
 		
 		return True
 
@@ -333,6 +333,28 @@ class CLS_Twitter_Use():
 			self.TwStatus['Reason'] = "CLS_Twitter_Use: __twConnect: Twitter host no responce"
 			return False
 		
+		#############################
+		# Twitterクラスの生成
+###		try:
+###			self.Twitter_use = OAuth1Session(
+###				self.STR_TWITTERdata["APIkey"],
+###				self.STR_TWITTERdata["APIsecret"],
+###				self.STR_TWITTERdata["ACCtoken"],
+###				self.STR_TWITTERdata["ACCsecret"]
+###			)
+###		except ValueError as err :
+###			self.IniStatus['Reason'] = "CLS_Twitter_Use: __twConnect: Twitter error: " + str(err)
+###			return False
+		wRes = self.__twSetAPI()
+		
+###		return True
+		return wRes
+
+
+
+	#####################################################
+	def __twSetAPI(self):
+
 		#############################
 		# Twitterクラスの生成
 		try:
