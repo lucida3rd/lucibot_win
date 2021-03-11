@@ -945,8 +945,8 @@ class CLS_TwitterMain():
 			###  同じIDなら既ファボとして処理終わり
 			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
 				CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-				wRes['Result'] = True
-				return wRes
+###				wRes['Result'] = True
+###				return wRes
 			else:
 				###最新ファボみつけた
 				###  日時の変換
@@ -960,7 +960,7 @@ class CLS_TwitterMain():
 				wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
 				wARR_Update['date'] = wTime['TimeDate']
 				wARR_Update['flg'] = True
-				break
+			break
 		
 		### ふぁぼがない場合、リプライ、リツイート、引用リツイートされているかで見る
 		if wARR_Update['flg']==False :
@@ -970,8 +970,8 @@ class CLS_TwitterMain():
 					if gVal.STR_UserInfo['id']==str( wTweet['in_reply_to_user_id'] ) :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-							wRes['Result'] = True
-							return wRes
+###							wRes['Result'] = True
+###							return wRes
 						else:
 							###  日時の変換
 							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
@@ -984,15 +984,15 @@ class CLS_TwitterMain():
 							wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
 							wARR_Update['date'] = wTime['TimeDate']
 							wARR_Update['flg'] = True
-							break
+						break
 				
 				### リツイート
 				elif "retweeted_status" in wTweet :
 					if gVal.STR_UserInfo['id']==wTweet['retweeted_status']['user']['id'] :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-							wRes['Result'] = True
-							return wRes
+###							wRes['Result'] = True
+###							return wRes
 						else:
 							###  日時の変換
 							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
@@ -1005,15 +1005,15 @@ class CLS_TwitterMain():
 							wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
 							wARR_Update['date'] = wTime['TimeDate']
 							wARR_Update['flg'] = True
-							break
+						break
 				
 				### 引用リツイート
 				elif "quoted_status" in wTweet :
 					if gVal.STR_UserInfo['id']==wTweet['quoted_status']['user']['id'] :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-							wRes['Result'] = True
-							return wRes
+###							wRes['Result'] = True
+###							return wRes
 						else:
 							###  日時の変換
 							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
@@ -1026,7 +1026,7 @@ class CLS_TwitterMain():
 							wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
 							wARR_Update['date'] = wTime['TimeDate']
 							wARR_Update['flg'] = True
-							break
+						break
 		
 		#############################
 		# 更新されてない場合、
