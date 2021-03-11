@@ -917,32 +917,50 @@ class CLS_TwitterMain():
 			if str(gVal.STR_UserInfo['id'])!=str(wROW['user']['id']) :
 				continue
 			###最新のファボ＝更新されていない
-			###  一定期間内なら既ファボとして処理終わり
+###			###  一定期間内なら既ファボとして処理終わり
+###			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
+###				wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favo_r_date']), inThreshold=wRemoveNofavoMin )
+###				if wGetLag['Result']!=True :
+###					wRes['Reason'] = "sTimeLag failed(3)"
+###					gVal.OBJ_L.Log( "B", wRes )
+###					return wRes
+###				if wGetLag['Beyond']==False :
+###					###期間内 =処理終わる
+###					CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
+###					wRes['Result'] = True
+###					return wRes
+###			###最新ファボみつけた
+###			###  日時の変換
+###			wTime = CLS_OSIF.sGetTimeformat_Twitter( wROW['created_at'] )
+###			if wTime['Result']!=True :
+###				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wROW['created_at'])
+###				gVal.OBJ_L.Log( "B", wRes )
+###				continue
+###			
+###			wARR_Update['id']   = str( wROW['id'] )
+###			wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+###			wARR_Update['date'] = wTime['TimeDate']
+###			wARR_Update['flg'] = True
+###			break
+			###  同じIDなら既ファボとして処理終わり
 			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
-				wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favo_r_date']), inThreshold=wRemoveNofavoMin )
-				if wGetLag['Result']!=True :
-					wRes['Reason'] = "sTimeLag failed(3)"
+				CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
+				wRes['Result'] = True
+				return wRes
+			else:
+				###最新ファボみつけた
+				###  日時の変換
+				wTime = CLS_OSIF.sGetTimeformat_Twitter( wROW['created_at'] )
+				if wTime['Result']!=True :
+					wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wROW['created_at'])
 					gVal.OBJ_L.Log( "B", wRes )
-					return wRes
-				if wGetLag['Beyond']==False :
-					###期間内 =処理終わる
-					CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-					wRes['Result'] = True
-					return wRes
-			
-			###最新ファボみつけた
-			###  日時の変換
-			wTime = CLS_OSIF.sGetTimeformat_Twitter( wROW['created_at'] )
-			if wTime['Result']!=True :
-				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wROW['created_at'])
-				gVal.OBJ_L.Log( "B", wRes )
-				continue
-			
-			wARR_Update['id']   = str( wROW['id'] )
-			wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-			wARR_Update['date'] = wTime['TimeDate']
-			wARR_Update['flg'] = True
-			break
+					continue
+				
+				wARR_Update['id']   = str( wROW['id'] )
+				wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+				wARR_Update['date'] = wTime['TimeDate']
+				wARR_Update['flg'] = True
+				break
 		
 		### ふぁぼがない場合、リプライ、リツイート、引用リツイートされているかで見る
 		if wARR_Update['flg']==False :
@@ -950,50 +968,65 @@ class CLS_TwitterMain():
 				### リプライ
 				if wTweet['in_reply_to_status_id']!=None :
 					if gVal.STR_UserInfo['id']==str( wTweet['in_reply_to_user_id'] ) :
-						###  日時の変換
-						wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
-						if wTime['Result']!=True :
-							wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
-							gVal.OBJ_L.Log( "B", wRes )
-							continue
-						
-						wARR_Update['id']   = str( wTweet['id'] )
-						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-						wARR_Update['date'] = wTime['TimeDate']
-						wARR_Update['flg'] = True
-						break
+						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
+							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
+							wRes['Result'] = True
+							return wRes
+						else:
+							###  日時の変換
+							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+							if wTime['Result']!=True :
+								wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
+								gVal.OBJ_L.Log( "B", wRes )
+								continue
+							
+							wARR_Update['id']   = str( wTweet['id'] )
+							wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+							wARR_Update['date'] = wTime['TimeDate']
+							wARR_Update['flg'] = True
+							break
 				
 				### リツイート
-				if "retweeted_status" in wTweet :
+				elif "retweeted_status" in wTweet :
 					if gVal.STR_UserInfo['id']==wTweet['retweeted_status']['user']['id'] :
-						###  日時の変換
-						wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
-						if wTime['Result']!=True :
-							wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
-							gVal.OBJ_L.Log( "B", wRes )
-							continue
-						
-						wARR_Update['id']   = str( wTweet['id'] )
-						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-						wARR_Update['date'] = wTime['TimeDate']
-						wARR_Update['flg'] = True
-						break
+						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
+							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
+							wRes['Result'] = True
+							return wRes
+						else:
+							###  日時の変換
+							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+							if wTime['Result']!=True :
+								wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
+								gVal.OBJ_L.Log( "B", wRes )
+								continue
+							
+							wARR_Update['id']   = str( wTweet['id'] )
+							wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+							wARR_Update['date'] = wTime['TimeDate']
+							wARR_Update['flg'] = True
+							break
 				
 				### 引用リツイート
-				if "quoted_status" in wTweet :
+				elif "quoted_status" in wTweet :
 					if gVal.STR_UserInfo['id']==wTweet['quoted_status']['user']['id'] :
-						###  日時の変換
-						wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
-						if wTime['Result']!=True :
-							wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
-							gVal.OBJ_L.Log( "B", wRes )
-							continue
-						
-						wARR_Update['id']   = str( wTweet['id'] )
-						wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-						wARR_Update['date'] = wTime['TimeDate']
-						wARR_Update['flg'] = True
-						break
+						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
+							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
+							wRes['Result'] = True
+							return wRes
+						else:
+							###  日時の変換
+							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
+							if wTime['Result']!=True :
+								wRes['Reason'] = "sGetTimeformat_Twitter is failed(2): " + str(wTweet['created_at'])
+								gVal.OBJ_L.Log( "B", wRes )
+								continue
+							
+							wARR_Update['id']   = str( wTweet['id'] )
+							wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
+							wARR_Update['date'] = wTime['TimeDate']
+							wARR_Update['flg'] = True
+							break
 		
 		#############################
 		# 更新されてない場合、
