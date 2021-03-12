@@ -1294,6 +1294,23 @@ class CLS_TwitterFollower():
 		wRes['Func']  = "PointFavoCheck"
 		
 		#############################
+		# Normalリストの取得
+		wListsRes = gVal.OBJ_Twitter.GetLists()
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		
+		wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['NorList'] )
+		if wListsRes['Result']!=True :
+			wRes['Reason'] = "Twitter API Error(GetListMember:NorList): " + wListsRes['Reason']
+			gVal.OBJ_L.Log( "B", wRes )
+			return wRes
+		wARR_NormalListMenberID = []
+		for wROW in wListsRes['Responce'] :
+			wARR_NormalListMenberID.append( str(wROW['id']) )
+		
+		#############################
 		# 画面クリア
 		CLS_OSIF.sDispClr()
 		
@@ -1395,6 +1412,11 @@ class CLS_TwitterFollower():
 			###ユーザIDを抽出
 			wID = str( wUserInfoRes['Responce']['id'] )
 			
+			###Normalリストならリムーブもありえる
+			wFLG_RemodeMode = False
+			if wID in wARR_NormalListMenberID :
+				wFLG_RemodeMode = True
+			
 			###DB登録者でないならスキップ
 			wFLG_Detect = False
 			for wIndex in wKeylist :
@@ -1423,7 +1445,7 @@ class CLS_TwitterFollower():
 			
 			#############################
 			# わたしをふぁぼったかチェック
-			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
+			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'], wFLG_RemodeMode )
 			if wReciveFavoRes['Result']!=True :
 				##失敗
 				continue

@@ -348,11 +348,28 @@ class CLS_Main_Console() :
 ##			wTwitterRes = gVal.OBJ_Twitter.GetTL( inTLmode="user" )
 ##			if wTwitterRes['Result']==True :
 ##				CLS_OSIF.sPrn( str(wTwitterRes['Responce']) )
-			wTwitterRes = gVal.OBJ_Twitter.GetTweetStat2( inID="1349021137309757446" )
-			if wTwitterRes['Result']==True :
-				CLS_OSIF.sPrn( str(wTwitterRes['Responce']) )
-			else:
-				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
+###			wTwitterRes = gVal.OBJ_Twitter.GetTweetStat2( inID="1349021137309757446" )
+###			if wTwitterRes['Result']==True :
+###				CLS_OSIF.sPrn( str(wTwitterRes['Responce']) )
+###			else:
+###				CLS_OSIF.sPrn( "Twitter API Error: " + wTwitterRes['Reason'] )
+
+			wListsRes = gVal.OBJ_Twitter.GetLists()
+			if wListsRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetLists): " + wListsRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+		
+			wListsRes = gVal.OBJ_Twitter.GetListMember( gVal.STR_UserInfo['NorList'] )
+			if wListsRes['Result']!=True :
+				wRes['Reason'] = "Twitter API Error(GetListMember:NorList): " + wListsRes['Reason']
+				gVal.OBJ_L.Log( "B", wRes )
+				return wRes
+			wARR_NormalListMenberID = []
+			for wROW in wListsRes['Responce'] :
+				wARR_NormalListMenberID.append( str(wROW['id']) )
+			print( str(wARR_NormalListMenberID) )
+
 		
 	#####################################################
 		#############################

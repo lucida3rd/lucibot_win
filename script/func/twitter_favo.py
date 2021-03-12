@@ -1158,13 +1158,13 @@ class CLS_TwitterFavo():
 					### ID未決定だけどリツイートor引用リツイートは取得している
 					wFavoTweetID = wARR_SetTweet['tw_id']	#リツイートor引用リツイートのIDをセット
 			
-			#############################
-			# わたしをふぁぼったかチェック
-			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
-			if wReciveFavoRes['Result']!=True :
-				##失敗
-				continue
-			
+###			#############################
+###			# わたしをふぁぼったかチェック
+###			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
+###			if wReciveFavoRes['Result']!=True :
+###				##失敗
+###				continue
+###			
 			#############################
 			# いいねを実行する
 			wFavoRes = gVal.OBJ_Twitter.CreateFavo( wFavoTweetID )

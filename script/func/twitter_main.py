@@ -715,7 +715,8 @@ class CLS_TwitterMain():
 #####################################################
 # ふぁぼチェック
 #####################################################
-	def ReciveFavo( self, inID, inARR_FollowerData, inARR_Tweets ):
+###	def ReciveFavo( self, inID, inARR_FollowerData, inARR_Tweets ):
+	def ReciveFavo( self, inID, inARR_FollowerData, inARR_Tweets, inFLG_RemoveMode=True ):
 		#############################
 		# 応答形式の取得
 		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
@@ -830,9 +831,11 @@ class CLS_TwitterMain():
 						break
 		
 		#############################
-		# 更新されてない場合、
+###		# 更新されてない場合、
+		# 更新されてない場合、かつリムーブモードON時
 		# 自動リムーブ対象外かをチェック
-		if wARR_Update['flg']==False :
+###		if wARR_Update['flg']==False :
+		if wARR_Update['flg']==False and inFLG_RemoveMode==True :
 			### フォローしてから一定期間内なら、何もしない
 			wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['foldate']), inThreshold=wRemoveNofavoMin )
 			if wGetLag['Result']!=True :
@@ -873,7 +876,7 @@ class CLS_TwitterMain():
 					gVal.OBJ_L.Log( "B", wRes )
 					return wRes
 				if wGetLag['Beyond']==True :
-					###期間外 =自動リムーブ対象外
+					###期間外 =自動リムーブ対象
 					wARR_Update['remove'] = True
 		
 		#############################
