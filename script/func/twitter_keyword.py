@@ -99,7 +99,6 @@ class CLS_TwitterKeyword():
 				wRes['Reason'] = "Twitter API Error: " + wTwitterRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
 				return wRes
-###			self.OBJ_Parent.STR_Cope['TimelineNum'] += len(wTwitterRes['Responce'])
 			gVal.STR_TrafficInfo['timeline'] += len(wTwitterRes['Responce'])
 			
 			#############################
@@ -227,7 +226,6 @@ class CLS_TwitterKeyword():
 		wSTR_Cell = {}
 		###セット
 		wSTR_Cell.update({ "id"          : str(inLine['user']['id']) })
-###		wSTR_Cell.update({ "id"          : inLine['user']['id'] })
 		wSTR_Cell.update({ "user_name"   : str(inLine['user']['name']) })
 		wSTR_Cell.update({ "screen_name" : str(inLine['user']['screen_name']) })
 		wSTR_Cell.update({ "hit_word"    : inWord })
@@ -894,7 +892,6 @@ class CLS_TwitterKeyword():
 					"r_myfollow = True or " + \
 					"rc_follower = True " + \
 					";"
-###					"r_remove = True or " + \
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 		wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -1784,7 +1781,6 @@ class CLS_TwitterKeyword():
 		wVAL_Count    = 0
 		wVAL_ArashiCount = 0
 		wKeylist = list( gVal.STR_SearchMode )
-###		###検索ワードで、荒らし設定ONのもの全てを検索する
 		###ワード設定有無、荒らし設定有無
 		###  にかかわらず全検索ワードを検索する
 		for wIndex in wKeylist :
@@ -1898,13 +1894,6 @@ class CLS_TwitterKeyword():
 		wRes['Class'] = "CLS_TwitterFavo"
 		wRes['Func']  = "Run"
 		
-###		#############################
-###		# 集計のリセット
-###		self.OBJ_Parent.STR_Cope['tFavoRemove'] = 0
-###		self.OBJ_Parent.STR_Cope['FavoRemove']  = 0
-###		
-###		self.OBJ_Parent.STR_Cope['DB_Update'] = 0
-###		
 		#############################
 		# DBのいいね一覧取得 (いいね解除対象の抜き出し)
 		wQuery = "select * from tbl_favo_data where " + \
@@ -1926,7 +1915,6 @@ class CLS_TwitterKeyword():
 		# 辞書型に整形
 		wARR_RateFavoID = {}
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavoID )
-###		self.OBJ_Parent.STR_Cope['tFavoRemove'] = len(wARR_RateFavoID)
 		gVal.STR_TrafficInfo['favoremovet'] = len(wARR_RateFavoID)
 		
 		#############################
@@ -1965,7 +1953,6 @@ class CLS_TwitterKeyword():
 			wStr = wStr + "--------------------" + '\n'
 			CLS_OSIF.sPrn( wStr )
 			
-###			self.OBJ_Parent.STR_Cope['FavoRemove'] += 1
 			gVal.STR_TrafficInfo['favoremove'] += 1
 			
 			###  limited をOFF、removed をONにする
@@ -1984,7 +1971,6 @@ class CLS_TwitterKeyword():
 				return wRes
 			
 			###  カウント
-###			self.OBJ_Parent.STR_Cope['DB_Update'] += 1
 			gVal.STR_TrafficInfo['dbreq'] += 1
 			gVal.STR_TrafficInfo['dbup'] += 1
 			
@@ -2006,9 +1992,6 @@ class CLS_TwitterKeyword():
 		#############################
 		# 統計
 		wStr = "--------------------" + '\n'
-###		wStr = wStr + "DB更新数          = " + str(self.OBJ_Parent.STR_Cope['DB_Update']) + '\n'
-###		wStr = wStr + "解除対象 いいね数 = " + str(self.OBJ_Parent.STR_Cope['tFavoRemove']) + '\n'
-###		wStr = wStr + "解除済み いいね数 = " + str(self.OBJ_Parent.STR_Cope['FavoRemove']) + '\n'
 		wStr = wStr + "解除対象 いいね数 = " + str( gVal.STR_TrafficInfo['favoremovet'] ) + '\n'
 		wStr = wStr + "解除済み いいね数 = " + str( gVal.STR_TrafficInfo['favoremove'] ) + '\n'
 		

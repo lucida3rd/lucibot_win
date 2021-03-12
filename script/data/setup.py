@@ -593,45 +593,6 @@ class CLS_Setup():
 			gVal.OBJ_DB.Close()
 			return False
 		
-##		#############################
-##		# DB初期化
-##		
-##		#############################
-##		# DB初期化：tbl_log_data
-##		wStr = "tbl_log_data（ログデータ） " + '\n'
-##		wStr = wStr + "をクリアしますか？(y/N)=> "
-##		wSelect = CLS_OSIF.sInp( wStr )
-##		if wSelect!="y" :
-##			self.__create_TBL_LOG_DATA( inDBobj )
-##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
-##		
-##		#############################
-##		# DB初期化：tbl_keyword_data
-##		wStr = "tbl_keyword_data（キーユーザ検索用データ） " + '\n'
-##		wStr = wStr + "をクリアしますか？(y/N)=> "
-##		wSelect = CLS_OSIF.sInp( wStr )
-##		if wSelect!="y" :
-##			self.__create_TBL_KEYWORD_DATA( inDBobj )
-##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
-##		
-##		#############################
-##		# DB初期化：tbl_favo_data
-##		wStr = "tbl_favo_data（いいね保存用データ） " + '\n'
-##		wStr = wStr + "をクリアしますか？(y/N)=> "
-##		wSelect = CLS_OSIF.sInp( wStr )
-##		if wSelect!="y" :
-##			self.__create_TBL_FAVO_DATA( inDBobj )
-##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
-##		
-##		#############################
-##		# DB初期化：tbl_follower_data
-##		wStr = "tbl_follower_data（フォロー・フォロワー管理用データ） " + '\n'
-##		wStr = wStr + "をクリアしますか？(y/N)=> "
-##		wSelect = CLS_OSIF.sInp( wStr )
-##		if wSelect!="y" :
-##			self.__create_TBL_FOLLOWER_DATA( inDBobj )
-##			CLS_OSIF.sPrn( "クリアしました。" + '\n' )
-##		
 		#############################
 		# DB初期化
 		self.__create_TBL_LOG_DATA( gVal.OBJ_DB )

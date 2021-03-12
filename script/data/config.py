@@ -176,7 +176,6 @@ class CLS_Config() :
 		wRes['Func']  = "SetTwitterList"
 		
 		wRes['Responce'] = {}
-###		wRes['Responce'].update({ "norlist" : "(none)", "urflist" : "(none)" })
 		wRes['Responce'].update({ "norlist" : "(none)", "urflist" : "(none)", "favolist" : "(none)" })
 		
 		#############################
@@ -334,9 +333,6 @@ class CLS_Config() :
 		
 		#############################
 		# DBの検索モード取得
-###		wQuery = "select * from tbl_keyword_data where " + \
-###					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
-###					" and choice = True ;"
 		wQuery = "select * from tbl_keyword_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					";"
@@ -460,7 +456,6 @@ class CLS_Config() :
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "'" + \
 					" and id = " + str( gVal.STR_SearchMode[inIndex]['id'] ) + " " + \
 					";"
-###					" and id = " + str(inIndex) + " " + \
 
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
 		wResDB = gVal.OBJ_DB.GetQueryStat()
@@ -491,8 +486,6 @@ class CLS_Config() :
 						str( gVal.STR_SearchMode[inIndex]['ExcSensi'] ) + "," + \
 						str( gVal.STR_SearchMode[inIndex]['Arashi'] ) + \
 						") ;"
-###		
-###						str( inIndex ) + "," + \
 		
 		#############################
 		# DBにあれば更新する
@@ -515,8 +508,6 @@ class CLS_Config() :
 					"arashi = " + str( gVal.STR_SearchMode[inIndex]['Arashi'] ) + " " + \
 					"where twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					" and id = " + str( gVal.STR_SearchMode[inIndex]['id'] ) + " ;"
-###		
-###					" and id = " + str(inIndex) + " ;"
 		
 		#############################
 		# Query実行
@@ -639,11 +630,9 @@ class CLS_Config() :
 		gVal.STR_RateExcTwitterID = []	#除外Twitter ID(処理前DB)
 		wKeylist = gVal.STR_ExcTwitterID_Info.keys()
 		for wIndex in wKeylist :
-###			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
 			gVal.STR_RateExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['id'] )
 			
 			if gVal.STR_ExcTwitterID_Info[wIndex]['arashi']==True :
-###				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['screen_name'] )
 				gVal.STR_ExcTwitterID.append( gVal.STR_ExcTwitterID_Info[wIndex]['id'] )
 		
 		#############################
@@ -938,7 +927,6 @@ class CLS_Config() :
 		
 		#############################
 		# DBの取得
-###		wQuery = "select favorp,favort,favoirt,favotag,favolen from tbl_user_data where " + \
 		wQuery = "select * from tbl_user_data where " + \
 					"twitterid = '" + gVal.STR_UserInfo['Account'] + "' " + \
 					";"

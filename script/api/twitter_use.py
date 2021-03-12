@@ -318,10 +318,6 @@ class CLS_Twitter_Use():
 		if self.__twConnect()!=True :
 			return False
 		
-###		#############################
-###		# 遅延
-###		time.sleep( self.DEF_VAL_SLEEP )
-		
 		return True
 
 	#####################################################
@@ -335,19 +331,8 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# Twitterクラスの生成
-###		try:
-###			self.Twitter_use = OAuth1Session(
-###				self.STR_TWITTERdata["APIkey"],
-###				self.STR_TWITTERdata["APIsecret"],
-###				self.STR_TWITTERdata["ACCtoken"],
-###				self.STR_TWITTERdata["ACCsecret"]
-###			)
-###		except ValueError as err :
-###			self.IniStatus['Reason'] = "CLS_Twitter_Use: __twConnect: Twitter error: " + str(err)
-###			return False
 		wRes = self.__twSetAPI()
 		
-###		return True
 		return wRes
 
 
@@ -487,7 +472,6 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# パラメータの生成
-###		wParams = { "status" : inTweet }
 		wHeaders = { "content-type" : "application/json" }
 		wPayload = { "event" : { "type" : "message_create",
 						"message_create" : {
@@ -504,7 +488,6 @@ class CLS_Twitter_Use():
 		#############################
 		# ついーと
 		try:
-###			wTweetRes = self.Twitter_use.post( wAPI, params=wParams )
 			wPayload = json.dumps( wPayload )
 			wTweetRes = self.Twitter_use.post( wAPI, headers=wHeaders, data=wPayload )
 		except ValueError as err :
@@ -529,7 +512,6 @@ class CLS_Twitter_Use():
 #####################################################
 # タイムライン読み込み処理
 #####################################################
-###	def GetTL( self, inTLmode="home", inListID=None, inFLG_Rep=True, inFLG_Rts=False ):
 	def GetTL( self, inTLmode="home", inFLG_Rep=True, inFLG_Rts=False, inScreenName=STR_TWITTERdata['TwitterID'], inCount=VAL_TwitNum, inListID=None ):
 		#############################
 		# 応答形式の取得
@@ -602,16 +584,11 @@ class CLS_Twitter_Use():
 			## exclude_replies  : リプライを除外する True=除外
 			## include_rts      : リツイートを含める True=含める
 		
-###		#############################
-###		# APIカウント
-###		self.__set_APIcount( wAPIname )
-###		
 		#############################
 		# タイムライン読み込み
 		wNowID = -1
 		wARR_TL = []
 		try:
-###			wTweetRes = self.Twitter_use.get( wAPI, params=wParams )
 			while True :
 				#############################
 				# APIカウント
@@ -655,21 +632,6 @@ class CLS_Twitter_Use():
 		except ValueError as err :
 			wRes['Reason'] = "Twitter error: " + err
 			return wRes
-		
-###		#############################
-###		# 遅延
-###		time.sleep( self.DEF_VAL_SLEEP )
-###		
-###		#############################
-###		# 結果
-###		if wTweetRes.status_code != 200 :
-###			wRes['Reason'] = "Twitter responce failed: " + str(wTweetRes.status_code)
-###			return wRes
-###		
-###		#############################
-###		# TLを取得
-###		wRes['Responce'] = json.loads( wTweetRes.text )
-###		
 		
 		#############################
 		# 結果
@@ -724,9 +686,6 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# APIの指定
-###		wAPI = "https://api.twitter.com/2/tweets"
-###		wAPI = "https://api.twitter.com/1.1/statuses/lookup.json"
-###		wAPI = "https://api.twitter.com/1.1/statuses/show.json"
 		wAPI = "https://twitter.com/i/activity/favorited_popup"
 
 		
@@ -738,10 +697,6 @@ class CLS_Twitter_Use():
 		
 		#############################
 		# パラメータの生成
-###		wParams = {
-###			"ids"			: inID,
-###			"tweet.fields"	: "created_at"
-###		}
 		wParams = {
 			"id"			: inID,
 			"include_entities" : True
@@ -1111,13 +1066,11 @@ class CLS_Twitter_Use():
 			"count"			: self.VAL_TwitNum,
 			"cursor"		: "-1",
 			"skip_status"	: "True"
-##			"screen_name"	: "..."
 		}
 		
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1218,13 +1171,11 @@ class CLS_Twitter_Use():
 			"count"			: self.VAL_TwitNum,
 			"cursor"		: "-1",
 			"skip_status"	: "True"
-##			"screen_name"	: "..."
 		}
 		
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1534,7 +1485,6 @@ class CLS_Twitter_Use():
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1774,17 +1724,12 @@ class CLS_Twitter_Use():
 		# パラメータの生成
 		wParams = {
 			"count"			: self.VAL_TwitNum
-###			"count"			: 5
-###			"since_id"			: -1
-###			"include_entities" : True
 		}
-###		wNowID = -1
 		
 		#############################
 		# タイムライン読み込み
 		wNowID = -1
 		wARR_TL = []
-###		wFLG_Limit = False
 		try:
 			while True :
 				#############################
@@ -1900,15 +1845,8 @@ class CLS_Twitter_Use():
 			if len(wTL)>0 :
 				if "errors" not in wTL :
 					for wLine in wTL :
-###						if wNowID==wLine['id'] :
-###							continue
 						wARR_TL.append( wLine )
 			
-###			#############################
-###			# API規制チェック
-###			if self.__get_APIrect( "favorites_list" )!=True :
-###				break
-###			
 			#############################
 			# 遅延
 			time.sleep( self.DEF_VAL_SLEEP )
@@ -2187,13 +2125,11 @@ class CLS_Twitter_Use():
 					"count"			: self.VAL_TwitListNum,
 					"cursor"		: "-1",
 					"skip_status"	: "True"
-##					"screen_name"	: "..."
 		}
 		
 		#############################
 		# タイムライン読み込み
 		wARR_TL = []
-###		wFLG_Limit = False
 		try:
 			while True :
 				#############################

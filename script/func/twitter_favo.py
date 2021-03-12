@@ -401,10 +401,6 @@ class CLS_TwitterFavo():
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFavoID )
 		gVal.STR_TrafficInfo['favoremovet'] = len(wARR_RateFavoID)
 		
-###		#############################
-###		# 画面クリア
-###		CLS_OSIF.sDispClr()
-###		
 		#############################
 		# ヘッダ表示
 		wStr = "--------------------" + '\n'
@@ -758,7 +754,6 @@ class CLS_TwitterFavo():
 			if wFavoRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error: " + wFavoRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
-###				continue
 				CLS_OSIF.sPrn( "●いいねは失敗しました：" + '\n' )
 			else:
 				CLS_OSIF.sPrn( "◎いいねしました：" + '\n' )
@@ -1165,7 +1160,6 @@ class CLS_TwitterFavo():
 			
 			#############################
 			# わたしをふぁぼったかチェック
-###			wReciveFavoRes = self.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
 			wReciveFavoRes = self.OBJ_Parent.ReciveFavo( wID, wARR_RateFollowers[wIndex], wTweetRes['Responce'] )
 			if wReciveFavoRes['Result']!=True :
 				##失敗
@@ -1177,7 +1171,6 @@ class CLS_TwitterFavo():
 			if wFavoRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error: " + wFavoRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
-###				continue
 				wStr = "●いいねに失敗しました：" + '\n'
 			else:
 				if wARR_SetTweet['flg']==False :

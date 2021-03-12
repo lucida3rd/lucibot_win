@@ -271,49 +271,6 @@ class CLS_TwitterMain():
 
 
 #####################################################
-# 終了
-#####################################################
-###	def End(self):
-###		#############################
-###		# 応答形式の取得
-###		#   "Result" : False, "Class" : None, "Func" : None, "Reason" : None, "Responce" : None
-###		wRes = CLS_OSIF.sGet_Resp()
-###		wRes['Class'] = "CLS_TwitterMain"
-###		wRes['Func']  = "End"
-###		
-###		#############################
-###		# 除外Twitter ID 書き込み
-###		wResSub = self.SaveExcTwitterID()
-###		if wResSub['Result']!=True :
-###			wRes['Reason'] = "SetExcTwitterID failed: reason" + CLS_OSIF.sCatErr( wResSub )
-###			return wRes
-###		
-###		#############################
-###		# 古い除外Follow候補 削除
-###		wOBJ_Config = CLS_Config()
-###		wResSub = wOBJ_Config.OldExcFollowID_Erase()
-###		if wResSub['Result']!=True :
-###			wRes['Reason'] = "OldExcFollowID_Erase failed: reason" + CLS_OSIF.sCatErr( wResSub )
-###			return wRes
-###		
-###		#############################
-###		# 完了
-###		wRes['Result'] = True
-###		return wRes
-###
-###
-
-#####################################################
-# 検索モード保存
-#####################################################
-###	def SaveSearchMode(self):
-###		wOBJ_Config = CLS_Config()
-###		wRes = wOBJ_Config.SetSearchMode_All()
-###		return wRes
-###
-###
-
-#####################################################
 # 除外Twitter ID保存
 #####################################################
 	def SaveExcTwitterID(self):
@@ -327,16 +284,6 @@ class CLS_TwitterMain():
 		return wRes
 
 
-
-#####################################################
-# 自動いいね保存
-#####################################################
-###	def SaveAutoFavo(self):
-###		wOBJ_Config = CLS_Config()
-###		wRes = wOBJ_Config.SetAutoFavo()
-###		return wRes
-###
-###
 
 #####################################################
 # 新規除外ユーザ 設定
@@ -389,74 +336,6 @@ class CLS_TwitterMain():
 			wRes['Reason'] = "OBJ_TwitterKeyword.Get failed: " + CLS_OSIF.sCatErr( wResSub )
 			return wRes
 		
-###		#############################
-###		# 画面クリア(=通常モード時)
-###		if gVal.FLG_Test_Mode==False :
-###			CLS_OSIF.sDispClr()
-###		
-###		#############################
-###		# ヘッダ表示
-###		wStr = "--------------------" + '\n'
-###		wStr = wStr + " 監視情報 結果" + '\n'
-###		wStr = wStr + "--------------------" + '\n'
-###		wStr = wStr + str(gVal.STR_TrafficInfo['update']) + '\n'
-###		wStr = wStr + '\n'
-###		
-###		#############################
-###		# 情報組み立て
-###		wStr = wStr + "Bot実行回数        : " + str( gVal.STR_TrafficInfo['run'] ) + '\n'
-###		wStr = wStr + "取得タイムライン数 : " + str( gVal.STR_TrafficInfo['timeline'] ) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "現いいね数         : " + str( gVal.STR_TrafficInfo['favo'] ) + '\n'
-###		wStr = wStr + "解除対象 いいね数  : " + str( gVal.STR_TrafficInfo['favoremovet'] ) + '\n'
-###		wStr = wStr + "解除実行 いいね数  : " + str( gVal.STR_TrafficInfo['favoremove'] ) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "現フォロー数       : " + str( gVal.STR_TrafficInfo['myfollow'] ) + '\n'
-###		wStr = wStr + "現フォロワー数     : " + str( gVal.STR_TrafficInfo['follower'] ) + '\n'
-###		wStr = wStr + "片フォロワー数     : " + str( gVal.STR_TrafficInfo['piefollow'] ) + '\n'
-####	wStr = wStr + "新規フォロワー数   : " + str( gVal.STR_TrafficInfo['newfollower'] ) + '\n'
-###		wStr = wStr + "被リムーブ数       : " + str( gVal.STR_TrafficInfo['selremove'] ) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "自動リムーブ対象数 : " + str( gVal.STR_TrafficInfo['autofollowt'] ) + '\n'
-###		wStr = wStr + "自動リムーブ実行数 : " + str( gVal.STR_TrafficInfo['autofollow'] ) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "自動いいね対象数   : " + str( gVal.STR_TrafficInfo['autofavot'] ) + '\n'
-###		wStr = wStr + "自動いいね実施数   : " + str( gVal.STR_TrafficInfo['autofavo'] ) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "荒らし登録者数     : " + str( gVal.STR_TrafficInfo['arashi'] ) + '\n'
-###		wStr = wStr + "荒らし検出回数     : " + str( gVal.STR_TrafficInfo['arashii'] ) + '\n'
-###		wStr = wStr + "荒らし解除者数     : " + str( gVal.STR_TrafficInfo['arashir'] ) + '\n'
-###		wStr = wStr + '\n'
-###		wStr = wStr + "クエリ要求回数     : " + str( gVal.STR_TrafficInfo['dbreq'] ) + '\n'
-###		wStr = wStr + "DB挿入回数         : " + str( gVal.STR_TrafficInfo['dbins'] ) + '\n'
-###		wStr = wStr + "DB更新回数         : " + str( gVal.STR_TrafficInfo['dbup'] ) + '\n'
-###		wStr = wStr + "DB削除回数         : " + str( gVal.STR_TrafficInfo['dbdel'] ) + '\n'
-###		wStr = wStr + '\n'
-###		
-###		###コンソールに表示
-###		CLS_OSIF.sPrn( wStr )
-###		
-###		#############################
-###		# キーワードの表示
-###		wRange = len(gVal.STR_SearchMode)
-###		if wRange>1 :
-###			wStr = '\n'
-###			wStr = wStr + " キーワードごとのヒット数" + '\n'
-###			wStr = wStr + "--------------------" + '\n'
-###			wRange = len(gVal.STR_SearchMode)
-###			for wIndex in range( wRange ) :
-###				if gVal.STR_SearchMode[wIndex]['id']==0 :
-###					continue	#id=0は手動用
-###				
-###				###前方に半角スペース埋め
-###				wLen = 10 - len( str(gVal.STR_SearchMode[wIndex]['Count']) )
-###				wBlank = " " * wLen
-###				wStr = wStr + wBlank + str(gVal.STR_SearchMode[wIndex]['Count']) + "  " + gVal.STR_SearchMode[wIndex]['Keyword'] + '\n'
-###			
-###			###コンソールに表示
-###			CLS_OSIF.sPrn( wStr )
-###		
-###		
 		#############################
 		# いいね情報の実行
 		wResSub = self.OBJ_TwitterFavo.Run()
@@ -473,8 +352,6 @@ class CLS_TwitterMain():
 		
 		#############################
 		# 荒らしユーザCSV出力
-###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
-###		wResSub = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=True )
 		wResSub = self.OBJ_TwitterKeyword.AlloutArashi()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "OBJ_TwitterKeyword.OutArashiCSV failed: " + CLS_OSIF.sCatErr( wResSub )
@@ -595,24 +472,6 @@ class CLS_TwitterMain():
 
 
 #####################################################
-# キーユーザCSV出力
-#####################################################
-###	def KeyUserCSV(self):
-###		wRes = self.OBJ_TwitterKeyword.OutCSV()
-###		return wRes
-###
-###
-
-#####################################################
-# 荒らしユーザCSV出力
-#####################################################
-###	def ArashiCSV( self, inReSearch=False ):
-###		wRes = self.OBJ_TwitterKeyword.OutArashiCSV( inReSearch=inReSearch )
-###		return wRes
-###
-###
-
-#####################################################
 # いいね情報の表示
 #####################################################
 	def ViewFavo(self):
@@ -622,15 +481,6 @@ class CLS_TwitterMain():
 
 
 #####################################################
-# いいね監視の実行
-#####################################################
-###	def RunFavo(self):
-###		wRes = self.OBJ_TwitterFavo.Run()
-###		return wRes
-###
-###
-
-#####################################################
 # フォロワー情報の表示
 #####################################################
 	def ViewFollower(self):
@@ -638,15 +488,6 @@ class CLS_TwitterMain():
 		return wRes
 
 
-
-#####################################################
-# フォロワー監視の実行
-#####################################################
-###	def RunFollower(self):
-###		wRes = self.OBJ_TwitterFollower.Run()
-###		return wRes
-###
-###
 
 #####################################################
 # 個別いいねチェック
@@ -681,7 +522,6 @@ class CLS_TwitterMain():
 		# 検索モードの保存
 		wOBJ_Config = CLS_Config()
 		wResSub = wOBJ_Config.SetSearchMode_All()
-###		wResSub = self.SaveSearchMode()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SetKeyuser failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
@@ -705,7 +545,6 @@ class CLS_TwitterMain():
 		# 自動いいね設定の保存
 		wOBJ_Config = CLS_Config()
 		wResSub = wOBJ_Config.SetAutoFavo()
-###		wResSub = self.SaveAutoFavo()
 		if wResSub['Result']!=True :
 			wRes['Reason'] = "SaveAutoFavo failed: reason" + CLS_OSIF.sCatErr( wResSub )
 			return wRes
@@ -713,15 +552,6 @@ class CLS_TwitterMain():
 		return wRes
 
 
-
-#####################################################
-# ユーザ復活
-#####################################################
-###	def UserRevival(self):
-###		wRes = self.OBJ_TwitterAdmin.UserRevival()
-###		return wRes
-###
-###
 
 #####################################################
 # 荒らしユーザ設定
@@ -917,36 +747,9 @@ class CLS_TwitterMain():
 			if str(gVal.STR_UserInfo['id'])!=str(wROW['user']['id']) :
 				continue
 			###最新のファボ＝更新されていない
-###			###  一定期間内なら既ファボとして処理終わり
-###			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
-###				wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['favo_r_date']), inThreshold=wRemoveNofavoMin )
-###				if wGetLag['Result']!=True :
-###					wRes['Reason'] = "sTimeLag failed(3)"
-###					gVal.OBJ_L.Log( "B", wRes )
-###					return wRes
-###				if wGetLag['Beyond']==False :
-###					###期間内 =処理終わる
-###					CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-###					wRes['Result'] = True
-###					return wRes
-###			###最新ファボみつけた
-###			###  日時の変換
-###			wTime = CLS_OSIF.sGetTimeformat_Twitter( wROW['created_at'] )
-###			if wTime['Result']!=True :
-###				wRes['Reason'] = "sGetTimeformat_Twitter is failed(1): " + str(wROW['created_at'])
-###				gVal.OBJ_L.Log( "B", wRes )
-###				continue
-###			
-###			wARR_Update['id']   = str( wROW['id'] )
-###			wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
-###			wARR_Update['date'] = wTime['TimeDate']
-###			wARR_Update['flg'] = True
-###			break
 			###  同じIDなら既ファボとして処理終わり
 			if inARR_FollowerData['favo_r_id']==str(wROW['id']) :
 				CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-###				wRes['Result'] = True
-###				return wRes
 			else:
 				###最新ファボみつけた
 				###  日時の変換
@@ -970,8 +773,6 @@ class CLS_TwitterMain():
 					if gVal.STR_UserInfo['id']==str( wTweet['in_reply_to_user_id'] ) :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-###							wRes['Result'] = True
-###							return wRes
 						else:
 							###  日時の変換
 							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
@@ -991,8 +792,6 @@ class CLS_TwitterMain():
 					if gVal.STR_UserInfo['id']==wTweet['retweeted_status']['user']['id'] :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-###							wRes['Result'] = True
-###							return wRes
 						else:
 							###  日時の変換
 							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
@@ -1012,8 +811,6 @@ class CLS_TwitterMain():
 					if gVal.STR_UserInfo['id']==wTweet['quoted_status']['user']['id'] :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
-###							wRes['Result'] = True
-###							return wRes
 						else:
 							###  日時の変換
 							wTime = CLS_OSIF.sGetTimeformat_Twitter( wTweet['created_at'] )
@@ -1032,8 +829,6 @@ class CLS_TwitterMain():
 		# 更新されてない場合、
 		# 自動リムーブ対象外かをチェック
 		if wARR_Update['flg']==False :
-###			wRemoveNofavoMin = gVal.DEF_STR_TLNUM['removeNofavoMin'] * 60	#秒に変換
-###			
 			### フォローしてから一定期間内なら、何もしない
 			wGetLag = CLS_OSIF.sTimeLag( str(inARR_FollowerData['foldate']), inThreshold=wRemoveNofavoMin )
 			if wGetLag['Result']!=True :

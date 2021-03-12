@@ -233,32 +233,12 @@ class CLS_Main_Console() :
 		elif inCommand=="\\ics" :
 			cls.OBJ_TwitterMain.CaoFavo()
 		
-###		#############################
-###		# キーユーザCSV出力
-###		elif inCommand=="\\k" :
-###			cls.OBJ_TwitterMain.KeyUserCSV()
-###		
-###		#############################
-###		# 荒らしユーザCSV出力
-###		elif inCommand=="\\t" :
-###			cls.OBJ_TwitterMain.ArashiCSV()
-###		
-###		#############################
-###		# 荒らしユーザCSV出力(再実行)
-###		elif inCommand=="\\tr" :
-###			cls.OBJ_TwitterMain.ArashiCSV( inReSearch=True )
-###		
 	#####################################################
 		#############################
 		# いいね情報の表示
 		elif inCommand=="\\vi" :
 			cls.OBJ_TwitterMain.ViewFavo()
 		
-###		#############################
-###		# いいね監視の実行
-###		elif inCommand=="\\ri" :
-###			cls.OBJ_TwitterMain.RunFavo()
-###		
 		#############################
 		# フォロワー情報の表示
 		elif inCommand=="\\vf" :
@@ -269,11 +249,6 @@ class CLS_Main_Console() :
 		elif inCommand=="\\ri" :
 			cls.OBJ_TwitterMain.PointFavoCheck()
 		
-###		#############################
-###		# フォロワー監視の実行
-###		elif inCommand=="\\rf" :
-###			cls.OBJ_TwitterMain.RunFollower()
-###		
 	#####################################################
 		#############################
 		# ユーザ管理

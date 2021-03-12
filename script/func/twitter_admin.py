@@ -88,7 +88,6 @@ class CLS_TwitterAdmin():
 			wTwitterID = CLS_OSIF.sInp( "Twitter ID(@なし)？(\\q=中止)=> " )
 			if wTwitterID=="\\q" :
 				##キャンセル
-###				CLS_OSIF.sPrn( "処理を中止しました。" )
 				wRes['Result'] = True
 				return wRes
 			
@@ -98,12 +97,6 @@ class CLS_TwitterAdmin():
 			
 			#############################
 			# ユーザ情報を取得する
-###			wUserinfoRes = gVal.OBJ_Twitter.GetUserinfo( inScreenName=wTwitterID )
-###			if wUserinfoRes['Result']!=True :
-###				wRes['Reason'] = "Twitter API Error(GetUserinfo): " + wUserinfoRes['Reason']
-###				gVal.OBJ_L.Log( "B", wRes )
-###				break
-###			
 			wUserinfoRes = self.GetUserInfo( wTwitterID )
 			if wUserinfoRes['Result']!=True :
 				wRes['Reason'] = "GetUserInfo is failed: " + wUserinfoRes['Reason']
@@ -151,7 +144,6 @@ class CLS_TwitterAdmin():
 					continue
 				
 				wResSearch = self.__run_UserAdmin( wWord )
-###				CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 				if wResSearch['Result']!=True :
 					### 処理失敗
 					continue
@@ -162,7 +154,6 @@ class CLS_TwitterAdmin():
 	#####################################################
 	# ユーザ管理 画面表示
 	#####################################################
-###	def __view_UserAdmin( self, inIndex ):
 	def __view_UserAdmin(self):
 		wResDisp = CLS_MyDisp.sViewDisp( "UserAdminConsole", -1 )
 		if wResDisp['Result']==False :
@@ -175,7 +166,6 @@ class CLS_TwitterAdmin():
 	#####################################################
 	# ユーザ管理 実行
 	#####################################################
-###	def __run_UserAdmin( self, inIndex, inWord ):
 	def __run_UserAdmin( self, inWord ):
 		#############################
 		# 応答形式の取得
@@ -213,9 +203,6 @@ class CLS_TwitterAdmin():
 			CLS_OSIF.sPrn( "不明なコマンドです" + '\n' )
 			CLS_OSIF.sInp( "リターンキーを押すと戻ります。[RT]" )
 		
-###		#############################
-###		# 正常終了
-###		wRes['Result'] = True
 		return wRes
 
 
@@ -264,7 +251,6 @@ class CLS_TwitterAdmin():
 				wResGet = CLS_OSIF.sInp( "(y=Yes / other=No)=> " )
 				if wResGet!="y" :
 					return wRes
-###				wFLG_r_remove = True
 			
 			#############################
 			# 過去にリムーブされたことがある
@@ -338,9 +324,6 @@ class CLS_TwitterAdmin():
 		
 		else:
 			###DBに記録なし
-###			wFLG_r_remove = False
-###			if gVal.STR_UserAdminInfo['Follower']==True :
-###				wFLG_r_remove = True
 			wQuery = "insert into tbl_follower_data values (" + \
 						"'" + gVal.STR_UserInfo['Account'] + "'," + \
 						"'" + str(wTD['TimeDate']) + "'," + \
@@ -474,9 +457,6 @@ class CLS_TwitterAdmin():
 			
 			else:
 				###DBに記録なし
-###				wFLG_r_remove = False
-###				if gVal.STR_UserAdminInfo['Follower']==True :
-###					wFLG_r_remove = True
 				wQuery = "insert into tbl_follower_data values (" + \
 							"'" + gVal.STR_UserInfo['Account'] + "'," + \
 							"'" + str(wTD['TimeDate']) + "'," + \
@@ -499,7 +479,6 @@ class CLS_TwitterAdmin():
 							"''," + \
 							"'1900-01-01 00:00:00' " + \
 							") ;"
-###							str( wFLG_r_remove ) + "," + \
 				gVal.STR_TrafficInfo['dbins'] += 1
 		
 		wResDB = gVal.OBJ_DB.RunQuery( wQuery )
@@ -655,7 +634,6 @@ class CLS_TwitterAdmin():
 		
 		#############################
 		# Twitterからユーザ情報を取得する
-###		wUserinfoRes = gVal.OBJ_Twitter.GetUserinfo( wID )
 		wUserinfoRes = gVal.OBJ_Twitter.GetUserinfo( inScreenName=inScreenName )
 		if wUserinfoRes['Result']!=True :
 			### 404エラーか

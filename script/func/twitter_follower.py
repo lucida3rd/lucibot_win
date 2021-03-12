@@ -700,16 +700,8 @@ class CLS_TwitterFollower():
 		gVal.OBJ_DB.ChgDict( wResDB['Responce']['Collum'], wResDB['Responce']['Data'], outDict=wARR_RateFollowers )
 		gVal.STR_TrafficInfo['autofollowt'] = len(wARR_RateFollowers)
 		
-###		#############################
-###		# 画面クリア
-###		CLS_OSIF.sDispClr()
-###		
 		#############################
 		# ヘッダ表示
-###		wStr = "--------------------" + '\n'
-###		wStr = wStr + " フォロワー監視 実行" + '\n'
-###		wStr = wStr + "--------------------" + '\n'
-###		wStr = wStr + "以下のリムーブ対象ユーザをリムーブします......" + '\n'
 		wStr = '\n' + "以下のリムーブ対象ユーザをリムーブします......" + '\n'
 		CLS_OSIF.sPrn( wStr )
 		
@@ -1162,14 +1154,6 @@ class CLS_TwitterFollower():
 				if wFLG_Active==False :
 					continue
 				
-###				#############################
-###				#※候補確定
-###				break
-###			
-###			if wRandID==None :
-###				###候補が確定してなければ、やり直し
-###				continue
-###			
 				wUserInfo = wUserInfoRes['Responce']
 				#※候補あり
 				#############################
