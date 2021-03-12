@@ -759,6 +759,10 @@ class CLS_TwitterMain():
 					gVal.OBJ_L.Log( "B", wRes )
 					continue
 				
+				###最新より古ければスキップ
+				if str(inARR_FollowerData['favo_r_date'])>=str(wTime['TimeDate']) :
+					continue
+				
 				wARR_Update['id']   = str( wROW['id'] )
 				wARR_Update['cnt']  = inARR_FollowerData['favo_r_cnt'] + 1
 				wARR_Update['date'] = wTime['TimeDate']
@@ -770,7 +774,7 @@ class CLS_TwitterMain():
 			for wTweet in inARR_Tweets :
 				### リプライ
 				if wTweet['in_reply_to_status_id']!=None :
-					if gVal.STR_UserInfo['id']==str( wTweet['in_reply_to_user_id'] ) :
+					if gVal.STR_UserInfo['id']==wTweet['in_reply_to_user_id'] :
 						if inARR_FollowerData['favo_r_id']==str( wTweet['id'] ) :
 							CLS_OSIF.sPrn( "●既ファボ: @" + inARR_FollowerData['screen_name'] + '\n')
 						else:

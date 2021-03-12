@@ -1406,8 +1406,10 @@ class CLS_TwitterFollower():
 				continue
 			
 			###ユーザの直近のツイートを取得
+###			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False,
+###				 inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=gVal.DEF_STR_TLNUM['AutoFavoCount'] )
 			wTweetRes = gVal.OBJ_Twitter.GetTL( inTLmode="user", inFLG_Rep=False, inFLG_Rts=False,
-				 inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=gVal.DEF_STR_TLNUM['AutoFavoCount'] )
+				 inScreenName=wARR_RateFollowers[wIndex]['screen_name'], inCount=gVal.DEF_STR_TLNUM['getTwitTLnum'] )
 			if wTweetRes['Result']!=True :
 				wRes['Reason'] = "Twitter API Error(GetTL): " + wTweetRes['Reason']
 				gVal.OBJ_L.Log( "B", wRes )
